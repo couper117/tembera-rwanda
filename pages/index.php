@@ -12,6 +12,8 @@
 <body>
     <?php
     // This finds the real path to the 'include' folder, no matter where you are
+    include __DIR__ . '/../include/preloader.php';
+    include __DIR__ . '/../include/header.php';
     ?>
 
     <header class="landing-hero">
