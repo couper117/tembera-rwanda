@@ -14,7 +14,6 @@
     <?php include 'include/preloader.php'; ?>
     <?php include 'include/nav.php'; ?>
     
-    <?php include 'include/db_connect.php'; ?>
 
     <header class="landing-hero">
         <div class="hero-bg-zoom"></div>

@@ -15,14 +15,7 @@
     /* Soft shadow */
     transition: all 0.3s ease;
 }
-/* Force-fix the gap */
-.navbar + * {
-    margin-top: 0 !important;
-}
 
-body {
-    padding-top: 70px; /* Slightly reduce this if the gap is still too big */
-}
 
 /* 2. BRANDING (Text Only) */
 .navbar-brand {
