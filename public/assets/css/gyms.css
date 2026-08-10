@@ -1,0 +1,103 @@
+/* --- MINIMALIST PALETTE --- */
+.gyms-page {
+    --primary-green: #283618; /* Dark Green (Buttons & Text) */
+    --accent-green: #606C38;  /* Olive Green (Tags) */
+    --text-dark: #1D1C1C;    /* Black (Headings) */
+    --text-grey: #555555;    /* Grey (Body text) */
+    --light-bg: #fdfdfd;     /* Very Clean White-ish Background */
+}
+
+.gyms-page * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+.gyms-page {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    padding-bottom: 50px;
+}
+
+/* Clean Header (No heavy background color) */
+.gyms-page header {
+    background-color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+.gyms-page header h1 {
+    color: var(--primary-green); /* Colored Text instead of Background */
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+.gyms-page header p { color: var(--text-grey); }
+
+.gyms-page .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+/* Section Titles */
+.gyms-page .section-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-dark);
+    margin: 40px 0 20px 0;
+    border-left: 5px solid var(--accent-green); /* Small colored line on the left */
+    padding-left: 15px;
+}
+
+.gyms-page .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+
+/* Clean Cards */
+.gyms-page .card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    /* Very soft shadow */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+}
+.gyms-page .card:hover { transform: translateY(-3px); }
+
+.gyms-page .card-img { width: 100%; height: 200px; background-color: #eee; object-fit: cover; }
+.gyms-page .card-body { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+
+/* Minimalist Tags */
+.gyms-page .tag {
+    color: var(--accent-green);
+    background-color: rgba(96, 108, 56, 0.1); /* Very light green background */
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 15px;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gyms-page .card h3 { color: var(--text-dark); margin-bottom: 8px; font-size: 1.4rem; }
+.gyms-page .location { color: var(--text-grey); font-size: 0.9rem; margin-bottom: 15px; }
+.gyms-page .description { color: var(--text-grey); font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px; flex-grow: 1; }
+
+/* Buttons */
+.gyms-page .btn {
+    background-color: var(--primary-green);
+    color: white;
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: auto;
+}
+.gyms-page .btn:hover { background-color: var(--accent-green); }
+
+/* Details Page */
+.gyms-page .details-container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+.gyms-page .back-link { color: var(--text-grey); text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px;}

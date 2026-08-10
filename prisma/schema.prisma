@@ -1,0 +1,53 @@
+// Prisma schema — replaces the old MySQL `tourism_db`.
+// Datasource is Postgres; connection comes from DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Homepage "Plan Your Journey" categories, managed from /admin.
+/// Ported from the legacy MySQL `travel_categories` table.
+model TravelCategory {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  imageUrl    String   @map("image_url")
+  pageLink    String   @map("page_link")
+  iconClass   String   @map("icon_class")
+  ctaText     String   @map("cta_text")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("travel_categories")
+}
+
+/// Admin users for the dashboard. The legacy PHP admin had NO auth at all;
+/// this replaces it with hashed-password login.
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+/// Trip booking requests from the /booking page.
+/// The legacy booking form was front-end only and never persisted anything.
+model Booking {
+  id          Int      @id @default(autoincrement())
+  experience  String
+  preferredAt DateTime @map("preferred_at")
+  guests      Int
+  fullName    String   @map("full_name")
+  email       String
+  totalPrice  Int      @map("total_price")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("bookings")
+}

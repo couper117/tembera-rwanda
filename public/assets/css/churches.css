@@ -1,0 +1,119 @@
+/* --- THEME ENGINE --- */
+:root {
+    /* LIGHT MODE */
+    --bg-body: #ececec;
+    --bg-card: #ffffff;
+    --bg-controls: rgba(255, 255, 255, 0.95);
+    --text-main: #1D1C1C;
+    --text-sub: #5D4037;
+    --accent: #00a859; /* Bright Rwanda Green */
+    --border: #dcd8cc;
+    --shadow: 0 10px 20px rgba(0, 168, 89, 0.15);
+}
+
+.churches-page {
+    /* LIGHT MODE */
+    --bg-body: #ececec;
+    --bg-card: #ffffff;
+    --bg-controls: rgba(255, 255, 255, 0.95);
+    --text-main: #1D1C1C;
+    --text-sub: #5D4037;
+    --accent: #00a859; /* Bright Rwanda Green */
+    --border: #dcd8cc;
+    --shadow: 0 10px 20px rgba(0, 168, 89, 0.15);
+}
+
+/* DARK MODE */
+.churches-page[data-theme="dark"] {
+    --bg-body: #1D1C1C;
+    --bg-card: #323031;
+    --bg-controls: rgba(29, 28, 28, 0.95);
+    --text-main: #e9e5d9;
+    --text-sub: #a8a49c;
+    --accent: #00a859;
+    --border: rgba(255, 255, 255, 0.05);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.churches-page {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0; padding: 0;
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* --- HEADER --- */
+.churches-page header {
+    background: linear-gradient(to bottom, rgba(29, 28, 28, 0.7), var(--bg-body)), url('https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover; background-position: center;
+    text-align: center; padding: 120px 20px 60px;
+    position: relative;
+}
+
+.churches-page .theme-toggle {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.3); color: white;
+    padding: 10px 15px; border-radius: 50px; cursor: pointer;
+    font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+}
+
+.churches-page h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0 0 15px 0; color: #e9e5d9; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.churches-page .subtitle { font-size: 1.1rem; opacity: 0.9; max-width: 600px; margin: 0 auto; color: #e9e5d9; }
+
+/* --- CONTROLS --- */
+.churches-page .controls-section {
+    background: var(--bg-controls); padding: 25px;
+    display: flex; justify-content: center; align-items: center; gap: 20px;
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    backdrop-filter: blur(10px);
+}
+
+.churches-page select {
+    padding: 12px 25px; border: 1px solid var(--border); border-radius: 50px;
+    font-family: 'Montserrat', sans-serif; background-color: var(--bg-card);
+    color: var(--text-main); font-weight: 600; cursor: pointer; outline: none;
+}
+
+.churches-page .filter-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-main);
+    padding: 10px 30px; font-weight: 600; cursor: pointer; border-radius: 50px;
+    text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;
+}
+.churches-page .filter-btn.active, .churches-page .filter-btn:hover {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+}
+
+/* --- GRID --- */
+.churches-page .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 40px; max-width: 1200px; margin: 60px auto; padding: 0 20px;
+}
+
+.churches-page .card {
+    background: var(--bg-card); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.4s ease;
+    border: 1px solid var(--border); position: relative;
+}
+.churches-page .card:hover { transform: translateY(-8px); box-shadow: var(--shadow); border-color: var(--accent); }
+
+.churches-page .img-wrapper { height: 200px; overflow: hidden; position: relative; }
+.churches-page .card-img {
+    width: 100%; height: 100%; background-size: cover; background-position: center;
+    transition: transform 0.8s ease;
+}
+.churches-page .card:hover .card-img { transform: scale(1.1); }
+
+.churches-page .badge {
+    position: absolute; top: 15px; left: 15px;
+    background: var(--accent); color: white; padding: 6px 14px;
+    border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+}
+
+.churches-page .card-body { padding: 30px; }
+.churches-page .location-tag { color: var(--accent); font-size: 0.75rem; font-weight: 700; display: block; margin-bottom: 8px; text-transform: uppercase; }
+.churches-page .card-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin: 0 0 20px 0; color: var(--text-main); }
+.churches-page .maps-btn { text-decoration: none; color: var(--text-main); font-size: 0.85rem; font-weight: 600; border-bottom: 1px solid var(--accent); }
+.churches-page .no-results { grid-column: 1 / -1; text-align: center; color: var(--text-sub); padding: 50px; }

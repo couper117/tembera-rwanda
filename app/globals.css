@@ -1,0 +1,92 @@
+/* Global base styles + preloader (the latter was inline in the legacy
+   include/preloader.php). Page-specific CSS is loaded per-page via <link>. */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;600;800&display=swap");
+
+/* --- Preloader (ported from include/preloader.php) --- */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background: #1d1c1c;
+  z-index: 9999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1);
+}
+#preloader.loaded {
+  transform: translateY(-100%);
+}
+.loader-content {
+  text-align: center;
+  position: relative;
+}
+.loader-text {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.loader-text span:first-child {
+  color: white;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.8s ease forwards 0.2s;
+}
+.stroke-text {
+  color: transparent;
+  -webkit-text-stroke: 2px #606c38;
+  position: relative;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.8s ease forwards 0.4s;
+}
+.stroke-text::before {
+  content: "Rwanda";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  color: #606c38;
+  border-right: 4px solid #fff;
+  overflow: hidden;
+  animation: fillText 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards 1s;
+}
+.loader-line {
+  width: 0%;
+  height: 4px;
+  background: white;
+  margin: 30px auto 0;
+  border-radius: 2px;
+  animation: lineGrow 2.2s ease-in-out forwards;
+}
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fillText {
+  to {
+    width: 100%;
+  }
+}
+@keyframes lineGrow {
+  0% {
+    width: 0%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 60%;
+    opacity: 1;
+  }
+}

@@ -1,0 +1,215 @@
+/* Extracted from the inline <style> in legacy pages/about.php.
+   Loaded only on /about. */
+:root {
+  --cream: #e9e5d9;
+  --olive: #606c38;
+  --dark-forest: #283618;
+  --black-matte: #1d1c1c;
+  --white: #ffffff;
+  --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.about-page {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background: var(--cream);
+  color: var(--black-matte);
+  overflow-x: hidden;
+}
+
+.about-page .hero {
+  position: relative;
+  height: 70vh;
+  background: url("https://images.unsplash.com/photo-1548695607-9c73430ba065?q=80&w=2000")
+    center/cover fixed no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 5rem;
+}
+.about-page .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(29, 28, 28, 0.4), var(--cream));
+}
+.about-page .hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 0 20px;
+  animation: aboutFadeInUp 1s ease forwards;
+}
+.about-page .hero-content h1 {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 800;
+  color: var(--dark-forest);
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+.about-page .hero-content p {
+  font-size: 1.2rem;
+  color: var(--black-matte);
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.about-page .story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  margin-bottom: 100px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 25px;
+}
+.about-page .story-text h2 {
+  font-size: 2.5rem;
+  color: var(--olive);
+  margin-bottom: 20px;
+  font-weight: 800;
+}
+.about-page .story-text p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #555;
+  margin-bottom: 20px;
+}
+.about-page .story-img {
+  position: relative;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(40, 54, 24, 0.15);
+  transform: rotate(2deg);
+  transition: var(--transition);
+}
+.about-page .story-img:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+.about-page .story-img img {
+  width: 100%;
+  display: block;
+}
+
+.about-page .values-section {
+  margin-top: 50px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 25px;
+}
+.about-page .section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+.about-page .section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--dark-forest);
+}
+.about-page .underline {
+  width: 60px;
+  height: 4px;
+  background: var(--olive);
+  margin: 15px auto;
+  border-radius: 2px;
+}
+.about-page .card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+.about-page .value-card {
+  background: var(--white);
+  padding: 40px 30px;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.about-page .value-card:hover {
+  transform: translateY(-15px);
+  box-shadow: 0 30px 60px rgba(40, 54, 24, 0.1);
+  border-color: rgba(96, 108, 56, 0.2);
+}
+.about-page .icon-box {
+  width: 60px;
+  height: 60px;
+  background: rgba(96, 108, 56, 0.1);
+  color: var(--olive);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 25px;
+  transition: 0.4s;
+}
+.about-page .value-card:hover .icon-box {
+  background: var(--olive);
+  color: white;
+  transform: scale(1.1);
+}
+.about-page .value-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark-forest);
+  margin-bottom: 15px;
+}
+.about-page .value-card p {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.6;
+}
+.about-page .stats-bar {
+  background: var(--dark-forest);
+  color: var(--cream);
+  border-radius: 30px;
+  padding: 60px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 30px;
+  text-align: center;
+  margin: 80px auto 0;
+  max-width: 1200px;
+}
+.about-page .stat-item h3 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+  color: var(--olive);
+}
+.about-page .stat-item p {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+@keyframes aboutFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 900px) {
+  .about-page .story-grid {
+    grid-template-columns: 1fr;
+  }
+  .about-page .hero {
+    height: 60vh;
+  }
+  .about-page .hero-content h1 {
+    font-size: 3rem;
+  }
+  .about-page .story-img {
+    transform: rotate(0);
+    margin-top: 30px;
+  }
+}

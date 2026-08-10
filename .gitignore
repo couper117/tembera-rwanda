@@ -19,3 +19,18 @@ build/**
 *.swo
 .DS_Store
 Thumbs.db
+
+# Next.js / Node
+/.next/
+/out/
+/node_modules/
+next-env.d.ts.timestamp
+.env
+.env*.local
+
+# Prisma
+/prisma/*.db
+
+# Uploaded admin images (served from /public/uploads)
+/public/uploads/*
+!/public/uploads/.gitkeep
