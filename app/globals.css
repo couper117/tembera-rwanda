@@ -1,92 +1,229 @@
-/* Global base styles + preloader (the latter was inline in the legacy
-   include/preloader.php). Page-specific CSS is loaded per-page via <link>. */
+/* ==========================================================================
+   Tembera — foundations
+   Design tokens, reset and base typography. Component classes live in
+   app/components.css. Everything the product UI uses is prefixed `t-`, so the
+   legacy stylesheets that a couple of remaining screens still load (admin)
+   cannot collide with it.
+   ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;600;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
-/* --- Preloader (ported from include/preloader.php) --- */
-#preloader {
-  position: fixed;
-  inset: 0;
-  background: #1d1c1c;
-  z-index: 9999999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1);
+:root {
+  /* -- Colour ------------------------------------------------------------
+     Warm neutrals carry the interface; green is an accent, not a theme.
+     Every surface is a token so a dark theme is a swap, not a rewrite. */
+  --t-bg: #faf9f7;
+  --t-surface: #ffffff;
+  --t-surface-2: #f4f2ee;
+  --t-surface-3: #ebe8e2;
+  --t-border: #e7e3dc;
+  --t-border-strong: #d8d2c8;
+
+  --t-ink: #1a1815;
+  --t-ink-2: #55504a;
+  --t-ink-3: #837d74;
+  --t-ink-inverse: #ffffff;
+
+  /* Deep, slightly desaturated green — confident rather than flag-bright. */
+  --t-accent: #11694a;
+  --t-accent-hover: #0d543b;
+  --t-accent-soft: #e6f0ea;
+  --t-accent-ink: #0b4433;
+
+  /* The darkest brand green, for the logo mark. */
+  --t-brand-deep: #0e4a33;
+
+  /* Ochre, used only for ratings and the occasional highlight. */
+  --t-gold: #b47318;
+  --t-gold-soft: #fbf2e2;
+
+  --t-danger: #a3352a;
+  --t-danger-soft: #fbeceb;
+
+  /* -- Type -------------------------------------------------------------- */
+  --t-font: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  --t-text-display: 1.75rem; /* 28 */
+  --t-text-title: 1.375rem; /* 22 */
+  --t-text-heading: 1.0625rem; /* 17 */
+  --t-text-body: 0.9375rem; /* 15 */
+  --t-text-small: 0.8125rem; /* 13 */
+  --t-text-micro: 0.6875rem; /* 11 */
+
+  /* -- Space (4px base) --------------------------------------------------- */
+  --t-1: 4px;
+  --t-2: 8px;
+  --t-3: 12px;
+  --t-4: 16px;
+  --t-5: 20px;
+  --t-6: 24px;
+  --t-8: 32px;
+  --t-10: 40px;
+  --t-14: 56px;
+
+  /* Horizontal page padding — one value, used everywhere. */
+  --t-gutter: 16px;
+
+  /* -- Radius ------------------------------------------------------------- */
+  --t-r-sm: 10px;
+  --t-r-md: 14px;
+  --t-r-lg: 18px;
+  --t-r-xl: 24px;
+  --t-r-pill: 999px;
+
+  /* -- Elevation ---------------------------------------------------------- */
+  --t-shadow-card: 0 1px 2px rgba(26, 24, 21, 0.04), 0 1px 3px rgba(26, 24, 21, 0.03);
+  --t-shadow-raised: 0 4px 16px rgba(26, 24, 21, 0.08);
+  --t-shadow-float: 0 8px 28px rgba(26, 24, 21, 0.14);
+  --t-shadow-sheet: 0 -8px 32px rgba(26, 24, 21, 0.12);
+
+  /* -- Motion ------------------------------------------------------------- */
+  --t-fast: 120ms;
+  --t-base: 200ms;
+  --t-slow: 320ms;
+  --t-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* -- Chrome sizing ------------------------------------------------------ */
+  --t-header-h: 56px;
+  --t-bottomnav-h: 60px;
+  /* The rail sits flush against the window on top, left and bottom; only its
+     inner edge is rounded. This is its full width. */
+  --t-rail-w: 264px;
+  /* One timing for width, labels and the content shift, so the collapse reads
+     as a single movement. */
+  --t-rail-anim: 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  --t-content-max: 1240px;
 }
-#preloader.loaded {
-  transform: translateY(-100%);
+
+@media (min-width: 768px) {
+  :root {
+    --t-gutter: 24px;
+    --t-text-display: 2rem;
+    --t-header-h: 64px;
+  }
 }
-.loader-content {
-  text-align: center;
-  position: relative;
+
+@media (min-width: 1080px) {
+  :root {
+    --t-gutter: 32px;
+  }
 }
-.loader-text {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 800;
-  line-height: 1;
+
+/* -------------------------------------------------------------- reset --- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  background: var(--t-bg);
+  color: var(--t-ink);
+  font-family: var(--t-font);
+  font-size: var(--t-text-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Stops horizontal scroll from any single overflowing carousel. */
+  overflow-x: hidden;
 }
-.loader-text span:first-child {
-  color: white;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.8s ease forwards 0.2s;
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
+  margin: 0;
 }
-.stroke-text {
-  color: transparent;
-  -webkit-text-stroke: 2px #606c38;
-  position: relative;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.8s ease forwards 0.4s;
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
-.stroke-text::before {
-  content: "Rwanda";
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--t-border);
+  margin: 0;
+}
+
+/* Visible, consistent keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 2px;
+  border-radius: var(--t-r-sm);
+}
+
+::selection {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+/* Screen-reader-only text. */
+.t-sr {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 0%;
-  height: 100%;
-  color: #606c38;
-  border-right: 4px solid #fff;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
-  animation: fillText 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards 1s;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
-.loader-line {
-  width: 0%;
-  height: 4px;
-  background: white;
-  margin: 30px auto 0;
-  border-radius: 2px;
-  animation: lineGrow 2.2s ease-in-out forwards;
-}
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes fillText {
-  to {
-    width: 100%;
-  }
-}
-@keyframes lineGrow {
-  0% {
-    width: 0%;
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    width: 60%;
-    opacity: 1;
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

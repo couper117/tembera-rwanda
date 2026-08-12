@@ -1,0 +1,2655 @@
+/* ==========================================================================
+   Tembera — components
+   Every class here is a reusable product primitive. Screens compose these;
+   they do not invent one-off styles.
+   ========================================================================== */
+
+/* ======================================================== app shell ===== */
+
+.t-app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Content sits above the bottom nav on mobile and beside the rail on desktop. */
+.t-main {
+  flex: 1;
+  padding-bottom: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom) + var(--t-6));
+}
+
+.t-page {
+  width: 100%;
+  max-width: var(--t-content-max);
+  margin: 0 auto;
+  padding-inline: var(--t-gutter);
+}
+
+@media (min-width: 1024px) {
+  .t-main {
+    padding-bottom: var(--t-10);
+    padding-left: var(--t-rail-w);
+  }
+}
+
+/* ---------------------------------------------------------- header ----- */
+
+.t-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--t-header-h);
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding-inline: var(--t-gutter);
+  background: rgba(250, 249, 247, 0.88);
+  backdrop-filter: saturate(150%) blur(12px);
+  -webkit-backdrop-filter: saturate(150%) blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--t-base) var(--t-ease);
+}
+
+.t-header--bordered {
+  border-bottom-color: var(--t-border);
+}
+
+.t-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-right: auto;
+}
+
+.t-header__mark {
+  color: var(--t-accent);
+}
+
+.t-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Inline search in the desktop header. Takes the space the brand vacates
+   (the rail carries it there) rather than leaving the bar half empty. */
+.t-header__search {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  /* The rail is fixed and paints above the header, so the header's content has
+     to start clear of it — otherwise the search field slides underneath. */
+  .t-header {
+    padding-left: calc(var(--t-rail-w) + var(--t-gutter));
+  }
+
+  .t-header__search {
+    display: flex;
+    align-items: center;
+    gap: var(--t-3);
+    flex: 1;
+    max-width: 460px;
+    height: 40px;
+    padding: 0 var(--t-4);
+    margin-right: auto;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: var(--t-r-pill);
+    color: var(--t-ink-3);
+    font-size: var(--t-text-small);
+    transition: border-color var(--t-fast) var(--t-ease),
+      box-shadow var(--t-base) var(--t-ease);
+  }
+
+  .t-header__search:hover {
+    border-color: var(--t-border-strong);
+    box-shadow: var(--t-shadow-card);
+  }
+
+  .t-header__search > span:first-of-type {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* On a narrow phone the header carries brand + city + three icons; shrink the
+   tap targets slightly so nothing wraps. */
+@media (max-width: 400px) {
+  .t-header {
+    gap: var(--t-1);
+  }
+
+  .t-header__brand {
+    font-size: 1rem;
+  }
+
+  .t-header__actions .t-iconbtn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Round icon button used in headers and over images. */
+.t-iconbtn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-pill);
+  color: var(--t-ink-2);
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease),
+    transform var(--t-fast) var(--t-ease);
+}
+
+.t-iconbtn:hover {
+  background: var(--t-surface-2);
+  color: var(--t-ink);
+}
+
+.t-iconbtn:active {
+  transform: scale(0.92);
+}
+
+.t-iconbtn--solid {
+  background: var(--t-surface);
+  color: var(--t-ink);
+  box-shadow: var(--t-shadow-raised);
+}
+
+.t-iconbtn--solid:hover {
+  background: var(--t-surface);
+}
+
+.t-iconbtn--active {
+  color: var(--t-accent);
+  background: var(--t-accent-soft);
+}
+
+/* Small dot for "you have something here" affordances. */
+.t-dot {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--t-accent);
+  border: 2px solid var(--t-bg);
+}
+
+/* ------------------------------------------------------- bottom nav ---- */
+
+.t-bottomnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  height: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(160%) blur(16px);
+  -webkit-backdrop-filter: saturate(160%) blur(16px);
+  border-top: 1px solid var(--t-border);
+}
+
+.t-bottomnav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--t-ink-3);
+  font-size: var(--t-text-micro);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  /* Full-height tap target. */
+  min-height: 44px;
+  transition: color var(--t-fast) var(--t-ease);
+}
+
+.t-bottomnav__item[aria-current="page"] {
+  color: var(--t-accent);
+}
+
+.t-bottomnav__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  transition: transform var(--t-base) var(--t-ease);
+}
+
+.t-bottomnav__item[aria-current="page"] .t-bottomnav__icon {
+  transform: translateY(-1px);
+}
+
+.t-bottomnav__item:active .t-bottomnav__icon {
+  transform: scale(0.88);
+}
+
+@media (min-width: 1024px) {
+  .t-bottomnav {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------- desktop rail ---- */
+
+.t-rail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  /* Flush to the window on top, left and bottom — only the inner edge is
+     rounded, so the rail reads as part of the frame rather than a panel
+     floating on top of it. */
+  .t-rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 55;
+    width: var(--t-rail-w);
+    display: flex;
+    flex-direction: column;
+    background: var(--t-surface);
+    border-right: 1px solid var(--t-border);
+    border-radius: 0 var(--t-r-md) var(--t-r-md) 0;
+    transition: width var(--t-rail-anim);
+    /* Nothing in here scrolls — the category list is trimmed to what fits (see
+       the height queries below) and the rest lives behind "More categories". */
+    overflow: hidden;
+  }
+
+  /* Content and header glide with the rail instead of snapping. */
+  .t-main,
+  .t-header {
+    transition: padding-left var(--t-rail-anim);
+  }
+
+  /* -- Brand row --------------------------------------------------------- */
+
+  .t-rail__brandrow {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--t-2);
+    padding: var(--t-4) var(--t-3) var(--t-3);
+  }
+
+  .t-rail__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--t-2);
+    min-width: 0;
+    padding: 0 var(--t-2);
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--t-ink);
+    white-space: nowrap;
+  }
+
+  .t-rail__brand svg {
+    flex: none;
+    color: var(--t-accent);
+  }
+
+  /* -- Toggle ------------------------------------------------------------ */
+
+  .t-rail__toggle {
+    flex: none;
+    margin-left: auto;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--t-r-sm);
+    color: var(--t-ink-3);
+    transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease);
+  }
+
+  .t-rail__toggle:hover {
+    background: var(--t-surface-2);
+    color: var(--t-ink);
+  }
+
+  /* -- Rows (primary nav, categories, footer all share this size) -------- */
+
+  .t-railrow {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--t-3);
+    height: 42px;
+    padding: 0 12px;
+    border-radius: var(--t-r-sm);
+    color: var(--t-ink-2);
+    font-size: var(--t-text-body);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease),
+      gap var(--t-rail-anim), padding var(--t-rail-anim);
+  }
+
+  .t-railrow:hover {
+    background: var(--t-surface-2);
+    color: var(--t-ink);
+  }
+
+  .t-railrow[aria-current="page"] {
+    background: var(--t-accent-soft);
+    color: var(--t-accent-ink);
+    font-weight: 700;
+  }
+
+  .t-railrow__glyph {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Category rows carry a tinted chip instead of a bare glyph. */
+  .t-railrow__chip {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  /* Labels collapse by animating their width away rather than being switched
+     off — display:none popped, which is what made the toggle feel cheap. */
+  .t-railrow__label,
+  .t-rail__brandtext,
+  .t-railpromo__body {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 1;
+    transition: max-width var(--t-rail-anim), opacity 140ms var(--t-ease);
+  }
+
+  .t-railrow__label {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .t-rail__brandtext,
+  .t-railpromo__body {
+    max-width: 200px;
+  }
+
+  .t-railrow__count {
+    flex: none;
+    font-size: var(--t-text-small);
+    font-weight: 700;
+    color: var(--t-ink-3);
+    font-variant-numeric: tabular-nums;
+    opacity: 1;
+    transition: max-width var(--t-rail-anim), opacity 140ms var(--t-ease);
+    max-width: 50px;
+    overflow: hidden;
+  }
+
+  .t-rail__nav,
+  .t-rail__cats {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 0 var(--t-3) var(--t-2);
+  }
+
+  .t-rail__sectionlabel {
+    flex: none;
+    padding: var(--t-3) var(--t-3) 6px 15px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .t-rail__sep {
+    flex: none;
+    height: 1px;
+    background: var(--t-border);
+    margin: var(--t-2) var(--t-3) 0;
+  }
+
+  /* Soaks up leftover height so the footer sits at the bottom without
+     anything needing to scroll. */
+  .t-rail__gap {
+    flex: 1;
+    min-height: var(--t-2);
+  }
+
+  /* -- "More categories" -------------------------------------------------- */
+
+  .t-railmore {
+    background: var(--t-accent-soft);
+    color: var(--t-accent-ink);
+    font-weight: 650;
+    margin-top: 5px;
+  }
+
+  .t-railmore:hover {
+    background: #d8e8df;
+    color: var(--t-accent-ink);
+  }
+
+  .t-railmore__chev {
+    flex: none;
+    margin-left: auto;
+  }
+
+  /* -- Promo card --------------------------------------------------------- */
+
+  .t-railpromo {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--t-3);
+    margin: var(--t-2) var(--t-3) 0;
+    padding: 10px;
+    border-radius: var(--t-r-md);
+    background: var(--t-surface-2);
+    transition: background var(--t-fast) var(--t-ease), gap var(--t-rail-anim);
+  }
+
+  .t-railpromo:hover {
+    background: var(--t-surface-3);
+  }
+
+  .t-railpromo__art {
+    flex: none;
+  }
+
+  .t-railpromo__title {
+    display: block;
+    font-size: var(--t-text-small);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--t-ink);
+    white-space: nowrap;
+  }
+
+  .t-railpromo__text {
+    display: block;
+    font-size: 12px;
+    color: var(--t-ink-3);
+    line-height: 1.35;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+
+  /* -- Pinned footer ------------------------------------------------------ */
+
+  .t-rail__foot {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: var(--t-2) var(--t-3) var(--t-3);
+    border-top: 1px solid var(--t-border);
+  }
+
+  /* ======================================================= collapsed ==== */
+
+  .t-app[data-rail="collapsed"] {
+    --t-rail-w: 72px;
+  }
+
+  /* Brand and toggle stack while collapsed, so both stay reachable without
+     either being crushed into 60px of width. */
+  .t-app[data-rail="collapsed"] .t-rail__brandrow {
+    flex-direction: column;
+    gap: var(--t-1);
+    padding: var(--t-3) 0 var(--t-2);
+  }
+
+  .t-app[data-rail="collapsed"] .t-rail__brand {
+    padding: 0;
+  }
+
+  .t-app[data-rail="collapsed"] .t-rail__toggle {
+    margin-left: 0;
+  }
+
+  .t-app[data-rail="collapsed"] .t-railrow {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
+
+  .t-app[data-rail="collapsed"] .t-railrow__label,
+  .t-app[data-rail="collapsed"] .t-rail__brandtext,
+  .t-app[data-rail="collapsed"] .t-railpromo__body,
+  .t-app[data-rail="collapsed"] .t-railrow__count {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .t-app[data-rail="collapsed"] .t-railmore__chev,
+  .t-app[data-rail="collapsed"] .t-rail__sectionlabel {
+    display: none;
+  }
+
+  .t-app[data-rail="collapsed"] .t-railpromo {
+    justify-content: center;
+    padding: 8px;
+    gap: 0;
+  }
+
+  .t-app[data-rail="collapsed"] .t-railpromo__art svg {
+    width: 34px;
+    height: 28px;
+  }
+
+  /* ==================================== fit-to-height category trimming == */
+
+  /* The rail never scrolls: the category list is cut to whatever the viewport
+     can hold, and anything trimmed stays one click away under "More
+     categories". These thresholds are MEASURED, not calculated — flex
+     children shrink instead of overflowing, so a scrollHeight check reports
+     success while rows are visibly squashed. The probe drives the visible
+     count from JS and records the largest that leaves every row at full
+     height with the footer still inside. Re-run it after any spacing change.
+     Ordered tallest to shortest; equal specificity, last match wins. */
+
+  @media (max-height: 1032px) {
+    .t-rail__cats > a:nth-child(n + 12):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 988px) {
+    .t-rail__cats > a:nth-child(n + 11):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 952px) {
+    .t-rail__cats > a:nth-child(n + 10):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 904px) {
+    .t-rail__cats > a:nth-child(n + 9):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 860px) {
+    .t-rail__cats > a:nth-child(n + 8):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 816px) {
+    .t-rail__cats > a:nth-child(n + 7):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 780px) {
+    .t-rail__cats > a:nth-child(n + 6):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 732px) {
+    .t-rail__cats > a:nth-child(n + 5):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 688px) {
+    .t-rail__cats > a:nth-child(n + 4):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 644px) {
+    .t-rail__cats > a:nth-child(n + 3):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  @media (max-height: 608px) {
+    .t-rail__cats > a:nth-child(n + 2):not(.t-railmore) {
+      display: none;
+    }
+  }
+
+  /* Below this only the nav, More and the footer remain, and the rows
+     themselves have to give a little. */
+  @media (max-height: 564px) {
+    .t-rail__cats > a:not(.t-railmore) {
+      display: none;
+    }
+
+    .t-rail__sectionlabel {
+      display: none;
+    }
+
+    .t-railrow {
+      height: 36px;
+    }
+
+    .t-app[data-rail="collapsed"] .t-rail__brandrow {
+      padding-top: var(--t-2);
+      padding-bottom: 0;
+    }
+  }
+
+  /* Last resort on a very short window: the promo and More go too — Explore
+     in the primary nav still reaches the full list. */
+  @media (max-height: 470px) {
+    .t-railpromo,
+    .t-railmore,
+    .t-rail__sep {
+      display: none;
+    }
+  }
+}
+
+/* ==================================================== category nav ====== */
+
+.t-catnav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.t-catnav__row {
+  display: flex;
+  align-items: center;
+  border-radius: var(--t-r-md);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-catnav__row:hover {
+  background: var(--t-surface-2);
+}
+
+.t-catnav__row--active {
+  background: var(--t-accent-soft);
+}
+
+.t-catnav__link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: 9px var(--t-2) 9px var(--t-3);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  border-radius: var(--t-r-md);
+}
+
+.t-catnav__row--active .t-catnav__link {
+  color: var(--t-accent-ink);
+  font-weight: 700;
+}
+
+.t-catnav__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-catnav__row:hover .t-catnav__icon,
+.t-catnav__row--active .t-catnav__icon {
+  background: var(--t-surface);
+  color: var(--t-accent);
+}
+
+.t-catnav__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.t-catnav__count {
+  flex: none;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  color: var(--t-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-catnav__toggle {
+  flex: none;
+  width: 30px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--t-ink-3);
+  border-radius: var(--t-r-sm);
+  transition: transform var(--t-base) var(--t-ease), color var(--t-fast) var(--t-ease);
+}
+
+.t-catnav__toggle:hover {
+  color: var(--t-ink);
+}
+
+.t-catnav__toggle--open {
+  transform: rotate(90deg);
+}
+
+.t-catnav__subs {
+  /* Indented under the group's icon so the hierarchy is readable at a glance. */
+  margin: 2px 0 var(--t-2) 27px;
+  padding-left: var(--t-3);
+  border-left: 1px solid var(--t-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.t-catnav__sub {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  padding: 7px var(--t-2);
+  border-radius: var(--t-r-sm);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease);
+}
+
+.t-catnav__sub > :first-child,
+.t-catnav__sub {
+  min-width: 0;
+}
+
+.t-catnav__sub .t-catnav__count {
+  margin-left: auto;
+}
+
+.t-catnav__sub:hover {
+  background: var(--t-surface-2);
+  color: var(--t-ink);
+}
+
+.t-catnav__sub--active {
+  background: var(--t-ink);
+  color: var(--t-ink-inverse);
+  font-weight: 650;
+}
+
+.t-catnav__sub--active .t-catnav__count {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Subcategory the taxonomy defines but the data doesn't fill yet. */
+.t-catnav__sub--empty {
+  color: var(--t-ink-3);
+  cursor: default;
+  opacity: 0.65;
+}
+
+/* ========================================================= typography == */
+
+.t-display {
+  font-size: var(--t-text-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.t-title {
+  font-size: var(--t-text-title);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.t-heading {
+  font-size: var(--t-text-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.t-body {
+  font-size: var(--t-text-body);
+  color: var(--t-ink-2);
+}
+
+.t-small {
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.t-muted {
+  color: var(--t-ink-3);
+}
+
+.t-label {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.t-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================ buttons == */
+
+.t-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--t-2);
+  min-height: 44px;
+  padding: 0 var(--t-5);
+  border-radius: var(--t-r-pill);
+  font-size: var(--t-text-body);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  border: 1px solid transparent;
+  transition: background var(--t-fast) var(--t-ease), border-color var(--t-fast) var(--t-ease),
+    color var(--t-fast) var(--t-ease), transform var(--t-fast) var(--t-ease);
+}
+
+.t-btn:active {
+  transform: scale(0.975);
+}
+
+.t-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.t-btn--primary {
+  background: var(--t-accent);
+  color: var(--t-ink-inverse);
+}
+
+.t-btn--primary:hover:not(:disabled) {
+  background: var(--t-accent-hover);
+}
+
+.t-btn--secondary {
+  background: var(--t-surface);
+  color: var(--t-ink);
+  border-color: var(--t-border-strong);
+}
+
+.t-btn--secondary:hover:not(:disabled) {
+  background: var(--t-surface-2);
+}
+
+.t-btn--ghost {
+  background: transparent;
+  color: var(--t-ink-2);
+}
+
+.t-btn--ghost:hover:not(:disabled) {
+  background: var(--t-surface-2);
+  color: var(--t-ink);
+}
+
+.t-btn--sm {
+  min-height: 36px;
+  padding: 0 var(--t-4);
+  font-size: var(--t-text-small);
+}
+
+.t-btn--block {
+  width: 100%;
+}
+
+/* ============================================================= inputs == */
+
+.t-field {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  height: 52px;
+  padding: 0 var(--t-4);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  box-shadow: var(--t-shadow-card);
+  color: var(--t-ink-3);
+  transition: border-color var(--t-base) var(--t-ease), box-shadow var(--t-base) var(--t-ease);
+}
+
+.t-field:focus-within {
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 3px var(--t-accent-soft);
+}
+
+.t-field__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: var(--t-text-body);
+  color: var(--t-ink);
+}
+
+.t-field__input::placeholder {
+  color: var(--t-ink-3);
+}
+
+/* A search box that is a link, not an input — used on the home screen so a
+   tap opens the full search screen instead of a cramped inline keyboard. */
+.t-searchlink {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  height: 52px;
+  padding: 0 var(--t-4);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  box-shadow: var(--t-shadow-card);
+  color: var(--t-ink-3);
+  font-size: var(--t-text-body);
+  transition: box-shadow var(--t-base) var(--t-ease), border-color var(--t-base) var(--t-ease),
+    transform var(--t-fast) var(--t-ease);
+}
+
+.t-searchlink:hover {
+  border-color: var(--t-border-strong);
+  box-shadow: var(--t-shadow-raised);
+}
+
+.t-searchlink:active {
+  transform: scale(0.99);
+}
+
+.t-searchlink__hint {
+  margin-left: auto;
+  display: none;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  color: var(--t-ink-3);
+  background: var(--t-surface-2);
+  border: 1px solid var(--t-border);
+  border-radius: 6px;
+  padding: 3px 7px;
+}
+
+@media (min-width: 768px) {
+  .t-searchlink__hint {
+    display: block;
+  }
+}
+
+.t-select {
+  height: 44px;
+  padding: 0 var(--t-4);
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  font-size: var(--t-text-body);
+}
+
+/* ============================================================== chips == */
+
+.t-chiprow {
+  display: flex;
+  gap: var(--t-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+  padding-block: var(--t-1);
+}
+
+.t-chiprow::-webkit-scrollbar {
+  display: none;
+}
+
+.t-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  height: 38px;
+  padding: 0 var(--t-4);
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  transition: background var(--t-fast) var(--t-ease), border-color var(--t-fast) var(--t-ease),
+    color var(--t-fast) var(--t-ease), transform var(--t-fast) var(--t-ease);
+}
+
+.t-chip:hover {
+  border-color: var(--t-border-strong);
+  color: var(--t-ink);
+}
+
+.t-chip:active {
+  transform: scale(0.96);
+}
+
+.t-chip[aria-pressed="true"],
+.t-chip--active {
+  background: var(--t-ink);
+  border-color: var(--t-ink);
+  color: var(--t-ink-inverse);
+}
+
+.t-chip__count {
+  font-weight: 600;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Second-level filter row — visually subordinate to the subcategory chips. */
+.t-chip--sm {
+  height: 32px;
+  padding: 0 var(--t-3);
+  font-size: var(--t-text-micro);
+  background: var(--t-surface-2);
+}
+
+.t-chip--sm[aria-pressed="true"] {
+  background: var(--t-accent);
+  border-color: var(--t-accent);
+  color: var(--t-ink-inverse);
+}
+
+/* ==================================================== section header === */
+
+.t-section {
+  margin-top: var(--t-8);
+}
+
+.t-section:first-child {
+  margin-top: var(--t-5);
+}
+
+.t-sectionhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--t-4);
+  margin-bottom: var(--t-3);
+}
+
+.t-sectionhead__text {
+  min-width: 0;
+}
+
+.t-sectionhead__sub {
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+  margin-top: 2px;
+}
+
+.t-sectionhead__link {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-accent);
+  padding: var(--t-1) 0;
+}
+
+.t-sectionhead__link:hover {
+  color: var(--t-accent-hover);
+}
+
+/* ========================================================== scroller === */
+
+/* Horizontal card rail. Escapes the page gutter with negative margins so cards
+   run to the screen edge — that overflow is what makes it read as swipeable —
+   while keeping its own padding so the first card still lines up with the
+   surrounding text. Works at any nesting depth. */
+.t-scroller {
+  display: flex;
+  gap: var(--t-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-inline: calc(var(--t-gutter) * -1);
+  padding-inline: var(--t-gutter);
+  padding-block: var(--t-1) var(--t-2);
+  scroll-padding-inline: var(--t-gutter);
+  overscroll-behavior-x: contain;
+}
+
+.t-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.t-scroller > * {
+  flex: none;
+  scroll-snap-align: start;
+}
+
+/* ============================================================= cards === */
+
+.t-card {
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  box-shadow: var(--t-shadow-card);
+}
+
+/* -- Place card: portrait, used in rails and grids ---------------------- */
+
+.t-place {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  border-radius: var(--t-r-lg);
+  transition: transform var(--t-base) var(--t-ease);
+}
+
+.t-place:active {
+  transform: scale(0.98);
+}
+
+.t-place__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--t-r-lg);
+  overflow: hidden;
+  background: var(--t-surface-3);
+}
+
+/* Absolute, not height:100%. A percentage height inside an aspect-ratio box
+   resolves to auto, so the image would render at its intrinsic height and
+   stretch the card — which made grid rows ragged wherever a photo was taller
+   than 4:3. Taking it out of flow makes the aspect ratio authoritative. */
+.t-place__img,
+.t-place__media > .t-imgfallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-slow) var(--t-ease);
+}
+
+.t-place:hover .t-place__img {
+  transform: scale(1.04);
+}
+
+.t-place__body {
+  padding: var(--t-3) 2px 0;
+}
+
+.t-place__name {
+  font-size: var(--t-text-body);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.t-place__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-top: 3px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+  min-width: 0;
+}
+
+.t-place__meta > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.t-place__sep {
+  flex: none;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--t-border-strong);
+}
+
+/* Grid variant fills its column. */
+.t-place--grid {
+  width: 100%;
+}
+
+/* -- Place row: landscape, used in lists and search results ------------- */
+
+.t-row {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-2);
+  border-radius: var(--t-r-md);
+  transition: background var(--t-fast) var(--t-ease), transform var(--t-fast) var(--t-ease);
+}
+
+.t-row:hover {
+  background: var(--t-surface-2);
+}
+
+.t-row:active {
+  transform: scale(0.99);
+}
+
+.t-row__media {
+  flex: none;
+  width: 68px;
+  height: 68px;
+  border-radius: var(--t-r-sm);
+  overflow: hidden;
+  background: var(--t-surface-3);
+}
+
+.t-row__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.t-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-row__name {
+  font-size: var(--t-text-body);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.t-row__chev {
+  flex: none;
+  color: var(--t-ink-3);
+}
+
+/* -- Category tile ------------------------------------------------------ */
+
+.t-cattile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--t-4);
+  min-height: 96px;
+  padding: var(--t-3);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  box-shadow: var(--t-shadow-card);
+  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-base) var(--t-ease),
+    transform var(--t-fast) var(--t-ease);
+}
+
+.t-cattile:hover {
+  border-color: var(--t-border-strong);
+  box-shadow: var(--t-shadow-raised);
+}
+
+.t-cattile:active {
+  transform: scale(0.97);
+}
+
+.t-cattile__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--t-r-sm);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-cattile__label {
+  display: block;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.t-cattile__count {
+  display: block;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.t-catgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--t-2);
+}
+
+@media (min-width: 560px) {
+  .t-catgrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--t-3);
+  }
+}
+
+@media (min-width: 900px) {
+  .t-catgrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* -- Category card (explore screen: a group plus its subcategories) -----
+   Each card carries its category's colour through two custom properties set
+   inline, --cat-bg and --cat-fg, so the icon, the hover states and the chips
+   all tint from one source instead of sixteen hard-coded rules. */
+
+.t-catcols {
+  display: grid;
+  gap: var(--t-4);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 720px) {
+  .t-catcols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1240px) {
+  .t-catcols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.t-catcard {
+  display: flex;
+  flex-direction: column;
+  /* Stretch to the tallest card in the row so the grid stays even however
+     many subcategories a group happens to have. */
+  height: 100%;
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-xl);
+  transition: border-color var(--t-fast) var(--t-ease),
+    box-shadow var(--t-base) var(--t-ease), transform var(--t-base) var(--t-ease);
+}
+
+.t-catcard:hover {
+  border-color: var(--t-border-strong);
+  box-shadow: var(--t-shadow-raised);
+  transform: translateY(-2px);
+}
+
+/* ---------------------------------------------------------------- head */
+
+.t-catcard__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-4) var(--t-4) var(--t-3);
+  border-radius: var(--t-r-xl) var(--t-r-xl) 0 0;
+}
+
+.t-catcard__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--cat-bg, var(--t-surface-2));
+  color: var(--cat-fg, var(--t-ink-2));
+  transition: transform var(--t-base) var(--t-ease);
+}
+
+.t-catcard:hover .t-catcard__icon {
+  transform: scale(1.06);
+}
+
+.t-catcard__title {
+  display: block;
+  font-size: 0.9688rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+}
+
+.t-catcard__count {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+  margin-top: 1px;
+}
+
+/* Reads as a target rather than a stray chevron, and picks up the category
+   colour when the card is hovered. */
+.t-catcard__go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--t-ink-3);
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease),
+    transform var(--t-base) var(--t-ease);
+}
+
+.t-catcard:hover .t-catcard__go {
+  background: var(--cat-bg, var(--t-surface-2));
+  color: var(--cat-fg, var(--t-ink));
+  transform: translateX(2px);
+}
+
+/* ---------------------------------------------------------- subcategories */
+
+.t-catcard__subs {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+  /* Fills the remaining height so every card in a row ends level. */
+  flex: 1;
+  padding: 0 var(--t-4) var(--t-4);
+}
+
+/* Outlined rather than filled: sixteen cards of solid grey pills buried the
+   category names underneath them. Colour arrives on hover instead. */
+.t-subchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-pill);
+  background: transparent;
+  color: var(--t-ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease),
+    border-color var(--t-fast) var(--t-ease);
+}
+
+.t-subchip:hover {
+  background: var(--cat-bg, var(--t-surface-2));
+  border-color: transparent;
+  color: var(--cat-fg, var(--t-ink));
+}
+
+.t-subchip .t-chip__count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t-ink-3);
+  opacity: 1;
+}
+
+.t-subchip:hover .t-chip__count {
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* Subcategory with nothing behind it yet — present, but plainly inert. */
+.t-subchip--empty {
+  border-style: dashed;
+  color: var(--t-ink-3);
+  cursor: default;
+}
+
+.t-subchip--empty:hover {
+  background: transparent;
+  border-color: var(--t-border);
+  color: var(--t-ink-3);
+}
+
+/* -- Destination card (photo-led, used sparingly) ----------------------- */
+
+.t-dest {
+  position: relative;
+  width: 260px;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--t-r-lg);
+  overflow: hidden;
+  background: var(--t-surface-3);
+  transition: transform var(--t-base) var(--t-ease);
+}
+
+.t-dest:active {
+  transform: scale(0.985);
+}
+
+.t-dest__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-slow) var(--t-ease);
+}
+
+.t-dest:hover .t-dest__img {
+  transform: scale(1.05);
+}
+
+.t-dest__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15, 13, 10, 0.82) 0%,
+    rgba(15, 13, 10, 0.35) 42%,
+    rgba(15, 13, 10, 0) 70%
+  );
+}
+
+.t-dest__body {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--t-4);
+  color: #fff;
+}
+
+.t-dest__name {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.t-dest__meta {
+  display: block;
+  font-size: var(--t-text-small);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* -- City card ---------------------------------------------------------- */
+
+.t-city {
+  position: relative;
+  width: 148px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--t-r-md);
+  overflow: hidden;
+  background: var(--t-surface-3);
+}
+
+.t-city__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-slow) var(--t-ease);
+}
+
+.t-city:hover .t-city__img {
+  transform: scale(1.06);
+}
+
+.t-city__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 13, 10, 0.78), rgba(15, 13, 10, 0.05));
+}
+
+.t-city__body {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--t-3);
+  color: #fff;
+}
+
+.t-city__name {
+  display: block;
+  font-size: var(--t-text-body);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.t-city__count {
+  display: block;
+  font-size: var(--t-text-micro);
+  opacity: 0.85;
+}
+
+/* ============================================================ badges === */
+
+.t-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 var(--t-2);
+  border-radius: var(--t-r-sm);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.t-badge--accent {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-badge--onmedia {
+  position: absolute;
+  top: var(--t-2);
+  left: var(--t-2);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--t-ink);
+  backdrop-filter: blur(4px);
+  box-shadow: var(--t-shadow-card);
+}
+
+.t-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+  color: var(--t-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-rating svg {
+  color: var(--t-gold);
+}
+
+/* Save button that floats over card media. */
+.t-save {
+  position: absolute;
+  top: var(--t-2);
+  right: var(--t-2);
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--t-ink-2);
+  backdrop-filter: blur(4px);
+  box-shadow: var(--t-shadow-card);
+  transition: transform var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease);
+}
+
+.t-save:hover {
+  color: var(--t-ink);
+}
+
+.t-save[aria-pressed="true"] {
+  color: var(--t-accent);
+}
+
+.t-save:active {
+  transform: scale(0.85);
+}
+
+/* One-shot pop when a place is saved. */
+.t-save--pop svg {
+  animation: t-pop 320ms var(--t-ease);
+}
+
+@keyframes t-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.32);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ====================================================== media fallback = */
+
+/* Several legacy image URLs are dead. Rather than a broken-image glyph, the
+   card shows a calm branded placeholder with the category icon. */
+.t-imgfallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--t-surface-2), var(--t-surface-3));
+  color: var(--t-ink-3);
+}
+
+/* ============================================================ spinner == */
+
+.t-spinnerwrap {
+  display: inline-grid;
+  place-items: center;
+  line-height: 0;
+}
+
+.t-spinner {
+  animation: t-spin 1.5s linear infinite;
+}
+
+.t-spinner__track {
+  fill: none;
+  stroke: var(--t-surface-3);
+  stroke-width: 4.5;
+}
+
+/* The dash grows and shrinks as the ring turns — that combination is what
+   makes it read as the familiar mobile spinner rather than a flat rotation. */
+.t-spinner__arc {
+  fill: none;
+  stroke: var(--t-accent);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  transform-origin: center;
+  animation: t-spin-dash 1.5s ease-in-out infinite;
+}
+
+@keyframes t-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes t-spin-dash {
+  0% {
+    stroke-dasharray: 1 126;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90 126;
+    stroke-dashoffset: -30;
+  }
+  100% {
+    stroke-dasharray: 90 126;
+    stroke-dashoffset: -120;
+  }
+}
+
+/* Inside a filled button the accent green disappears, so the ring borrows the
+   button's own text colour. */
+.t-spinner--current .t-spinner__track {
+  stroke: currentColor;
+  opacity: 0.28;
+}
+
+.t-spinner--current .t-spinner__arc {
+  stroke: currentColor;
+}
+
+/* A spinner that stops spinning communicates nothing, so reduced motion gets a
+   slower steady rotation rather than no animation at all. */
+@media (prefers-reduced-motion: reduce) {
+  .t-spinner {
+    animation-duration: 2.4s !important;
+  }
+
+  .t-spinner__arc {
+    animation: none !important;
+    stroke-dasharray: 70 126;
+  }
+}
+
+.t-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--t-3);
+  padding: var(--t-8) var(--t-5);
+}
+
+.t-loading__text {
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+/* ========================================================== skeletons == */
+
+.t-skel {
+  position: relative;
+  overflow: hidden;
+  background: var(--t-surface-2);
+  border-radius: var(--t-r-sm);
+}
+
+.t-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: t-shimmer 1.4s infinite;
+}
+
+@keyframes t-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.t-skel--media {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--t-r-lg);
+}
+
+.t-skel--line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+/* ======================================================= state blocks == */
+
+.t-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--t-3);
+  padding: var(--t-10) var(--t-5);
+}
+
+.t-state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+}
+
+.t-state__title {
+  font-size: var(--t-text-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.t-state__text {
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+  max-width: 34ch;
+  line-height: 1.55;
+}
+
+.t-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  justify-content: center;
+  margin-top: var(--t-1);
+}
+
+/* Inline banner — location prompts, degraded map, etc. */
+.t-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+}
+
+.t-notice__icon {
+  flex: none;
+  color: var(--t-accent);
+  margin-top: 1px;
+}
+
+.t-notice__body {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+  line-height: 1.5;
+}
+
+.t-notice__title {
+  font-weight: 700;
+  color: var(--t-ink);
+  font-size: var(--t-text-small);
+}
+
+.t-notice--danger {
+  background: var(--t-danger-soft);
+  border-color: #f0d5d2;
+}
+
+.t-notice--danger .t-notice__icon {
+  color: var(--t-danger);
+}
+
+/* ======================================================= bottom sheet == */
+
+.t-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(20, 18, 14, 0.42);
+  animation: t-fade var(--t-base) var(--t-ease);
+}
+
+@keyframes t-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.t-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 101;
+  max-height: 88dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-surface);
+  border-radius: var(--t-r-xl) var(--t-r-xl) 0 0;
+  box-shadow: var(--t-shadow-sheet);
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: t-sheet-up var(--t-slow) var(--t-ease);
+}
+
+@keyframes t-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.t-sheet__grab {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--t-border-strong);
+  margin: var(--t-2) auto var(--t-1);
+}
+
+.t-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-sheet__body {
+  overflow-y: auto;
+  padding: var(--t-4);
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 768px) {
+  .t-sheet {
+    left: 50%;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, calc(100vw - 48px));
+    max-height: 84dvh;
+    border-radius: var(--t-r-xl);
+    animation: t-dialog-in var(--t-base) var(--t-ease);
+  }
+
+  @keyframes t-dialog-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -46%) scale(0.98);
+    }
+  }
+
+  .t-sheet__grab {
+    display: none;
+  }
+}
+
+/* ============================================================== grids == */
+
+/* minmax(0, 1fr), never plain 1fr: a track sized `1fr` still refuses to go
+   below its content's min-content width, and the card titles are `nowrap`.
+   One long place name would widen its column, making the whole row's cards
+   taller than their neighbours. */
+.t-grid {
+  display: grid;
+  gap: var(--t-4) var(--t-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 720px) {
+  .t-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--t-5) var(--t-4);
+  }
+}
+
+@media (min-width: 1100px) {
+  .t-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.t-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ======================================================= place detail == */
+
+.t-detail__hero {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--t-surface-3);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .t-detail__hero {
+    aspect-ratio: 21 / 9;
+    border-radius: var(--t-r-xl);
+    margin-top: var(--t-4);
+  }
+}
+
+.t-detail__hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.t-detail__floaters {
+  position: absolute;
+  inset: var(--t-3) var(--t-3) auto;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--t-2);
+}
+
+.t-detail__body {
+  position: relative;
+  background: var(--t-bg);
+  border-radius: var(--t-r-xl) var(--t-r-xl) 0 0;
+  margin-top: -20px;
+  padding: var(--t-5) var(--t-gutter) var(--t-8);
+}
+
+@media (min-width: 768px) {
+  .t-detail__body {
+    margin-top: 0;
+    padding-inline: 0;
+    border-radius: 0;
+  }
+}
+
+.t-detail__metarow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-2);
+  margin-top: var(--t-2);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+/* Two-column detail layout on desktop: content + sticky action panel. */
+.t-detail__cols {
+  display: grid;
+  gap: var(--t-6);
+}
+
+@media (min-width: 1024px) {
+  .t-detail__cols {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--t-8);
+    align-items: start;
+  }
+
+  .t-detail__aside {
+    position: sticky;
+    top: calc(var(--t-header-h) + var(--t-4));
+  }
+}
+
+/* Fact list — hours, phone, location. */
+.t-facts {
+  display: flex;
+  flex-direction: column;
+}
+
+.t-fact {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  padding: var(--t-3) 0;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-fact:last-child {
+  border-bottom: none;
+}
+
+.t-fact__icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-sm);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-fact__label {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-fact__value {
+  font-size: var(--t-text-body);
+  color: var(--t-ink);
+  overflow-wrap: anywhere;
+}
+
+/* Sticky action bar on mobile detail pages. */
+.t-actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  gap: var(--t-2);
+  padding: var(--t-3) var(--t-gutter);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--t-border);
+}
+
+@media (min-width: 1024px) {
+  .t-actionbar {
+    display: none;
+  }
+}
+
+/* Detail pages need room for the action bar. */
+.t-main--hasactionbar {
+  padding-bottom: calc(
+    var(--t-bottomnav-h) + 72px + env(safe-area-inset-bottom)
+  );
+}
+
+@media (min-width: 1024px) {
+  .t-main--hasactionbar {
+    padding-bottom: var(--t-10);
+  }
+}
+
+/* ================================================================ map == */
+
+.t-map {
+  position: relative;
+  height: calc(100dvh - var(--t-header-h) - var(--t-bottomnav-h) - env(safe-area-inset-bottom));
+  min-height: 380px;
+}
+
+/* The canvas needs real height of its own: the map itself is absolutely
+   positioned, so without this the stage collapses to zero and the whole map
+   disappears on mobile. */
+.t-map__stage {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .t-map {
+    height: calc(100dvh - var(--t-header-h));
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    /* The rail is fixed, so the map has to step around it exactly as .t-main
+       does — otherwise its side panel hides underneath the sidebar. */
+    padding-left: var(--t-rail-w);
+    transition: padding-left var(--t-rail-anim);
+  }
+}
+
+.t-map__canvas {
+  position: absolute;
+  inset: 0;
+  background: var(--t-surface-2);
+}
+
+@media (min-width: 1024px) {
+  .t-map__canvas {
+    position: relative;
+    inset: auto;
+    height: 100%;
+  }
+}
+
+.t-map__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.t-map__overlay > * {
+  pointer-events: auto;
+}
+
+.t-map__controls {
+  position: absolute;
+  right: var(--t-3);
+  bottom: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+}
+
+/* Desktop map gets a real side panel instead of a sheet. */
+.t-map__panel {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .t-map__panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-right: 1px solid var(--t-border);
+    background: var(--t-surface);
+  }
+
+  .t-map__controls {
+    bottom: 42px;
+  }
+}
+
+/* Search and filters stay put; only the results scroll. The chip row brings
+   its own gutter, so the head pads vertically and lets each child inset. */
+.t-map__panelhead {
+  flex: none;
+  padding-top: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-map__panelhead .t-searchlink {
+  margin: 0 var(--t-gutter);
+}
+
+.t-map__panelbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--t-3) var(--t-3) var(--t-6);
+}
+
+/* Panel rows act on the map, so they are buttons, not links. */
+.t-maprow {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.t-maprow[aria-current] {
+  background: var(--t-accent-soft);
+}
+
+/* Peeking card rail over the map on mobile. */
+.t-map__rail {
+  margin-top: auto;
+  padding-bottom: var(--t-3);
+}
+
+@media (min-width: 1024px) {
+  .t-map__rail {
+    display: none;
+  }
+}
+
+.t-mapcard {
+  display: flex;
+  gap: var(--t-3);
+  width: 260px;
+  padding: var(--t-2);
+  background: var(--t-surface);
+  border-radius: var(--t-r-md);
+  box-shadow: var(--t-shadow-float);
+}
+
+.t-mapcard__media {
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--t-r-sm);
+  overflow: hidden;
+  background: var(--t-surface-3);
+}
+
+.t-mapcard__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Bottom sheet over the map: selected place, or the active route. */
+.t-map__sheet {
+  margin: auto var(--t-gutter) var(--t-3);
+  padding: var(--t-3);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow-float);
+}
+
+@media (min-width: 1024px) {
+  .t-map__sheet {
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: var(--t-4);
+    margin-bottom: var(--t-4);
+  }
+}
+
+/* Turn-by-turn list, rendered in the app rather than handing off to Maps. */
+.t-route {
+  margin-top: var(--t-3);
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+}
+
+.t-route__step {
+  display: flex;
+  gap: var(--t-2);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+  line-height: 1.4;
+}
+
+.t-route__n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ============================================================ profile == */
+
+.t-profile {
+  padding: var(--t-5);
+}
+
+.t-profile__top {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+}
+
+.t-profile__id {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.t-profile__bio {
+  margin-top: var(--t-4);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+.t-profile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2) var(--t-4);
+  margin-top: var(--t-4);
+}
+
+.t-profile__metaitem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+/* Three even columns whatever the numbers are, so they don't jump about as
+   the counts change. */
+.t-profile__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--t-2);
+  margin-top: var(--t-5);
+  padding-top: var(--t-4);
+  border-top: 1px solid var(--t-border);
+}
+
+.t-profile__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.t-profile__statvalue {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.t-profile__actions {
+  margin-top: var(--t-5);
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------- forms -- */
+
+.t-formgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--t-4);
+  margin-top: var(--t-5);
+}
+
+@media (min-width: 640px) {
+  .t-formgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* The bio needs the full width; everything else pairs up. */
+  .t-formrow--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.t-formrow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.t-formrow__label {
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-2);
+}
+
+.t-formrow .t-field {
+  height: 46px;
+}
+
+/* The "@" reads as part of the handle, so it sits tight against the input
+   rather than inheriting the field's normal icon gap. */
+.t-field--prefixed {
+  gap: 1px;
+}
+
+.t-field__prefix {
+  color: var(--t-ink-3);
+}
+
+/* A textarea grows, so the field wrapper can't be a fixed-height flex row. */
+.t-formrow .t-field--area {
+  height: auto;
+  align-items: stretch;
+  padding: var(--t-3) var(--t-4);
+}
+
+.t-field--area .t-field__input {
+  resize: vertical;
+  min-height: 68px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.t-field--error {
+  border-color: var(--t-danger);
+}
+
+.t-field--error:focus-within {
+  border-color: var(--t-danger);
+  box-shadow: 0 0 0 3px var(--t-danger-soft);
+}
+
+.t-danger {
+  color: var(--t-danger);
+}
+
+/* ========================================================== utilities == */
+
+.t-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.t-stack-2 > * + * {
+  margin-top: var(--t-2);
+}
+.t-stack-3 > * + * {
+  margin-top: var(--t-3);
+}
+.t-stack-4 > * + * {
+  margin-top: var(--t-4);
+}
+.t-stack-6 > * + * {
+  margin-top: var(--t-6);
+}
+
+.t-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+}
+
+.t-wrap {
+  flex-wrap: wrap;
+}
+
+.t-spacer {
+  flex: 1;
+}
+
+/* Responsive visibility.
+   These only ever set `display: none`; they never set a display value for the
+   visible state. An earlier version used `display: initial`, which clobbered
+   whatever the component itself declared — a flex header search collapsed to
+   inline, and grid icon buttons lost their centring. Hiding is the whole job;
+   the element keeps its own display when shown. */
+@media (min-width: 1024px) {
+  .t-hide-desktop {
+    display: none;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  .t-show-desktop {
+    display: none;
+  }
+}
+
+/* Fade-in used for content that arrives after a client-side fetch. */
+.t-fadein {
+  animation: t-fadein var(--t-slow) var(--t-ease);
+}
+
+@keyframes t-fadein {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

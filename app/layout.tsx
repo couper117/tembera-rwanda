@@ -1,14 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-// Bootstrap grid/utilities + the legacy base site styles are global.
-import "../public/assets/bootstrap/css/bootstrap.min.css";
-import "../public/assets/css/style.css";
-import "../public/assets/css/nav.css";
+import "./components.css";
 
 export const metadata: Metadata = {
-  title: "Visit Rwanda — Experience the Remarkable",
-  description: "Your all-in-one pocket guide to Rwanda.",
-  keywords: ["Rwanda", "Tourism", "Travel", "Kigali", "Tembera"],
+  title: {
+    default: "Tembera — Find places in Rwanda",
+    template: "%s · Tembera",
+  },
+  description:
+    "Search restaurants, stays, markets, museums, parks and more across Rwanda. Find what's near you and get directions.",
+  keywords: ["Rwanda", "Kigali", "places", "directory", "discover", "Tembera"],
+  applicationName: "Tembera",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#faf9f7",
+  // The app uses safe-area insets for its tab bar, so it needs the full
+  // viewport on notched devices.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -16,13 +25,6 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <head>
-        {/* FontAwesome icons (used pervasively across the ported pages). */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-      </head>
       <body>{children}</body>
     </html>
   );
