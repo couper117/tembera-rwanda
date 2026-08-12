@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Icon from "@/components/Icon";
 import BottomSheet from "@/components/ui/BottomSheet";
+import { useAccount } from "@/lib/client/account";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
 import CategoryNav from "./CategoryNav";
@@ -23,6 +24,7 @@ export default function AppHeader() {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
+  const { authed, isAdmin } = useAccount();
 
   const savedCount = ready ? ids.length : 0;
 
@@ -80,9 +82,26 @@ export default function AppHeader() {
             {savedCount > 0 && <span className="t-dot" />}
           </Link>
 
-          <Link href="/profile" className="t-iconbtn" aria-label="Profile">
-            <Icon name="user" size={21} />
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="t-iconbtn t-show-desktop"
+              aria-label="Admin dashboard"
+              title="Admin dashboard"
+            >
+              <Icon name="lock" size={20} />
+            </Link>
+          )}
+
+          {authed ? (
+            <Link href="/profile" className="t-iconbtn" aria-label="Profile">
+              <Icon name="user" size={21} />
+            </Link>
+          ) : (
+            <Link href="/login" className="t-btn t-btn--secondary t-btn--sm">
+              Sign in
+            </Link>
+          )}
         </div>
       </header>
 

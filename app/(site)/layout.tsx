@@ -50,7 +50,11 @@ export default async function AppLayout({
     <CategoryProvider categories={categories}>
       <CatalogMetaProvider summaries={summaries}>
         <LocationProvider>
-          <AccountProvider authed={authed} initialAccount={account}>
+          <AccountProvider
+            authed={authed}
+            isAdmin={user?.role === "ADMIN"}
+            initialAccount={account}
+          >
             <SavedProvider authed={authed} initialIds={savedIds}>
               <VisitedProvider authed={authed} initialVisits={visits}>
                 <AppShell>

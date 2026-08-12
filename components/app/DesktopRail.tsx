@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
 import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
+import { useAccount } from "@/lib/client/account";
 import { useCategories } from "@/lib/client/categories";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
@@ -35,6 +36,7 @@ export default function DesktopRail() {
   const categories = useCategories();
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
+  const { authed, isAdmin } = useAccount();
   const { collapsed, toggle } = useRail();
 
   const counts = new Map(summaries.map((s) => [s.id, s.total]));
@@ -165,6 +167,32 @@ export default function DesktopRail() {
             </Link>
           );
         })}
+
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="t-railrow"
+            title={collapsed ? "Admin dashboard" : undefined}
+          >
+            <span className="t-railrow__glyph">
+              <Icon name="lock" size={18} />
+            </span>
+            <span className="t-railrow__label">Admin</span>
+          </Link>
+        )}
+
+        {!authed && (
+          <Link
+            href="/login"
+            className="t-railrow"
+            title={collapsed ? "Sign in" : undefined}
+          >
+            <span className="t-railrow__glyph">
+              <Icon name="user" size={18} />
+            </span>
+            <span className="t-railrow__label">Sign in</span>
+          </Link>
+        )}
       </div>
     </aside>
   );

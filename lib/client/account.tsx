@@ -45,6 +45,8 @@ export const DEMO_ACCOUNT: Account = {
 interface AccountValue {
   account: Account;
   ready: boolean;
+  /** True when the signed-in account has the ADMIN role. */
+  isAdmin: boolean;
   /** True when the profile is a real account rather than a local demo. */
   authed: boolean;
   update: (edits: Partial<AccountEdits>) => Promise<{ error?: string }>;
@@ -70,10 +72,12 @@ function normalise(raw: unknown): Account {
 
 export function AccountProvider({
   authed,
+  isAdmin = false,
   initialAccount,
   children,
 }: {
   authed: boolean;
+  isAdmin?: boolean;
   initialAccount?: Account | null;
   children: ReactNode;
 }) {
@@ -130,8 +134,8 @@ export function AccountProvider({
   }, [authed]);
 
   const value = useMemo<AccountValue>(
-    () => ({ account, ready, authed, update, reset }),
-    [account, ready, authed, update, reset],
+    () => ({ account, ready, authed, isAdmin, update, reset }),
+    [account, ready, authed, isAdmin, update, reset],
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
