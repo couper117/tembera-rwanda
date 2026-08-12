@@ -5,15 +5,19 @@ import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import PlaceActions from "@/components/place/PlaceActions";
 import VisitRecorder from "@/components/place/VisitRecorder";
+import ReviewSection from "@/components/place/ReviewSection";
 import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { groupTitle } from "@/lib/places/taxonomy";
-import { PLACES, getPlace, nearest } from "@/lib/places/catalog";
+import { groupTitle } from "@/lib/data/categories";
+import { getPlaces, getPlace, nearest } from "@/lib/data/places";
+import { getCurrentUser } from "@/lib/auth";
+import { getPlaceReviews } from "@/lib/data/user";
 import type { Place } from "@/lib/places/types";
 
-export function generateStaticParams() {
-  return PLACES.map((place) => ({ id: place.id }));
+export async function generateStaticParams() {
+  const places = await getPlaces();
+  return places.map((place) => ({ id: place.id }));
 }
 
 /**
@@ -23,13 +27,18 @@ export function generateStaticParams() {
  */
 export const dynamicParams = false;
 
+// Per-user content (auth, the reader's own review) is rendered here, so these
+// pages are dynamic. generateStaticParams still enumerates the valid ids so an
+// unknown /place/… returns a real 404 rather than rendering on demand.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const place = getPlace(id);
+  const place = await getPlace(id);
   if (!place) return { title: "Place not found" };
 
   return {
@@ -46,16 +55,25 @@ export default async function PlaceDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const place = getPlace(id);
+  const place = await getPlace(id);
   if (!place) notFound();
 
   // Other places worth a look, measured from this one.
   const around =
     place.lat !== undefined && place.lng !== undefined
-      ? nearest({ lat: place.lat, lng: place.lng }, { limit: 6 }).filter(
+      ? (await nearest({ lat: place.lat, lng: place.lng }, { limit: 6 })).filter(
           (p) => p.id !== place.id,
         )
       : [];
+
+  // The category's display title, resolved server-side for the badge below.
+  const categoryTitle = await groupTitle(place.categoryId);
+
+  // Reviews + who's reading, for the ratings section.
+  const [reviews, currentUser] = await Promise.all([
+    getPlaceReviews(place.id),
+    getCurrentUser(),
+  ]);
 
   return (
     <>
@@ -80,7 +98,7 @@ export default async function PlaceDetailPage({
               <div>
                 <div className="t-inline t-wrap" style={{ marginBottom: "var(--t-2)" }}>
                   <Link href={`/c/${place.categoryId}`} className="t-badge t-badge--accent">
-                    {groupTitle(place.categoryId)}
+                    {categoryTitle}
                   </Link>
                   <Link
                     href={`/c/${place.categoryId}?type=${encodeURIComponent(place.subcategory)}`}
@@ -201,6 +219,23 @@ export default async function PlaceDetailPage({
                 </div>
               </section>
             )}
+
+            {/* ---------------------------------------------- reviews --- */}
+            <section className="t-section">
+              <SectionHeader
+                title="Ratings & reviews"
+                subtitle={
+                  reviews.length
+                    ? `${reviews.length} review${reviews.length > 1 ? "s" : ""}`
+                    : "Share your experience"
+                }
+              />
+              <ReviewSection
+                placeId={place.id}
+                reviews={reviews}
+                currentUserId={currentUser?.id ?? null}
+              />
+            </section>
           </div>
         </div>
       </main>

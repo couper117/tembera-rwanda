@@ -7,7 +7,7 @@ import Spinner from "@/components/ui/Spinner";
 import { useLocation } from "@/lib/client/location";
 import { clearRecentSearches, readRecentSearches } from "@/lib/client/recentSearches";
 import { useSaved } from "@/lib/client/saved";
-import { clearVisited, readVisited } from "@/lib/client/visited";
+import { useVisited } from "@/lib/client/visited";
 
 /**
  * Everything that actually changes how the app behaves: where distances are
@@ -18,12 +18,12 @@ export default function SettingsScreen() {
   const { originLabel, status, requestLocation, coords, chosenCity, setCity } =
     useLocation();
   const { ids, clear, ready } = useSaved();
+  const { visits, clear: clearVisited } = useVisited();
   const [recentCount, setRecentCount] = useState(0);
-  const [visitedCount, setVisitedCount] = useState(0);
+  const visitedCount = visits.length;
 
   useEffect(() => {
     setRecentCount(readRecentSearches().length);
-    setVisitedCount(readVisited().length);
   }, []);
 
   return (
@@ -130,10 +130,7 @@ export default function SettingsScreen() {
                 <button
                   type="button"
                   className="t-btn t-btn--secondary t-btn--sm"
-                  onClick={() => {
-                    clearVisited();
-                    setVisitedCount(0);
-                  }}
+                  onClick={clearVisited}
                   disabled={visitedCount === 0}
                 >
                   Clear visit history

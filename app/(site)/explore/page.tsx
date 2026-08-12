@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
 import Icon from "@/components/Icon";
-import { categoryColor, categoryIcon } from "@/components/ui/categoryIcon";
+import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
 import PlaceImage from "@/components/ui/PlaceImage";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { citySummaries, groupSummaries } from "@/lib/places/catalog";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
+import { citySummaries, groupSummaries } from "@/lib/data/places";
+import { getCategories } from "@/lib/data/categories";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Explore",
@@ -18,10 +20,11 @@ export const metadata: Metadata = {
  * every group, every subcategory, each with its real count and each a link
  * straight into the filtered listing.
  */
-export default function ExplorePage() {
-  const summaries = groupSummaries();
+export default async function ExplorePage() {
+  const summaries = await groupSummaries();
   const byId = new Map(summaries.map((s) => [s.id, s]));
-  const cities = citySummaries();
+  const cities = await citySummaries();
+  const categories = await getCategories();
   const total = summaries.reduce((sum, group) => sum + group.total, 0);
 
   return (
@@ -33,7 +36,7 @@ export default function ExplorePage() {
           <section className="t-section">
             <h1 className="t-display">Explore</h1>
             <p className="t-small t-muted" style={{ marginTop: 4 }}>
-              {total.toLocaleString()} places across {CATEGORY_GROUPS.length} categories
+              {total.toLocaleString()} places across {categories.length} categories
             </p>
 
             <Link
@@ -53,7 +56,7 @@ export default function ExplorePage() {
             />
 
             <div className="t-catcols">
-              {CATEGORY_GROUPS.map((group) => {
+              {categories.map((group) => {
                 const summary = byId.get(group.id);
                 const color = categoryColor(group.id);
                 return (
@@ -71,7 +74,7 @@ export default function ExplorePage() {
                   >
                     <Link href={`/c/${group.id}`} className="t-catcard__head">
                       <span className="t-catcard__icon">
-                        <Icon name={categoryIcon(group.id)} size={21} />
+                        <Icon name={resolveIconName(group.icon)} size={21} />
                       </span>
                       <span style={{ flex: 1, minWidth: 0 }}>
                         <span className="t-catcard__title">{group.title}</span>

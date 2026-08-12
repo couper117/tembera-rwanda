@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Icon";
-import { categoryIcon } from "@/components/ui/categoryIcon";
+import { resolveIconName } from "@/components/ui/categoryIcon";
 import EmptyState from "@/components/ui/EmptyState";
 import PlaceRow from "@/components/ui/PlaceRow";
+import { useCategories, useCategoryMap } from "@/lib/client/categories";
 import { useLocation } from "@/lib/client/location";
 import {
   clearRecentSearches,
@@ -15,7 +16,6 @@ import {
 } from "@/lib/client/recentSearches";
 import { distanceKm } from "@/lib/places/geo";
 import { SUGGESTED_SEARCHES, searchPlaces } from "@/lib/places/search";
-import { CATEGORY_GROUPS, getGroup } from "@/lib/places/taxonomy";
 import type { Place } from "@/lib/places/types";
 
 interface Props {
@@ -33,6 +33,7 @@ export default function SearchScreen({ index, initialQuery }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const { origin, coords } = useLocation();
+  const categories = useCategories();
 
   const [query, setQuery] = useState(initialQuery);
   const [recent, setRecent] = useState<string[]>([]);
@@ -195,9 +196,9 @@ export default function SearchScreen({ index, initialQuery }: Props) {
                   Browse categories
                 </h2>
                 <div className="t-inline t-wrap">
-                  {CATEGORY_GROUPS.map((group) => (
+                  {categories.map((group) => (
                     <Link key={group.id} href={`/c/${group.id}`} className="t-chip">
-                      <Icon name={categoryIcon(group.id)} size={15} />
+                      <Icon name={resolveIconName(group.icon)} size={15} />
                       {group.label}
                     </Link>
                   ))}
@@ -273,7 +274,8 @@ function ResultSummary({
   subcategory?: string;
   city?: string;
 }) {
-  const group = categoryId ? getGroup(categoryId) : undefined;
+  const categoryMap = useCategoryMap();
+  const group = categoryId ? categoryMap.get(categoryId) : undefined;
   // The subcategory is the more specific of the two, so prefer it.
   const parts = [subcategory ?? group?.title, city && `in ${city}`].filter(Boolean);
 
@@ -302,7 +304,8 @@ function NoResults({
   parsedSubcategory?: string;
   onClear: () => void;
 }) {
-  const group = parsedCategoryId ? getGroup(parsedCategoryId) : undefined;
+  const categoryMap = useCategoryMap();
+  const group = parsedCategoryId ? categoryMap.get(parsedCategoryId) : undefined;
   const what = parsedSubcategory?.toLowerCase() ?? group?.label.toLowerCase();
 
   // The commonest miss is a category that exists but not in the city asked for.

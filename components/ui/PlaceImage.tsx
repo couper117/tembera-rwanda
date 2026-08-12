@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icon, { type IconName } from "@/components/Icon";
-import { categoryIcon, categoryTint } from "@/components/ui/categoryIcon";
+import { resolveIconName, categoryTint } from "@/components/ui/categoryIcon";
+import { useCategoryMap } from "@/lib/client/categories";
 import type { CategoryId } from "@/lib/places/types";
 
 interface Props {
@@ -30,6 +31,7 @@ export default function PlaceImage({
 }: Props) {
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const group = useCategoryMap().get(categoryId ?? "");
 
   // The server sends the <img> in the HTML, so a dead URL can 404 before React
   // hydrates — and that error event is gone by the time onError is attached.
@@ -48,7 +50,7 @@ export default function PlaceImage({
         style={{ background: categoryTint(categoryId) }}
       >
         <Icon
-          name={fallbackIcon ?? (categoryId ? categoryIcon(categoryId) : "image")}
+          name={fallbackIcon ?? (categoryId ? resolveIconName(group?.icon) : "image")}
           size={26}
         />
       </div>

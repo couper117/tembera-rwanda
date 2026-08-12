@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import SearchScreen from "@/components/search/SearchScreen";
-import { buildSearchIndex } from "@/lib/places/catalog";
+import { buildSearchIndex } from "@/lib/data/places";
 
 export const metadata: Metadata = {
   title: "Search",
@@ -16,7 +16,7 @@ export default async function SearchPage({
 
   // Built on the server so the browser gets names and metadata, not the raw
   // datasets (which carry inline images and descriptions it doesn't need).
-  const index = buildSearchIndex();
+  const index = await buildSearchIndex();
 
   return <SearchScreen index={index} initialQuery={q ?? ""} />;
 }

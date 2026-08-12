@@ -5,13 +5,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Icon";
-import { categoryIcon } from "@/components/ui/categoryIcon";
+import { resolveIconName } from "@/components/ui/categoryIcon";
 import EmptyState from "@/components/ui/EmptyState";
 import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
 import Spinner from "@/components/ui/Spinner";
+import { useCategories } from "@/lib/client/categories";
 import { useLocation } from "@/lib/client/location";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
 import type { Place } from "@/lib/places/types";
 import { MAP_STYLE, MIN_ZOOM, PLACE_ZOOM, RWANDA_BOUNDS, pinIcon } from "./rwandaMap";
@@ -52,6 +52,7 @@ const MAX_MARKERS = 80;
 
 export default function MapScreen({ places, apiKey }: Props) {
   const { origin, coords, requestLocation, originLabel } = useLocation();
+  const categories = useCategories();
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -319,7 +320,7 @@ export default function MapScreen({ places, apiKey }: Props) {
       >
         All
       </button>
-      {CATEGORY_GROUPS.map((group) => (
+      {categories.map((group) => (
         <button
           key={group.id}
           type="button"
@@ -327,7 +328,7 @@ export default function MapScreen({ places, apiKey }: Props) {
           aria-pressed={category === group.id}
           onClick={() => setCategory(group.id === category ? null : group.id)}
         >
-          <Icon name={categoryIcon(group.id)} size={15} />
+          <Icon name={resolveIconName(group.icon)} size={15} />
           {group.label}
         </button>
       ))}

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Icon from "@/components/Icon";
-import { categoryColor, categoryIcon } from "@/components/ui/categoryIcon";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
+import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
+import { useCategories } from "@/lib/client/categories";
 import type { GroupSummary } from "@/lib/places/catalog";
 
 interface Props {
@@ -24,6 +24,7 @@ interface Props {
 export default function CategoryNav({ summaries }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const categories = useCategories();
 
   const activeGroup = pathname.startsWith("/c/") ? pathname.slice(3) : null;
   const activeType = searchParams.get("type");
@@ -35,7 +36,7 @@ export default function CategoryNav({ summaries }: Props) {
 
   return (
     <div className="t-catnav">
-      {CATEGORY_GROUPS.map((group) => {
+      {categories.map((group) => {
         const summary = byId.get(group.id);
         const isActive = activeGroup === group.id;
         const isOpen = expanded === group.id;
@@ -55,7 +56,7 @@ export default function CategoryNav({ summaries }: Props) {
                     color: categoryColor(group.id).fg,
                   }}
                 >
-                  <Icon name={categoryIcon(group.id)} size={18} />
+                  <Icon name={resolveIconName(group.icon)} size={18} />
                 </span>
                 <span className="t-catnav__label">{group.label}</span>
                 <span className="t-catnav__count">{summary?.total ?? 0}</span>

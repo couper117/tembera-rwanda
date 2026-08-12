@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
-import type { GroupSummary } from "@/lib/places/catalog";
+import type { GroupSummary } from "@/lib/places/engine";
 
 /**
  * Category counts, computed once on the server and shared with every client

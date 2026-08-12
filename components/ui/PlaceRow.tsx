@@ -3,9 +3,9 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import PlaceImage from "@/components/ui/PlaceImage";
+import { useCategoryMap } from "@/lib/client/categories";
 import { useLocation } from "@/lib/client/location";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
-import { groupLabel } from "@/lib/places/taxonomy";
 import type { Coords, Place } from "@/lib/places/types";
 
 interface Props {
@@ -30,6 +30,7 @@ export default function PlaceRow({
 }: Props) {
   const { origin } = useLocation();
   const from = measureFrom ?? origin;
+  const groupLabel = useCategoryMap().get(place.categoryId)?.label ?? place.categoryId;
 
   const km =
     showDistance && place.lat !== undefined && place.lng !== undefined
@@ -52,7 +53,7 @@ export default function PlaceRow({
       <div className="t-row__body">
         <div className="t-row__name t-truncate">{place.name}</div>
         <div className="t-place__meta">
-          <span>{place.subcategory ?? groupLabel(place.categoryId)}</span>
+          <span>{place.subcategory ?? groupLabel}</span>
           <span className="t-place__sep" aria-hidden="true" />
           <span>{place.area ?? place.city}</span>
         </div>

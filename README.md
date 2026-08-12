@@ -1,14 +1,59 @@
-# NGA Tourism Project — Visit Rwanda / Tembera
+# Tembera — Visit Rwanda
 
-A tourism guide for Rwanda, migrated from a PHP + MySQL app to **Next.js (App
-Router) + TypeScript + Prisma + PostgreSQL**.
+A production tourism directory for Rwanda: a searchable, map-aware catalog of
+places (dining, stays, health, worship, nature, transport and more) with real
+user accounts, saved/visited history, reviews, trip bookings, and a full admin
+CMS. Built on **Next.js 15 (App Router) + TypeScript + Prisma + PostgreSQL**.
 
 ## Stack
 
-- **Next.js 15** (App Router, React 19, server components + server actions)
+- **Next.js 15** — App Router, React 19, server components + server actions
 - **TypeScript** (strict)
 - **Prisma ORM** → **PostgreSQL**
-- Bootstrap 5 grid/utilities + the original custom CSS (under `public/assets/css`)
+- **bcryptjs** for password hashing; signed, httpOnly session cookies (HMAC-SHA256)
+- **zod** for input validation
+- Bootstrap 5 grid/utilities + the app's own CSS
+
+## Architecture
+
+Nothing the UI renders is hardcoded — every listing, category, city and account
+is a database row. The catalog domain logic (search, geo, ranking) is pure and
+data-agnostic; the data comes from Postgres.
+
+```
+app/
+  (site)/            Public app shell (nav, providers) + screens
+    page.tsx         Home — DB-driven categories, near-you, top-rated, featured
+    c/[category]/    Category browser (filter by subcategory)
+    city/[city]/     City browser
+    place/[id]/      Place detail + ratings & reviews
+    search/ map/ explore/ saved/ profile/ settings/
+    login/ register/ Public auth
+    booking/         Trip booking (price computed server-side)
+  admin/             Role-guarded CMS: places, categories, cities, bookings, users
+  api/
+    nearby/          Distance-ranked places for a coordinate
+    place-image/[id] Serves inline (data-URI) images from the DB
+components/          UI + app shell + screens (client)
+lib/
+  auth.ts            Sessions, password hashing, requireUser/requireAdmin
+  prisma.ts          PrismaClient singleton
+  data/              Server-only cached repositories (places, categories,
+                     cities, user) — tag-revalidated on admin edits
+  actions/           Server actions (auth, per-user state, reviews)
+  client/            Client context providers (categories, saved, visited,
+                     account, location) — DB-backed when signed in
+  places/
+    types.ts         The single Place shape every screen renders
+    engine.ts        Pure logic: search index, ranking, summaries, geo grouping
+    geo.ts search.ts District centres + query parsing/search
+    catalog.ts       Legacy source assembly — used ONLY by the seed
+    sources/         Original datasets — used ONLY by the seed
+prisma/
+  schema.prisma      users, categories, subcategories, cities, places,
+                     saved_places, visited_places, reviews, bookings
+  seed.ts            One-time migration of the original catalog into the DB
+```
 
 ## Getting started
 
@@ -18,87 +63,68 @@ Router) + TypeScript + Prisma + PostgreSQL**.
    npm install
    ```
 
-2. **Configure environment** — copy the example and fill in your values:
+2. **Start a database.** Any Postgres works. For local dev with Docker:
+
+   ```bash
+   docker run -d --name tembera-db -e POSTGRES_PASSWORD=postgres \
+     -e POSTGRES_USER=postgres -e POSTGRES_DB=tourism_db \
+     -p 5432:5432 postgres:16
+   ```
+
+3. **Configure environment** — copy the example and fill it in:
 
    ```bash
    cp .env.example .env
    ```
 
-   - `DATABASE_URL` — your Postgres connection string
-   - `ADMIN_SESSION_SECRET` — a long random string (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
-   - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` — optional, enables the live map on `/map`
+   - `DATABASE_URL` — Postgres connection string
+   - `ADMIN_SESSION_SECRET` — long random string
+     (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
+   - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` — optional, enables the live map
 
-3. **Create the schema and seed data**
-
-   ```bash
-   npm run db:push     # push the Prisma schema to Postgres
-   npm run db:seed     # seed homepage categories + a default admin user
-   ```
-
-   The seed creates an admin login: `admin@visitrwanda.local` / `changeme123`
-   — **change this password after first login.**
-
-4. **Run the dev server**
+4. **Create the schema and seed the catalog**
 
    ```bash
-   npm run dev
+   npm run db:push
+   npm run db:seed
    ```
 
-   Open http://localhost:3000.
+   The seed migrates the full catalog (~500 places, 16 categories, 30
+   districts) into Postgres and creates two accounts:
+
+   - **Admin:** `admin@tembera.rw` / `changeme123` — change after first login
+     (or set `SEED_ADMIN_PASSWORD` before seeding)
+   - **Demo user:** `demo@tembera.rw` / `demo12345`
+
+5. **Run**
+
+   ```bash
+   npm run dev        # http://localhost:3000
+   ```
+
+   The admin dashboard is at `/admin` (sign in with the admin account).
 
 ## Scripts
 
-| Script            | Purpose                                    |
-| ----------------- | ------------------------------------------ |
-| `npm run dev`     | Start the dev server                       |
-| `npm run build`   | Production build (runs `prisma generate`)  |
-| `npm run start`   | Serve the production build                 |
-| `npm run lint`    | ESLint                                     |
-| `npm run db:push` | Push schema to the database                |
-| `npm run db:migrate` | Create/apply a dev migration            |
-| `npm run db:seed` | Seed categories + default admin            |
-| `npm run db:studio` | Open Prisma Studio                       |
+| Script               | Purpose                              |
+| -------------------- | ------------------------------------ |
+| `npm run dev`        | Dev server                           |
+| `npm run build`      | Production build (runs `prisma generate`) |
+| `npm run start`      | Serve the production build           |
+| `npm run lint`       | ESLint                               |
+| `npm run db:push`    | Push schema to the database          |
+| `npm run db:migrate` | Create/apply a dev migration         |
+| `npm run db:seed`    | Migrate the catalog + seed accounts  |
+| `npm run db:studio`  | Prisma Studio                        |
 
-## Project structure
+## Notes
 
-```
-app/
-  layout.tsx            Root layout (html/body, global CSS, FontAwesome)
-  (site)/               Public pages — share Nav / Footer / Preloader
-    layout.tsx
-    page.tsx            Home (category grid is DB-driven)
-    historics/  homes/  churches/  restaurants/  gyms/
-    wonders/  map/  shops/  playground/  about/  booking/
-  admin/                Admin dashboard (outside the public chrome)
-    page.tsx            CRUD for travel categories (auth-guarded)
-    login/page.tsx
-    actions.ts          Server actions (login, logout, save/delete category)
-  not-found.tsx         404 (replaces legacy error.php)
-components/             Nav, Footer, Preloader
-lib/                    prisma.ts (client singleton), auth.ts (session)
-prisma/                 schema.prisma, seed.ts
-public/                 Static assets (CSS, JS, images, bootstrap, uploads)
-legacy/                 The original PHP app, kept for reference only
-```
-
-## Notes on the migration
-
-The following problems in the original PHP were fixed during the port:
-
-- **Leaked DB credentials** — the old `include/db_connect.php` committed a live
-  MySQL username/password. Credentials now live only in `.env` (gitignored).
-  **The old InfinityFree DB password should be rotated.**
-- **SQL injection** — `admin.php` concatenated `$_POST`/`$_GET` straight into
-  queries. All DB access now goes through Prisma with parameterized queries.
-- **No admin auth** — the admin panel was fully public. It now requires a
-  hashed-password login with a signed, httpOnly session cookie.
-- **Arbitrary `.php` file generation / deletion (RCE)** — saving a category used
-  to write and `unlink` `.php` files on disk from user input. Removed entirely;
-  categories are plain database rows and the homepage renders them dynamically.
-- **Hard-coded Google Maps key** — moved to `NEXT_PUBLIC_GOOGLE_MAPS_KEY`. The
-  old key should be revoked.
-- **Broken/typo'd links** — `restuarants` → `/restaurants`, `book.php` →
-  `/booking`, footer `.html` links repointed to real routes.
-
-The `legacy/` folder contains the original PHP for reference and can be deleted
-once you're satisfied with the port.
+- **Everything is editable at `/admin`** — places, the category taxonomy,
+  cities/districts, bookings (status), and users (roles). Edits revalidate the
+  cached data layer, so the public site reflects them on the next request.
+- **User state is real** — saved places, visit history and reviews are per
+  account and sync across devices. Signed-out visitors get a localStorage
+  fallback so browsing still works before sign-up.
+- The `legacy/` folder holds the original PHP app for reference only.
+- `lib/places/catalog.ts` and `lib/places/sources/*` exist solely so the seed
+  can import the original data once; they are not used at runtime.

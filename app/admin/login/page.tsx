@@ -1,46 +1,56 @@
 "use client";
 
 import { useActionState } from "react";
-import { login } from "../actions";
+import { login, type LoginState } from "../actions";
+import styles from "../admin.module.css";
 
-const initialState: { error?: string } = {};
+const initialState: LoginState = {};
 
 export default function AdminLoginPage() {
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (
-    <div className="admin-login-wrap">
-      <div className="admin-login-card">
-        <h3 className="mb-1">VisitRwanda</h3>
-        <p className="text-muted mb-4">Admin sign in</p>
+    <div className={styles.loginWrap}>
+      <div className={styles.loginCard}>
+        <h1 className={styles.loginBrand}>Tembera</h1>
+        <p className={styles.loginSub}>Admin sign in</p>
 
-        <form action={formAction}>
-          <div className="mb-3">
-            <label className="form-label">Email</label>
+        <form action={formAction} className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="email">
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               name="email"
-              className="form-control"
+              className={styles.input}
               autoComplete="username"
               required
             />
           </div>
-          <div className="mb-3">
-            <label className="form-label">Password</label>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="password">
+              Password
+            </label>
             <input
+              id="password"
               type="password"
               name="password"
-              className="form-control"
+              className={styles.input}
               autoComplete="current-password"
               required
             />
           </div>
 
-          {state?.error && (
-            <p style={{ color: "#c0392b", fontWeight: 600 }}>{state.error}</p>
-          )}
+          {state?.error && <p className={styles.error}>{state.error}</p>}
 
-          <button type="submit" className="btn btn-success w-100" disabled={pending}>
+          <button
+            type="submit"
+            className={`${styles.btn} ${styles.btnPrimary}`}
+            disabled={pending}
+            style={{ justifyContent: "center" }}
+          >
             {pending ? "Signing in…" : "Sign In"}
           </button>
         </form>

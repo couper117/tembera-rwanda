@@ -1,0 +1,177 @@
+/* Auth screens + review form. Scoped, additive styling that reuses the app's
+   design tokens (--t-*) so it sits naturally inside the Tembera shell. */
+
+.t-auth {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 96px;
+}
+
+.t-authcard {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--t-surface, #fff);
+  border: 1px solid var(--t-border, #e6e6e6);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.t-authcard__title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.t-authcard__sub {
+  margin: 0;
+  color: var(--t-ink-2, #667);
+  font-size: 14px;
+}
+
+.t-authcard__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fdecec;
+  color: #b3261e;
+  font-size: 14px;
+}
+
+.t-authcard__foot {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--t-ink-2, #667);
+  text-align: center;
+}
+
+.t-authcard__foot a {
+  color: var(--t-accent, #11694a);
+  font-weight: 600;
+}
+
+.t-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.t-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t-ink, #222);
+}
+
+.t-field__hint {
+  font-size: 12px;
+  color: var(--t-ink-2, #889);
+}
+
+.t-input,
+.t-textarea {
+  width: 100%;
+  border: 1px solid var(--t-border, #dcdcdc);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font: inherit;
+  background: var(--t-surface, #fff);
+  color: var(--t-ink, #222);
+}
+
+.t-input:focus,
+.t-textarea:focus {
+  outline: 2px solid var(--t-accent, #11694a);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.t-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--t-surface-2, #f1f1f1);
+  color: var(--t-ink, #222);
+}
+
+.t-btn--primary {
+  background: var(--t-accent, #11694a);
+  color: #fff;
+}
+
+.t-btn[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Reviews */
+.t-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.t-review {
+  border: 1px solid var(--t-border, #eee);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.t-review__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.t-review__author {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.t-review__stars {
+  color: #e6a417;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.t-review__body {
+  margin: 0;
+  font-size: 14px;
+  color: var(--t-ink-2, #556);
+}
+
+.t-ratingpick {
+  display: flex;
+  gap: 6px;
+}
+
+.t-ratingpick button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  color: #d3d3d3;
+  padding: 0;
+}
+
+.t-ratingpick button[data-on="true"] {
+  color: #e6a417;
+}
+
+.t-signin-note {
+  font-size: 14px;
+  color: var(--t-ink-2, #667);
+}
+
+.t-signin-note a {
+  color: var(--t-accent, #11694a);
+  font-weight: 600;
+}

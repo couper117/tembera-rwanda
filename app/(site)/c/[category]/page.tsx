@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/app/PageHeader";
 import PlaceBrowser from "@/components/browse/PlaceBrowser";
 import Icon from "@/components/Icon";
-import { categoryColor, categoryIcon } from "@/components/ui/categoryIcon";
-import { placesInCategory } from "@/lib/places/catalog";
-import { CATEGORY_GROUPS, getGroup } from "@/lib/places/taxonomy";
+import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
+import { placesInCategory } from "@/lib/data/places";
+import { getCategories, getGroup } from "@/lib/data/categories";
 
-export function generateStaticParams() {
-  return CATEGORY_GROUPS.map((group) => ({ category: group.id }));
+export async function generateStaticParams() {
+  const groups = await getCategories();
+  return groups.map((group) => ({ category: group.id }));
 }
 
 // KNOWN ISSUE: an unknown category (/c/nope) serves the correct not-found
@@ -25,10 +26,10 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }): Promise<Metadata> {
   const { category: id } = await params;
-  const group = getGroup(id);
+  const group = await getGroup(id);
   if (!group) return { title: "Not found" };
 
-  const count = placesInCategory(id).length;
+  const count = (await placesInCategory(id)).length;
   return {
     title: group.title,
     description: `${count} ${group.title.toLowerCase()} listed across Rwanda on Tembera.`,
@@ -45,10 +46,10 @@ export default async function CategoryPage({
   const { category: id } = await params;
   const { type } = await searchParams;
 
-  const group = getGroup(id);
+  const group = await getGroup(id);
   if (!group) notFound();
 
-  const places = placesInCategory(id);
+  const places = await placesInCategory(id);
 
   // Only honour a `?type=` that this group actually defines, so a stale or
   // hand-edited link can't leave the page filtered to nothing with no
@@ -73,7 +74,7 @@ export default async function CategoryPage({
                   color: categoryColor(group.id).fg,
                 }}
               >
-                <Icon name={categoryIcon(group.id)} size={22} />
+                <Icon name={resolveIconName(group.icon)} size={22} />
               </span>
               <div>
                 <h1 className="t-display">{group.title}</h1>

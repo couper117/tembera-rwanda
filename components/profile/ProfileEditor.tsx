@@ -52,6 +52,8 @@ export default function ProfileEditor({ onDone }: Props) {
     homeCity: account.homeCity,
   });
   const [errors, setErrors] = useState<Errors>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const cities = useMemo(() => {
     const districts = Object.keys(DISTRICT_CENTRES).sort((a, b) => a.localeCompare(b));
@@ -66,7 +68,7 @@ export default function ProfileEditor({ onDone }: Props) {
     setErrors((current) => (current[key] ? { ...current, [key]: undefined } : current));
   }
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     const cleaned: AccountEdits = {
       ...draft,
@@ -82,7 +84,14 @@ export default function ProfileEditor({ onDone }: Props) {
       return;
     }
 
-    update(cleaned);
+    setSaving(true);
+    setFormError(null);
+    const { error } = await update(cleaned);
+    setSaving(false);
+    if (error) {
+      setFormError(error);
+      return;
+    }
     onDone();
   }
 
@@ -180,10 +189,16 @@ export default function ProfileEditor({ onDone }: Props) {
         </div>
       </div>
 
+      {formError && (
+        <p className="t-small t-danger" role="alert">
+          {formError}
+        </p>
+      )}
+
       <div className="t-inline t-profile__actions">
-        <button type="submit" className="t-btn t-btn--primary t-btn--sm">
+        <button type="submit" className="t-btn t-btn--primary t-btn--sm" disabled={saving}>
           <Icon name="check" size={16} />
-          Save changes
+          {saving ? "Saving…" : "Save changes"}
         </button>
         <button type="button" className="t-btn t-btn--secondary t-btn--sm" onClick={onDone}>
           Cancel

@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import AppHeader from "@/components/app/AppHeader";
 import MapScreen from "@/components/map/MapScreen";
-import { buildSearchIndex } from "@/lib/places/catalog";
+import { buildSearchIndex } from "@/lib/data/places";
 
 export const metadata: Metadata = {
   title: "Map",
   description: "Explore Rwanda geographically — places, filters and directions.",
 };
 
-export default function MapPage() {
+export default async function MapPage() {
   // Only places with coordinates can be plotted; the index carries them all.
-  const places = buildSearchIndex().filter(
+  const places = (await buildSearchIndex()).filter(
     (place) => place.lat !== undefined && place.lng !== undefined,
   );
 

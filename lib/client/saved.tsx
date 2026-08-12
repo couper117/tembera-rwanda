@@ -1,8 +1,12 @@
 "use client";
 
-// Saved places. Local to the device — Tembera has no user accounts, so this is
-// honest about what it is: a bookmark list in this browser. The Saved screen
-// says so rather than implying a synced account.
+// Saved places.
+//
+// Signed in: bookmarks are per-account rows in Postgres, synced across devices.
+// The server hands the initial set to this provider and every toggle is
+// persisted through a server action (optimistically, so the UI never waits).
+// Signed out: falls back to a local bookmark list in this browser, so visitors
+// can still collect places before deciding to create an account.
 
 import {
   createContext,
@@ -11,15 +15,18 @@ import {
   useEffect,
   useMemo,
   useState,
+  useTransition,
   type ReactNode,
 } from "react";
+import { toggleSaveAction, clearSavedAction } from "@/lib/actions/user";
 
 const KEY = "tembera.saved";
 
 interface SavedValue {
   ids: string[];
-  /** False until the stored list has been read, so the UI can avoid a flash. */
   ready: boolean;
+  /** True when saves persist to an account rather than just this browser. */
+  synced: boolean;
   isSaved: (id: string) => boolean;
   toggle: (id: string) => void;
   clear: () => void;
@@ -27,11 +34,22 @@ interface SavedValue {
 
 const SavedContext = createContext<SavedValue | null>(null);
 
-export function SavedProvider({ children }: { children: ReactNode }) {
-  const [ids, setIds] = useState<string[]>([]);
-  const [ready, setReady] = useState(false);
+export function SavedProvider({
+  authed,
+  initialIds,
+  children,
+}: {
+  authed: boolean;
+  initialIds?: string[];
+  children: ReactNode;
+}) {
+  const [ids, setIds] = useState<string[]>(initialIds ?? []);
+  const [ready, setReady] = useState(authed);
+  const [, startTransition] = useTransition();
 
+  // Guest: hydrate from localStorage once.
   useEffect(() => {
+    if (authed) return;
     try {
       const raw = window.localStorage.getItem(KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -39,19 +57,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         setIds(parsed.filter((v): v is string => typeof v === "string"));
       }
     } catch {
-      // Corrupt or unavailable storage: start empty rather than crash.
+      // Corrupt/unavailable storage: start empty.
     }
     setReady(true);
-  }, []);
-
-  const persist = useCallback((next: string[]) => {
-    setIds(next);
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(next));
-    } catch {
-      // Non-fatal: saves just won't survive a reload.
-    }
-  }, []);
+  }, [authed]);
 
   const toggle = useCallback(
     (id: string) => {
@@ -59,26 +68,48 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         const next = current.includes(id)
           ? current.filter((x) => x !== id)
           : [id, ...current];
-        try {
-          window.localStorage.setItem(KEY, JSON.stringify(next));
-        } catch {
-          // ignore
+        if (authed) {
+          startTransition(() => {
+            void toggleSaveAction(id);
+          });
+        } else {
+          try {
+            window.localStorage.setItem(KEY, JSON.stringify(next));
+          } catch {
+            // ignore
+          }
         }
         return next;
       });
     },
-    [],
+    [authed],
   );
+
+  const clear = useCallback(() => {
+    setIds([]);
+    if (authed) {
+      startTransition(() => {
+        void clearSavedAction();
+      });
+    } else {
+      try {
+        window.localStorage.removeItem(KEY);
+      } catch {
+        // ignore
+      }
+    }
+  }, [authed]);
 
   const value = useMemo<SavedValue>(
     () => ({
       ids,
       ready,
+      synced: authed,
       isSaved: (id: string) => ids.includes(id),
       toggle,
-      clear: () => persist([]),
+      clear,
     }),
-    [ids, ready, toggle, persist],
+    [ids, ready, authed, toggle, clear],
   );
 
   return <SavedContext.Provider value={value}>{children}</SavedContext.Provider>;

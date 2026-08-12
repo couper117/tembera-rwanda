@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 const PRICES: Record<string, number> = {
   "Gorilla Trekking": 1500,
@@ -37,8 +38,11 @@ export async function createBooking(formData: FormData): Promise<BookingResult> 
 
   const total = pricePer * guests;
 
+  // Attach the current user if signed in; anonymous bookings keep userId null.
+  const userId = (await getCurrentUser())?.id ?? null;
+
   const booking = await prisma.booking.create({
-    data: { experience, preferredAt, guests, fullName, email, totalPrice: total },
+    data: { experience, preferredAt, guests, fullName, email, totalPrice: total, userId },
   });
 
   return { ok: true, id: booking.id, total };

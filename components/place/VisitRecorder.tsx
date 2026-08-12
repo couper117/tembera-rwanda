@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { pushVisit } from "@/lib/client/visited";
+import { useVisited } from "@/lib/client/visited";
 
 /**
  * Records that this place was opened. Renders nothing — it exists so the place
@@ -9,9 +9,11 @@ import { pushVisit } from "@/lib/client/visited";
  * profile reads.
  */
 export default function VisitRecorder({ id }: { id: string }) {
+  const { record } = useVisited();
+
   useEffect(() => {
-    pushVisit(id);
-  }, [id]);
+    record(id);
+  }, [id, record]);
 
   return null;
 }

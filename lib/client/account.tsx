@@ -1,11 +1,11 @@
 "use client";
 
-// The demo account.
+// The user's profile.
 //
-// Tembera has no sign-in. Rather than pretend otherwise, the app ships with one
-// local profile that behaves like a real one: it lives in this browser, every
-// field is editable, and edits persist. Nothing is sent anywhere, and the
-// profile screen says so.
+// Signed in: the profile is the account — name, handle, email, bio and home
+// city are real columns, and edits persist through a server action. Signed out:
+// a local, editable demo profile lives in this browser so the profile screen is
+// explorable before sign-up (and the screen says which mode it is in).
 
 import {
   createContext,
@@ -16,6 +16,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { updateProfileAction } from "@/lib/actions/user";
 
 const KEY = "tembera.account";
 
@@ -25,44 +26,38 @@ export interface Account {
   email: string;
   bio: string;
   homeCity: string;
-  /** ISO date. Set once when the profile is first created, never edited. */
+  /** ISO date. Set when the account was created; never edited. */
   joinedAt: string;
 }
 
-/** Fields the user can change. `joinedAt` is deliberately not one of them. */
 export type AccountEdits = Omit<Account, "joinedAt">;
 
-/**
- * The seed profile. Obviously a placeholder rather than anyone real — this is a
- * demo directory, and inventing a plausible identity would be worse than an
- * obvious one.
- */
+/** The guest demo profile, editable in-browser. */
 export const DEMO_ACCOUNT: Account = {
-  name: "Demo User",
-  handle: "demo",
-  email: "demo@tembera.rw",
-  bio: "Exploring Rwanda one place at a time. This is a demo profile — edit it and it stays on this device.",
+  name: "Guest",
+  handle: "guest",
+  email: "guest@tembera.rw",
+  bio: "Browsing as a guest — sign in to sync your saves and reviews across devices.",
   homeCity: "Kigali",
   joinedAt: "2026-01-08",
 };
 
 interface AccountValue {
   account: Account;
-  /** False until storage has been read, so the UI can avoid a flash of seed data. */
   ready: boolean;
-  update: (edits: Partial<AccountEdits>) => void;
+  /** True when the profile is a real account rather than a local demo. */
+  authed: boolean;
+  update: (edits: Partial<AccountEdits>) => Promise<{ error?: string }>;
   reset: () => void;
 }
 
 const AccountContext = createContext<AccountValue | null>(null);
 
-/** Keeps a stored profile usable even if it predates a field being added. */
 function normalise(raw: unknown): Account {
   if (!raw || typeof raw !== "object") return DEMO_ACCOUNT;
   const value = raw as Record<string, unknown>;
   const str = (key: keyof Account) =>
     typeof value[key] === "string" ? (value[key] as string) : DEMO_ACCOUNT[key];
-
   return {
     name: str("name"),
     handle: str("handle"),
@@ -73,37 +68,70 @@ function normalise(raw: unknown): Account {
   };
 }
 
-export function AccountProvider({ children }: { children: ReactNode }) {
-  const [account, setAccount] = useState<Account>(DEMO_ACCOUNT);
-  const [ready, setReady] = useState(false);
+export function AccountProvider({
+  authed,
+  initialAccount,
+  children,
+}: {
+  authed: boolean;
+  initialAccount?: Account | null;
+  children: ReactNode;
+}) {
+  const [account, setAccount] = useState<Account>(initialAccount ?? DEMO_ACCOUNT);
+  const [ready, setReady] = useState(authed);
 
   useEffect(() => {
+    if (authed) return;
     try {
       const raw = window.localStorage.getItem(KEY);
       if (raw) setAccount(normalise(JSON.parse(raw)));
     } catch {
-      // Corrupt or unavailable storage: fall back to the seed profile.
+      // fall back to demo
     }
     setReady(true);
-  }, []);
+  }, [authed]);
 
-  const persist = useCallback((next: Account) => {
-    setAccount(next);
+  const update = useCallback(
+    async (edits: Partial<AccountEdits>): Promise<{ error?: string }> => {
+      const next = { ...account, ...edits };
+      setAccount(next); // optimistic
+      if (authed) {
+        const res = await updateProfileAction({
+          name: next.name,
+          handle: next.handle,
+          email: next.email,
+          bio: next.bio,
+          homeCity: next.homeCity,
+        });
+        if ("error" in res) {
+          setAccount(account); // roll back
+          return { error: res.error };
+        }
+        return {};
+      }
+      try {
+        window.localStorage.setItem(KEY, JSON.stringify(next));
+      } catch {
+        // non-fatal
+      }
+      return {};
+    },
+    [account, authed],
+  );
+
+  const reset = useCallback(() => {
+    if (authed) return; // a real account is not "resettable" to a demo
+    setAccount(DEMO_ACCOUNT);
     try {
-      window.localStorage.setItem(KEY, JSON.stringify(next));
+      window.localStorage.setItem(KEY, JSON.stringify(DEMO_ACCOUNT));
     } catch {
-      // Non-fatal: the edit just won't survive a reload.
+      // ignore
     }
-  }, []);
+  }, [authed]);
 
   const value = useMemo<AccountValue>(
-    () => ({
-      account,
-      ready,
-      update: (edits) => persist({ ...account, ...edits }),
-      reset: () => persist(DEMO_ACCOUNT),
-    }),
-    [account, ready, persist],
+    () => ({ account, ready, authed, update, reset }),
+    [account, ready, authed, update, reset],
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
@@ -115,7 +143,6 @@ export function useAccount(): AccountValue {
   return ctx;
 }
 
-/** Up to two letters for the avatar, falling back to something non-empty. */
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -123,7 +150,6 @@ export function initialsOf(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-/** "January 2026" — a join date only needs month precision. */
 export function formatJoined(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "recently";

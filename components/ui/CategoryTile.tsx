@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { categoryColor, categoryIcon } from "@/components/ui/categoryIcon";
+import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
 import type { CategoryGroup } from "@/lib/places/taxonomy";
 
 interface Props {
@@ -17,7 +17,7 @@ export default function CategoryTile({ category, count }: Props) {
         className="t-cattile__icon"
         style={{ background: color.bg, color: color.fg }}
       >
-        <Icon name={categoryIcon(category.id)} size={20} />
+        <Icon name={resolveIconName(category.icon)} size={20} />
       </span>
       <span>
         <span className="t-cattile__label">{category.label}</span>

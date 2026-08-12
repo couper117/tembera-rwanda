@@ -6,7 +6,7 @@ import CategoryTile from "@/components/ui/CategoryTile";
 import PlaceCard from "@/components/ui/PlaceCard";
 import PlaceImage from "@/components/ui/PlaceImage";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
+import { getCategories } from "@/lib/data/categories";
 import {
   cityGroup,
   citySummaries,
@@ -14,7 +14,7 @@ import {
   featured,
   nearest,
   topRated,
-} from "@/lib/places/catalog";
+} from "@/lib/data/places";
 import { KIGALI } from "@/lib/places/geo";
 import { getCollections } from "@/lib/collections";
 
@@ -28,16 +28,17 @@ export const dynamic = "force-dynamic";
  * never as a hero.
  */
 export default async function HomePage() {
-  const counts = countByCategory();
-  const primary = CATEGORY_GROUPS.filter((group) => group.primary);
+  const counts = await countByCategory();
+  const categories = await getCategories();
+  const primary = categories.filter((group) => group.primary);
   const collections = await getCollections();
 
   // Default "near you" list, measured from Kigali. The client swaps this for a
   // real one if the user shares their location.
-  const nearbyDefault = nearest(KIGALI, { limit: 12 });
-  const rated = topRated(10);
-  const cities = citySummaries().slice(0, 8);
-  const destinations = featured(8);
+  const nearbyDefault = await nearest(KIGALI, { limit: 12 });
+  const rated = await topRated(10);
+  const cities = (await citySummaries()).slice(0, 8);
+  const destinations = await featured(8);
 
   return (
     <>
@@ -67,7 +68,7 @@ export default async function HomePage() {
           <section className="t-section">
             <SectionHeader
               title="Explore"
-              subtitle={`${CATEGORY_GROUPS.length} categories, from restaurants to hospitals`}
+              subtitle={`${categories.length} categories, from restaurants to hospitals`}
               actionLabel="All categories"
               actionHref="/explore"
             />

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
-import { categoryColor, categoryIcon } from "@/components/ui/categoryIcon";
+import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
+import { useCategories } from "@/lib/client/categories";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
 import { useRail } from "./AppShell";
 
 /** Destinations pinned above the category list. */
@@ -32,6 +32,7 @@ const MAX_ROWS = 12;
 
 export default function DesktopRail() {
   const pathname = usePathname();
+  const categories = useCategories();
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { collapsed, toggle } = useRail();
@@ -85,7 +86,7 @@ export default function DesktopRail() {
       <p className="t-label t-rail__sectionlabel">Browse categories</p>
 
       <div className="t-rail__cats">
-        {CATEGORY_GROUPS.slice(0, MAX_ROWS).map((group) => {
+        {categories.slice(0, MAX_ROWS).map((group) => {
           const color = categoryColor(group.id);
           const active = pathname === `/c/${group.id}`;
           return (
@@ -100,7 +101,7 @@ export default function DesktopRail() {
                 className="t-railrow__chip"
                 style={{ background: color.bg, color: color.fg }}
               >
-                <Icon name={categoryIcon(group.id)} size={15} />
+                <Icon name={resolveIconName(group.icon)} size={15} />
               </span>
               <span className="t-railrow__label">{group.label}</span>
               <span className="t-railrow__count">{counts.get(group.id) ?? 0}</span>

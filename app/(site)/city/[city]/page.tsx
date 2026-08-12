@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/app/PageHeader";
 import PlaceBrowser from "@/components/browse/PlaceBrowser";
-import { citySummaries, placesInCity } from "@/lib/places/catalog";
+import { citySummaries, placesInCity } from "@/lib/data/places";
 
-export function generateStaticParams() {
-  return citySummaries().map((c) => ({ city: encodeURIComponent(c.name) }));
+export async function generateStaticParams() {
+  const cities = await citySummaries();
+  return cities.map((c) => ({ city: encodeURIComponent(c.name) }));
 }
 
 /**
@@ -36,7 +37,7 @@ export default async function CityPage({
   const { city: raw } = await params;
   const city = decodeURIComponent(raw);
 
-  const places = placesInCity(city);
+  const places = await placesInCity(city);
   if (places.length === 0) notFound();
 
   return (

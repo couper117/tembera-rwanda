@@ -1,9 +1,12 @@
 import type { IconName } from "@/components/Icon";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
 
-/** Category group id -> icon name. */
-export function categoryIcon(categoryId: string): IconName {
-  const icon = CATEGORY_GROUPS.find((group) => group.id === categoryId)?.icon;
+/**
+ * Resolve a category's stored icon key (from the DB `Category.icon` field) to a
+ * known IconName, falling back to a neutral pin. Category records carry their
+ * own icon now, so components pass `group.icon` here rather than looking a
+ * hardcoded table up by id.
+ */
+export function resolveIconName(icon: string | undefined | null): IconName {
   return (icon as IconName) ?? "pin";
 }
 

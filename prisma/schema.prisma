@@ -1,5 +1,11 @@
-// Prisma schema — replaces the old MySQL `tourism_db`.
-// Datasource is Postgres; connection comes from DATABASE_URL.
+// Tembera — production schema.
+//
+// Everything the app renders now lives here: the catalog (places), the
+// taxonomy (categories + subcategories), the geography (cities/districts),
+// real user accounts with per-user saved/visited/reviews, and bookings.
+// Nothing the UI depends on is hardcoded in application code any more — the
+// seed migrates the original catalog into these tables once, and from then on
+// the admin dashboard is the source of truth.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,44 +16,196 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Homepage "Plan Your Journey" categories, managed from /admin.
-/// Ported from the legacy MySQL `travel_categories` table.
-model TravelCategory {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  imageUrl    String   @map("image_url")
-  pageLink    String   @map("page_link")
-  iconClass   String   @map("icon_class")
-  ctaText     String   @map("cta_text")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("travel_categories")
+enum Role {
+  USER
+  ADMIN
 }
 
-/// Admin users for the dashboard. The legacy PHP admin had NO auth at all;
-/// this replaces it with hashed-password login.
-model AdminUser {
+/// How well we actually know where a place is (mirrors the domain type).
+enum CoordsPrecision {
+  exact
+  district
+  unknown
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+}
+
+/// One account table for everyone; admins are simply users with role ADMIN.
+/// Replaces the old separate, unauthenticated admin and the localStorage
+/// "demo account".
+model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
+  handle       String   @unique
   passwordHash String   @map("password_hash")
+  name         String
+  bio          String   @default("")
+  homeCity     String   @default("Kigali") @map("home_city")
+  role         Role     @default(USER)
   createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  @@map("admin_users")
+  saves    SavedPlace[]
+  visits   VisitedPlace[]
+  reviews  Review[]
+  bookings Booking[]
+
+  @@map("users")
 }
 
-/// Trip booking requests from the /booking page.
-/// The legacy booking form was front-end only and never persisted anything.
+/// Top level of the taxonomy ("dining", "stays", …). Admin-editable.
+model Category {
+  id        String   @id
+  label     String
+  title     String
+  icon      String
+  primary   Boolean  @default(false)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subcategories Subcategory[]
+  places        Place[]
+
+  @@map("categories")
+}
+
+/// Second level, scoped to a category ("Cafés", "Hospitals", …). The label a
+/// place's `subcategory` string must match.
+model Subcategory {
+  id         Int    @id @default(autoincrement())
+  name       String
+  categoryId String @map("category_id")
+  sortOrder  Int    @default(0) @map("sort_order")
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, name])
+  @@index([categoryId])
+  @@map("subcategories")
+}
+
+/// Districts/cities, with a centre coordinate and an optional display group
+/// (Kigali's three districts read as one city). Admin-editable directory.
+model City {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  group     String?
+  province  String?
+  lat       Float?
+  lng       Float?
+  image     String?
+  sortOrder Int      @default(0) @map("sort_order")
+
+  @@map("cities")
+}
+
+/// A listing. The single shape every screen renders.
+model Place {
+  id              String          @id
+  name            String
+  categoryId      String          @map("category_id")
+  subcategory     String
+  subtype         String?
+  city            String
+  area            String?
+  lat             Float?
+  lng             Float?
+  coordsPrecision CoordsPrecision @default(unknown) @map("coords_precision")
+  rating          Float?
+  image           String?
+  /// Original inline data: URI, lifted out of `image` and served by
+  /// /api/place-image/[id]. Null for the vast majority of places.
+  imageData       String?         @map("image_data")
+  description     String?
+  hours           String?
+  phone           String?
+  mapLink         String?         @map("map_link")
+  highlights      String[]        @default([])
+  priceFrom       Int?            @map("price_from")
+  keywords        String[]        @default([])
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  category Category       @relation(fields: [categoryId], references: [id])
+  saves    SavedPlace[]
+  visits   VisitedPlace[]
+  reviews  Review[]
+
+  @@index([categoryId])
+  @@index([city])
+  @@map("places")
+}
+
+/// A place a user has bookmarked. Per-account, synced across devices.
+model SavedPlace {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  placeId   String   @map("place_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([userId])
+  @@map("saved_places")
+}
+
+/// A place a user has opened. Most-recent-first history behind the profile
+/// stats. A repeat visit updates `visitedAt` rather than adding a row.
+model VisitedPlace {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  placeId   String   @map("place_id")
+  visitedAt DateTime @default(now()) @map("visited_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([userId])
+  @@map("visited_places")
+}
+
+/// A user rating + optional note. A place's displayed rating is the average of
+/// these once it has any, falling back to the seeded editorial rating.
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  placeId   String   @map("place_id")
+  rating    Int
+  body      String   @default("")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("reviews")
+}
+
+/// Trip booking requests. Price is derived server-side from a trusted table.
+/// Linked to a user when placed while signed in.
 model Booking {
-  id          Int      @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   experience  String
-  preferredAt DateTime @map("preferred_at")
+  preferredAt DateTime      @map("preferred_at")
   guests      Int
-  fullName    String   @map("full_name")
+  fullName    String        @map("full_name")
   email       String
-  totalPrice  Int      @map("total_price")
-  createdAt   DateTime @default(now()) @map("created_at")
+  totalPrice  Int           @map("total_price")
+  status      BookingStatus @default(pending)
+  userId      Int?          @map("user_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("bookings")
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { nearest } from "@/lib/places/catalog";
+import { nearest } from "@/lib/data/places";
 
 /**
  * Nearest places to a point.
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "coordinates out of range" }, { status: 400 });
   }
 
-  const places = nearest({ lat, lng }, { limit, categoryId }).map((place) => ({
+  const places = (await nearest({ lat, lng }, { limit, categoryId })).map((place) => ({
     id: place.id,
     name: place.name,
     categoryId: place.categoryId,

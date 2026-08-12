@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import AppHeader from "@/components/app/AppHeader";
 import Icon, { type IconName } from "@/components/Icon";
 import EmptyState from "@/components/ui/EmptyState";
@@ -9,7 +9,7 @@ import PlaceRow from "@/components/ui/PlaceRow";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { formatJoined, initialsOf, useAccount } from "@/lib/client/account";
 import { useSaved } from "@/lib/client/saved";
-import { clearVisited, readVisited } from "@/lib/client/visited";
+import { useVisited } from "@/lib/client/visited";
 import type { Place } from "@/lib/places/types";
 import ProfileEditor from "./ProfileEditor";
 
@@ -29,17 +29,11 @@ const PREVIEW = 4;
 export default function ProfileScreen({ index }: Props) {
   const { account, ready: accountReady } = useAccount();
   const { ids: savedIds, ready: savedReady } = useSaved();
+  const { visits, ready: visitedReady, clear: clearVisited } = useVisited();
 
-  const [visitedIds, setVisitedIds] = useState<string[]>([]);
-  const [visitedReady, setVisitedReady] = useState(false);
   const [editing, setEditing] = useState(false);
 
-  // localStorage can only be read on the client, so the list arrives a tick
-  // after first paint. Skeletons cover the gap rather than a flash of "0".
-  useEffect(() => {
-    setVisitedIds(readVisited().map((v) => v.id));
-    setVisitedReady(true);
-  }, []);
+  const visitedIds = useMemo(() => visits.map((v) => v.id), [visits]);
 
   const byId = useMemo(() => new Map(index.map((place) => [place.id, place])), [index]);
   const resolve = useCallback(
@@ -61,7 +55,6 @@ export default function ProfileScreen({ index }: Props) {
 
   function clearHistory() {
     clearVisited();
-    setVisitedIds([]);
   }
 
   return (

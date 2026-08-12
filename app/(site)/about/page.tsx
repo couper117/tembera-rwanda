@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHeader from "@/components/app/PageHeader";
 import Icon, { type IconName } from "@/components/Icon";
-import { countByCategory, citySummaries } from "@/lib/places/catalog";
-import { CATEGORY_GROUPS } from "@/lib/places/taxonomy";
+import { countByCategory, citySummaries } from "@/lib/data/places";
+import { getCategories } from "@/lib/data/categories";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "About",
@@ -15,10 +17,11 @@ export const metadata: Metadata = {
  * The legacy page was a marketing brochure with a hero and mission statement;
  * this states the numbers instead.
  */
-export default function AboutPage() {
-  const counts = countByCategory();
+export default async function AboutPage() {
+  const counts = await countByCategory();
+  const categories = await getCategories();
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
-  const cities = citySummaries().length;
+  const cities = (await citySummaries()).length;
 
   return (
     <>
@@ -38,7 +41,7 @@ export default function AboutPage() {
           <section className="t-section">
             <div className="t-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
               <Stat value={total.toLocaleString()} label="Places listed" />
-              <Stat value={String(CATEGORY_GROUPS.length)} label="Categories" />
+              <Stat value={String(categories.length)} label="Categories" />
               <Stat value={String(cities)} label="Cities & districts" />
             </div>
           </section>
@@ -48,7 +51,7 @@ export default function AboutPage() {
               What&apos;s covered
             </h2>
             <div className="t-card">
-              {CATEGORY_GROUPS.map((category) => (
+              {categories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/c/${category.id}`}
