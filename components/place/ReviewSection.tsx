@@ -72,26 +72,38 @@ export default function ReviewSection({ placeId, reviews, currentUserId }: Props
               </button>
             ))}
           </div>
-          <textarea
-            className="t-textarea"
-            rows={3}
-            placeholder="Share what this place is like… (optional)"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            style={{ marginTop: 10 }}
-          />
-          {error && <p className="t-authcard__error" style={{ marginTop: 8 }}>{error}</p>}
+          <div className="t-formrow" style={{ marginTop: 10 }}>
+            <label className="t-field t-field--area">
+              <textarea
+                className="t-field__input"
+                rows={3}
+                placeholder="Share what this place is like… (optional)"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+              />
+            </label>
+          </div>
+          {error && (
+            <p className="t-small t-danger" style={{ marginTop: 8 }}>
+              {error}
+            </p>
+          )}
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <button
               type="button"
-              className="t-btn t-btn--primary"
+              className="t-btn t-btn--primary t-btn--sm"
               onClick={submit}
               disabled={pending}
             >
               {mine ? "Update review" : "Post review"}
             </button>
             {mine && (
-              <button type="button" className="t-btn" onClick={remove} disabled={pending}>
+              <button
+                type="button"
+                className="t-btn t-btn--secondary t-btn--sm"
+                onClick={remove}
+                disabled={pending}
+              >
                 Delete
               </button>
             )}
