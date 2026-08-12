@@ -10,26 +10,16 @@ import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { groupTitle } from "@/lib/data/categories";
-import { getPlaces, getPlace, nearest } from "@/lib/data/places";
+import { getPlace, nearest } from "@/lib/data/places";
 import { getCurrentUser } from "@/lib/auth";
 import { getPlaceReviews } from "@/lib/data/user";
 import type { Place } from "@/lib/places/types";
 
-export async function generateStaticParams() {
-  const places = await getPlaces();
-  return places.map((place) => ({ id: place.id }));
-}
-
-/**
- * Every valid param is enumerated above. Without this, Next renders an
- * unlisted param on demand and serves the not-found page with a 200 — the
- * right screen, the wrong status. Refusing unknown params gives a real 404.
- */
-export const dynamicParams = false;
-
-// Per-user content (auth, the reader's own review) is rendered here, so these
-// pages are dynamic. generateStaticParams still enumerates the valid ids so an
-// unknown /place/… returns a real 404 rather than rendering on demand.
+// Fully dynamic: the page renders per-user content (auth + the reader's own
+// review) and must reflect admin edits immediately, so it is never prerendered.
+// An unknown id falls through to getPlace() -> notFound(), which returns a real
+// 404. (Prerendering every place via generateStaticParams would also open a DB
+// connection per page at build time and bake in stale, signed-out content.)
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({

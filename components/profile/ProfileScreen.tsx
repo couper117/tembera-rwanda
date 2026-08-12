@@ -27,7 +27,7 @@ const PREVIEW = 4;
  * actually done in the app rather than from seeded activity.
  */
 export default function ProfileScreen({ index }: Props) {
-  const { account, ready: accountReady } = useAccount();
+  const { account, ready: accountReady, authed } = useAccount();
   const { ids: savedIds, ready: savedReady } = useSaved();
   const { visits, ready: visitedReady, clear: clearVisited } = useVisited();
 
@@ -199,10 +199,38 @@ export default function ProfileScreen({ index }: Props) {
               <Row icon="ticket" label="Your bookings" href="/booking" />
               <Row icon="info" label="About Tembera" href="/about" />
               <Row icon="lock" label="Admin sign in" href="/admin" />
+              {authed ? (
+                <form action="/logout" method="post">
+                  <button
+                    type="submit"
+                    className="t-fact"
+                    style={{
+                      width: "100%",
+                      padding: "var(--t-3) var(--t-4)",
+                      alignItems: "center",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      font: "inherit",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span className="t-fact__icon">
+                      <Icon name="external" size={17} />
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0 }} className="t-row__name">
+                      Sign out
+                    </span>
+                  </button>
+                </form>
+              ) : (
+                <Row icon="user" label="Sign in" href="/login" />
+              )}
             </div>
             <p className="t-small t-muted" style={{ marginTop: "var(--t-3)" }}>
-              Tembera has no online accounts. This profile, your saves and your
-              history are stored in this browser only — nothing is sent anywhere.
+              {authed
+                ? "Your profile, saved places, visits and reviews are saved to your account and sync across devices."
+                : "You're browsing as a guest — your saves and history live in this browser. Sign in to keep them across devices."}
             </p>
           </section>
         </div>

@@ -76,25 +76,26 @@ export function VisitedProvider({
     setReady(true);
   }, [authed]);
 
+  // Guest persistence lives here (not in `record`) so `record` can stay a
+  // stable, dependency-free callback — VisitRecorder calls it from an effect,
+  // and a `visits`-dependent callback would re-fire that effect on every visit.
+  useEffect(() => {
+    if (authed || !ready) return;
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(visits));
+    } catch {
+      // ignore
+    }
+  }, [authed, ready, visits]);
+
   const record = useCallback(
     (id: string) => {
       if (!id) return;
-      setVisits((current) => {
-        const next = [
-          { id, at: Date.now() },
-          ...current.filter((v) => v.id !== id),
-        ].slice(0, MAX);
-        if (authed) {
-          void recordVisitAction(id);
-        } else {
-          try {
-            window.localStorage.setItem(KEY, JSON.stringify(next));
-          } catch {
-            // ignore
-          }
-        }
-        return next;
-      });
+      // Pure functional updater — no side effects in the render phase.
+      setVisits((current) =>
+        [{ id, at: Date.now() }, ...current.filter((v) => v.id !== id)].slice(0, MAX),
+      );
+      if (authed) void recordVisitAction(id);
     },
     [authed],
   );

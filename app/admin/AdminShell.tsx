@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { logout } from "./actions";
 import styles from "./admin.module.css";
 
 const NAV = [
@@ -50,7 +49,8 @@ export default function AdminShell({
         </nav>
         <div className={styles.sidebarFoot}>
           <div className={styles.who}>{email}</div>
-          <form action={logout}>
+          <form action="/logout" method="post">
+            <input type="hidden" name="redirectTo" value="/admin/login" />
             <button type="submit" className={styles.logoutBtn}>
               Log out
             </button>

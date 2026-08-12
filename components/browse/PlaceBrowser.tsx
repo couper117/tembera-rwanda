@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Icon from "@/components/Icon";
 import EmptyState, { type StateAction } from "@/components/ui/EmptyState";
 import PlaceCard from "@/components/ui/PlaceCard";
@@ -61,6 +61,15 @@ export default function PlaceBrowser({
 
   const [subcategory, setSubcategory] = useState<string | null>(initialSubcategory);
   const [subtype, setSubtype] = useState<string | null>(null);
+
+  // Pick up a deep-linked `?type=` on mount (rather than in the server page, so
+  // the category route can 404 unknown ids). Applied in an effect to avoid a
+  // hydration mismatch, and only honoured when it names a real subcategory.
+  useEffect(() => {
+    if (!syncPath) return;
+    const t = new URLSearchParams(window.location.search).get("type");
+    if (t && places.some((p) => p.subcategory === t)) setSubcategory(t);
+  }, [syncPath, places]);
   const [sort, setSort] = useState<SortKey>("distance");
   const [view, setView] = useState<ViewKey>(initialView);
   const [shown, setShown] = useState(PAGE);

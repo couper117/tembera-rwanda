@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import Spinner from "@/components/ui/Spinner";
+import { useAccount } from "@/lib/client/account";
 import { useLocation } from "@/lib/client/location";
 import { clearRecentSearches, readRecentSearches } from "@/lib/client/recentSearches";
 import { useSaved } from "@/lib/client/saved";
@@ -19,6 +21,7 @@ export default function SettingsScreen() {
     useLocation();
   const { ids, clear, ready } = useSaved();
   const { visits, clear: clearVisited } = useVisited();
+  const { account, authed } = useAccount();
   const [recentCount, setRecentCount] = useState(0);
   const visitedCount = visits.length;
 
@@ -35,6 +38,54 @@ export default function SettingsScreen() {
           <div className="t-section">
             <h1 className="t-display">Settings</h1>
           </div>
+
+          {/* ------------------------------------------------- account -- */}
+          <section className="t-section">
+            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
+              Account
+            </h2>
+            <div className="t-card" style={{ padding: "var(--t-4)" }}>
+              {authed ? (
+                <>
+                  <div className="t-fact" style={{ padding: 0, marginBottom: "var(--t-3)" }}>
+                    <span className="t-fact__icon">
+                      <Icon name="user" size={17} />
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span className="t-fact__value" style={{ display: "block" }}>
+                        {account.name}
+                      </span>
+                      <span className="t-fact__label">{account.email}</span>
+                    </span>
+                  </div>
+                  <form action="/logout" method="post">
+                    <button
+                      type="submit"
+                      className="t-btn t-btn--secondary t-btn--sm t-btn--block"
+                    >
+                      <Icon name="external" size={16} />
+                      Sign out
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
+                    You&apos;re browsing as a guest. Sign in to sync your saved places,
+                    visits and reviews across devices.
+                  </p>
+                  <div className="t-inline t-wrap">
+                    <Link href="/login" className="t-btn t-btn--primary t-btn--sm">
+                      Sign in
+                    </Link>
+                    <Link href="/register" className="t-btn t-btn--secondary t-btn--sm">
+                      Create account
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
 
           {/* ------------------------------------------------ location -- */}
           <section className="t-section">
@@ -102,10 +153,9 @@ export default function SettingsScreen() {
             </h2>
             <div className="t-card" style={{ padding: "var(--t-4)" }}>
               <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
-                Your profile, saved places ({ready ? ids.length : 0}), visited
-                places ({visitedCount}) and recent searches ({recentCount}) are
-                stored in this browser. Nothing is sent to a server, and there
-                is no account to sync them to.
+                {authed
+                  ? `Your saved places (${ready ? ids.length : 0}) and visited places (${visitedCount}) are synced to your account. Recent searches (${recentCount}) stay in this browser.`
+                  : `Your profile, saved places (${ready ? ids.length : 0}), visited places (${visitedCount}) and recent searches (${recentCount}) are stored in this browser. Sign in to sync them to an account.`}
               </p>
               <div className="t-inline t-wrap">
                 <button

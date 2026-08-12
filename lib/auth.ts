@@ -10,7 +10,7 @@ import type { Role, User } from "@prisma/client";
 // One signed, httpOnly session cookie for the whole app. Admins are just users
 // with role ADMIN — there is no separate admin table or second login system.
 
-const COOKIE_NAME = "tembera_session";
+export const COOKIE_NAME = "tembera_session";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 function secret(): string {

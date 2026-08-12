@@ -3,12 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import {
-  createSession,
-  destroySession,
-  hashPassword,
-  verifyPassword,
-} from "@/lib/auth";
+import { createSession, hashPassword, verifyPassword } from "@/lib/auth";
 
 export interface AuthState {
   error?: string;
@@ -95,7 +90,3 @@ export async function loginAction(
   redirect("/");
 }
 
-export async function logoutAction(): Promise<void> {
-  await destroySession();
-  redirect("/");
-}

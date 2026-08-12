@@ -14,18 +14,15 @@ export interface PlaceFormState {
 /** Build a unique, URL-safe id from categoryId + name (append -2, -3 … if taken). */
 async function uniquePlaceId(categoryId: string, name: string): Promise<string> {
   const base = kebab(`${categoryId}-${name}`) || "place";
-  let candidate = base;
-  let n = 2;
-  // Loop until we find a free id. Bounded in practice by real collision counts.
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  // Walk base, base-2, base-3, … until a free id is found. Bounded in practice
+  // by real collision counts.
+  for (let n = 1; ; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
     const existing = await prisma.place.findUnique({
       where: { id: candidate },
       select: { id: true },
     });
     if (!existing) return candidate;
-    candidate = `${base}-${n}`;
-    n += 1;
   }
 }
 

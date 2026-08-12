@@ -2,11 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import {
-  createSession,
-  destroySession,
-  verifyPassword,
-} from "@/lib/auth";
+import { createSession, verifyPassword } from "@/lib/auth";
 import { loginSchema } from "@/lib/validation/admin";
 
 export interface LoginState {
@@ -48,7 +44,3 @@ export async function login(
   redirect("/admin");
 }
 
-export async function logout(): Promise<void> {
-  await destroySession();
-  redirect("/admin/login");
-}

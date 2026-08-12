@@ -12,13 +12,12 @@ export async function generateStaticParams() {
   return groups.map((group) => ({ category: group.id }));
 }
 
-// KNOWN ISSUE: an unknown category (/c/nope) serves the correct not-found
-// screen but with a 200 rather than a 404. `dynamicParams = false` fixes this
-// on /place/[id] and /city/[city], but not here: this page reads searchParams
-// for `?type=`, so it can render on demand and the guard never applies. The
-// real fix is to move `?type=` handling into PlaceBrowser (a client
-// component) so the page can be fully static — at the cost of server-rendered
-// filtering for linked, filtered URLs. Left alone deliberately.
+// Reject unknown categories with a real 404. generateStaticParams enumerates
+// every valid category id; dynamicParams=false makes any other /c/… return a
+// proper 404 status (not just the not-found screen with a 200). This validates
+// the route param and is independent of the `?type=` searchParam, which still
+// works for valid categories.
+export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
@@ -38,24 +37,19 @@ export async function generateMetadata({
 
 export default async function CategoryPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ category: string }>;
-  searchParams: Promise<{ type?: string }>;
 }) {
   const { category: id } = await params;
-  const { type } = await searchParams;
 
   const group = await getGroup(id);
   if (!group) notFound();
 
   const places = await placesInCategory(id);
 
-  // Only honour a `?type=` that this group actually defines, so a stale or
-  // hand-edited link can't leave the page filtered to nothing with no
-  // matching chip to clear.
-  const selected =
-    type && group.subcategories.includes(type) ? type : null;
+  // The `?type=` filter is applied client-side by PlaceBrowser (it reads the
+  // URL on mount). Keeping it out of this server component is what lets
+  // dynamicParams=false return a real 404 for unknown categories.
 
   return (
     <>
@@ -89,7 +83,6 @@ export default async function CategoryPage({
             <PlaceBrowser
               places={places}
               subcategoryOrder={group.subcategories}
-              initialSubcategory={selected}
               syncPath={`/c/${group.id}`}
               emptyTitle={`No ${group.label.toLowerCase()} listed yet`}
               emptyText="Nothing in this category has been added to the guide."

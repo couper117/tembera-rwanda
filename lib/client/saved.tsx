@@ -64,25 +64,24 @@ export function SavedProvider({
 
   const toggle = useCallback(
     (id: string) => {
-      setIds((current) => {
-        const next = current.includes(id)
-          ? current.filter((x) => x !== id)
-          : [id, ...current];
-        if (authed) {
-          startTransition(() => {
-            void toggleSaveAction(id);
-          });
-        } else {
-          try {
-            window.localStorage.setItem(KEY, JSON.stringify(next));
-          } catch {
-            // ignore
-          }
+      // Compute the next list and persist as a side effect of the *event*, not
+      // inside the state updater — running a server action / startTransition
+      // during React's render phase is illegal and drops the write.
+      const next = ids.includes(id) ? ids.filter((x) => x !== id) : [id, ...ids];
+      setIds(next);
+      if (authed) {
+        startTransition(() => {
+          void toggleSaveAction(id);
+        });
+      } else {
+        try {
+          window.localStorage.setItem(KEY, JSON.stringify(next));
+        } catch {
+          // ignore
         }
-        return next;
-      });
+      }
     },
-    [authed],
+    [ids, authed],
   );
 
   const clear = useCallback(() => {
