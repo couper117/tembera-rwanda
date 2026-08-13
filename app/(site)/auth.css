@@ -2,10 +2,142 @@
    buttons and notices reuse the app's existing components (.t-field, .t-btn,
    .t-notice…) so nothing collides with app/components.css. */
 
-.t-auth {
+.t-auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-bg);
+}
+
+.t-auth-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: calc(100vh - var(--t-header-h));
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: var(--t-4);
+  gap: var(--t-6);
+  align-items: center;
+}
+
+@media (min-width: 860px) {
+  .t-auth-container {
+    grid-template-columns: 1.15fr 1fr;
+    padding: var(--t-8) var(--t-6) var(--t-10);
+    gap: var(--t-10);
+  }
+}
+
+/* Minimalist Editorial Hero Panel */
+.t-auth-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 520px;
+  border-radius: var(--t-r-xl, 24px);
+  overflow: hidden;
+  padding: var(--t-10) var(--t-8);
+  background-image: url("/assets/images/rwanda_travel_hero.jpg");
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--t-border);
+}
+
+@media (max-width: 859px) {
+  .t-auth-hero {
+    display: none;
+  }
+}
+
+.t-auth-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    rgba(15, 24, 20, 0.94) 0%,
+    rgba(15, 24, 20, 0.78) 55%,
+    rgba(15, 24, 20, 0.45) 100%
+  );
+}
+
+.t-auth-hero__content {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-4);
+  height: 100%;
+  justify-content: space-between;
+}
+
+.t-auth-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--t-r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: fit-content;
+  color: #ffffff;
+}
+
+.t-auth-hero__title {
+  font-size: 2.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: var(--t-3) 0 0 0;
+  color: #ffffff;
+}
+
+.t-auth-hero__desc {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0;
+  max-width: 440px;
+}
+
+.t-auth-hero__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--t-4);
+  margin-top: auto;
+  padding-top: var(--t-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.t-auth-hero__stat-val {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.t-auth-hero__stat-lbl {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.68);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.t-auth-form-wrapper {
   display: flex;
   justify-content: center;
-  padding: var(--t-6, 24px) var(--t-4, 16px) 96px;
+  width: 100%;
 }
 
 .t-authcard {
@@ -13,48 +145,99 @@
   max-width: 420px;
   display: flex;
   flex-direction: column;
-  gap: var(--t-4, 16px);
-  background: var(--t-surface, #fff);
-  border: 1px solid var(--t-border, #e6e6e6);
-  border-radius: var(--t-r-lg, 18px);
-  padding: var(--t-6, 24px);
-  box-shadow: var(--t-shadow-card, 0 8px 30px rgba(0, 0, 0, 0.05));
+  gap: var(--t-5, 20px);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-xl, 24px);
+  padding: var(--t-8);
+  box-shadow: var(--t-shadow-raised);
+  transition: border-color var(--t-base) var(--t-ease);
+}
+
+.t-authcard__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+}
+
+.t-authcard__brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent);
+  margin-bottom: var(--t-1);
 }
 
 .t-authcard__title {
-  font-size: var(--t-text-h2, 22px);
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   margin: 0;
+  color: var(--t-ink);
 }
 
 .t-authcard__sub {
   margin: 0;
-  color: var(--t-ink-2, #667);
-  font-size: var(--t-text-small, 14px);
+  color: var(--t-ink-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
-.t-authcard__foot {
-  margin: var(--t-1, 4px) 0 0;
-  font-size: var(--t-text-small, 14px);
-  color: var(--t-ink-2, #667);
+.t-authcard__divider {
+  display: flex;
+  align-items: center;
   text-align: center;
-}
-
-.t-authcard__foot a {
-  color: var(--t-accent, #11694a);
+  margin: var(--t-1) 0;
+  color: var(--t-ink-3);
+  font-size: 12px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* A label stacked above a field (login/register). */
+.t-authcard__divider::before,
+.t-authcard__divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-authcard__divider span {
+  padding: 0 var(--t-3);
+}
+
+/* Fields with focus ring micro-interactions */
 .t-authfield {
   display: flex;
   flex-direction: column;
-  gap: var(--t-2, 6px);
+  gap: 6px;
+}
+
+.t-authfield .t-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--t-ink);
+  letter-spacing: -0.01em;
+}
+
+.t-authfield .t-field {
+  border-radius: var(--t-r-md);
+  border: 1.5px solid var(--t-border);
+  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-fast) var(--t-ease);
+}
+
+.t-authfield .t-field:focus-within {
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 3px var(--t-accent-soft);
 }
 
 .t-authfield__hint {
   font-size: 12px;
-  color: var(--t-ink-3, #889);
+  color: var(--t-ink-3);
 }
 
 /* Reviews */

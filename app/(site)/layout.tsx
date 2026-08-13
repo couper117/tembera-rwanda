@@ -12,6 +12,7 @@ import { CatalogMetaProvider } from "@/lib/client/catalogMeta";
 import { CategoryProvider } from "@/lib/client/categories";
 import { LocationProvider } from "@/lib/client/location";
 import { SavedProvider } from "@/lib/client/saved";
+import { ThemeProvider } from "@/lib/client/theme";
 import { VisitedProvider } from "@/lib/client/visited";
 
 /**
@@ -47,31 +48,33 @@ export default async function AppLayout({
     : null;
 
   return (
-    <CategoryProvider categories={categories}>
-      <CatalogMetaProvider summaries={summaries}>
-        <LocationProvider>
-          <AccountProvider
-            authed={authed}
-            isAdmin={user?.role === "ADMIN"}
-            initialAccount={account}
-          >
-            <SavedProvider authed={authed} initialIds={savedIds}>
-              <VisitedProvider authed={authed} initialVisits={visits}>
-                <AppShell>
-                  {/* CategoryNav reads useSearchParams, which needs a Suspense
-                      boundary so it doesn't force every page to render
-                      dynamically. */}
-                  <Suspense fallback={null}>
-                    <DesktopRail />
-                  </Suspense>
-                  {children}
-                  <BottomNav />
-                </AppShell>
-              </VisitedProvider>
-            </SavedProvider>
-          </AccountProvider>
-        </LocationProvider>
-      </CatalogMetaProvider>
-    </CategoryProvider>
+    <ThemeProvider>
+      <CategoryProvider categories={categories}>
+        <CatalogMetaProvider summaries={summaries}>
+          <LocationProvider>
+            <AccountProvider
+              authed={authed}
+              isAdmin={user?.role === "ADMIN"}
+              initialAccount={account}
+            >
+              <SavedProvider authed={authed} initialIds={savedIds}>
+                <VisitedProvider authed={authed} initialVisits={visits}>
+                  <AppShell>
+                    {/* CategoryNav reads useSearchParams, which needs a Suspense
+                        boundary so it doesn't force every page to render
+                        dynamically. */}
+                    <Suspense fallback={null}>
+                      <DesktopRail />
+                    </Suspense>
+                    {children}
+                    <BottomNav />
+                  </AppShell>
+                </VisitedProvider>
+              </SavedProvider>
+            </AccountProvider>
+          </LocationProvider>
+        </CatalogMetaProvider>
+      </CategoryProvider>
+    </ThemeProvider>
   );
 }

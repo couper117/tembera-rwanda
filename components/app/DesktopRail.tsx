@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
@@ -32,12 +33,21 @@ const SECONDARY: { href: string; label: string; icon: IconName }[] = [
 const MAX_ROWS = 12;
 
 export default function DesktopRail() {
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const categories = useCategories();
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { authed, isAdmin } = useAccount();
   const { collapsed, toggle } = useRail();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (pathname === "/login" || pathname === "/register") {
+    return null;
+  }
 
   const counts = new Map(summaries.map((s) => [s.id, s.total]));
   const isActive = (href: string) =>
@@ -161,7 +171,7 @@ export default function DesktopRail() {
                 />
               </span>
               <span className="t-railrow__label">{item.label}</span>
-              {item.href === "/saved" && ready && ids.length > 0 && (
+              {mounted && item.href === "/saved" && ready && ids.length > 0 && (
                 <span className="t-railrow__count">{ids.length}</span>
               )}
             </Link>

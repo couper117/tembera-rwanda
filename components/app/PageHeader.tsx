@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import Icon from "@/components/Icon";
+import { useTheme } from "@/lib/client/theme";
 import { useScrolled } from "./AppHeader";
 
 interface Props {
@@ -23,6 +24,7 @@ export default function PageHeader({
 }: Props) {
   const router = useRouter();
   const scrolled = useScrolled(24);
+  const { theme, toggleTheme } = useTheme();
   const showTitle = revealTitleOnScroll ? scrolled : true;
 
   return (
@@ -52,7 +54,18 @@ export default function PageHeader({
         {title}
       </h1>
 
-      {actions && <div className="t-header__actions">{actions}</div>}
+      <div className="t-header__actions">
+        <button
+          type="button"
+          className="t-iconbtn"
+          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          title={theme === "dark" ? "Light mode" : "Dark mode"}
+          onClick={toggleTheme}
+        >
+          <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
+        </button>
+        {actions}
+      </div>
     </header>
   );
 }

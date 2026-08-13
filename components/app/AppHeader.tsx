@@ -8,6 +8,7 @@ import BottomSheet from "@/components/ui/BottomSheet";
 import { useAccount } from "@/lib/client/account";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
+import { useTheme } from "@/lib/client/theme";
 import CategoryNav from "./CategoryNav";
 import CityPicker from "./CityPicker";
 
@@ -25,6 +26,7 @@ export default function AppHeader() {
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { authed, isAdmin } = useAccount();
+  const { theme, toggleTheme } = useTheme();
 
   const savedCount = ready ? ids.length : 0;
 
@@ -52,18 +54,31 @@ export default function AppHeader() {
         </Link>
 
         <div className="t-header__actions">
-          <CityPicker />
+          <span className="t-show-desktop">
+            <CityPicker />
+          </span>
+
+          <button
+            type="button"
+            className="t-iconbtn t-show-desktop"
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+            onClick={toggleTheme}
+          >
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
+          </button>
 
           <Link href="/search" className="t-iconbtn t-hide-desktop" aria-label="Search">
-            <Icon name="search" size={21} />
+            <Icon name="search" size={20} />
           </Link>
 
           <button
             type="button"
             className="t-iconbtn"
-            aria-label="Browse categories"
+            aria-label="Browse categories and location"
             aria-haspopup="dialog"
             onClick={() => setCategoriesOpen(true)}
+            title="Categories & location"
           >
             <Icon name="grid" size={20} />
           </button>
@@ -95,7 +110,7 @@ export default function AppHeader() {
 
           {authed ? (
             <Link href="/profile" className="t-iconbtn" aria-label="Profile">
-              <Icon name="user" size={21} />
+              <Icon name="user" size={20} />
             </Link>
           ) : (
             <Link href="/login" className="t-btn t-btn--secondary t-btn--sm">
@@ -112,6 +127,10 @@ export default function AppHeader() {
         title="Browse categories"
         onClose={() => setCategoriesOpen(false)}
       >
+        <div style={{ marginBottom: "var(--t-4)" }}>
+          <div className="t-label" style={{ marginBottom: "var(--t-2)" }}>Location</div>
+          <CityPicker />
+        </div>
         <CategoryNav summaries={summaries} />
       </BottomSheet>
     </>

@@ -9,6 +9,7 @@ import { useAccount } from "@/lib/client/account";
 import { useLocation } from "@/lib/client/location";
 import { clearRecentSearches, readRecentSearches } from "@/lib/client/recentSearches";
 import { useSaved } from "@/lib/client/saved";
+import { useTheme } from "@/lib/client/theme";
 import { useVisited } from "@/lib/client/visited";
 
 /**
@@ -22,6 +23,7 @@ export default function SettingsScreen() {
   const { ids, clear, ready } = useSaved();
   const { visits, clear: clearVisited } = useVisited();
   const { account, authed } = useAccount();
+  const { theme, toggleTheme } = useTheme();
   const [recentCount, setRecentCount] = useState(0);
   const visitedCount = visits.length;
 
@@ -84,6 +86,43 @@ export default function SettingsScreen() {
                   </div>
                 </>
               )}
+            </div>
+          </section>
+
+          {/* --------------------------------------------------- theme -- */}
+          <section className="t-section">
+            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
+              Appearance
+            </h2>
+            <div className="t-card" style={{ padding: "var(--t-3) var(--t-4)" }}>
+              <div className="t-inline t-between">
+                <div>
+                  <span className="t-fact__value" style={{ display: "block" }}>
+                    Theme
+                  </span>
+                  <span className="t-small t-muted">
+                    Currently using {theme === "dark" ? "Dark" : "Light"} mode
+                  </span>
+                </div>
+                <div className="t-inline" style={{ gap: "var(--t-2)" }}>
+                  <button
+                    type="button"
+                    className={`t-btn t-btn--sm ${theme === "light" ? "t-btn--primary" : "t-btn--secondary"}`}
+                    onClick={() => theme !== "light" && toggleTheme()}
+                  >
+                    <Icon name="sun" size={16} />
+                    Light
+                  </button>
+                  <button
+                    type="button"
+                    className={`t-btn t-btn--sm ${theme === "dark" ? "t-btn--primary" : "t-btn--secondary"}`}
+                    onClick={() => theme !== "dark" && toggleTheme()}
+                  >
+                    <Icon name="moon" size={16} />
+                    Dark
+                  </button>
+                </div>
+              </div>
             </div>
           </section>
 

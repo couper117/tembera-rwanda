@@ -12,6 +12,10 @@ export default function BottomNav() {
   const active = activeNavHref(pathname);
   const { ids, ready } = useSaved();
 
+  if (pathname === "/login" || pathname === "/register") {
+    return null;
+  }
+
   return (
     <nav className="t-bottomnav" aria-label="Primary">
       {NAV_ITEMS.map((item) => {
