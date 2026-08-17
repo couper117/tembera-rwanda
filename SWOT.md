@@ -3,17 +3,34 @@
 **Subject:** Tembera, a tourism discovery platform and directory for Rwanda
 **Stack:** Next.js 15.5.23 (App Router) · React 19 · TypeScript (strict) · Prisma · PostgreSQL
 **Scale assessed:** ~114 source files + 5 test files, ~18,600 lines, 495 places, 16 categories, 30 districts
-**Baseline:** `f020607` "Tembera v2" plus uncommitted hardening work
-**Date:** 17 August 2026 — second assessment (first was 16 August)
+**Baseline:** `d2b3e92` on branch `security-hardening`, pushed to origin
+**Date:** 17 August 2026 — third assessment (first two were 16 and 17 August)
 
-> **What changed since the first assessment.** Fourteen findings were closed:
-> rate limiting, server-side session expiry, default passwords, the committed
-> Maps key, the privacy gap, booking validation, the missing test suite, the
-> missing CI, and the documentation drift. Two findings turned out to be
-> already fixed and wrongly reported the first time (the soft-404 and the
-> missing dark theme). Five new weaknesses surfaced — four of them created or
-> revealed *by* the fix work, which is normal and worth naming rather than
-> hiding.
+> **Where this stands.** Eighteen findings have now been closed across two
+> rounds. Round one: rate limiting, server-side session expiry, default
+> passwords, the committed Maps key, the privacy gap, booking validation, the
+> test suite, CI, and the documentation drift. Round two: the work is committed
+> and pushed, sessions became revocable, and the auth code gained real test
+> coverage (94 tests). Two findings from the first pass turned out to be
+> already fixed and wrongly reported (the soft-404, the missing dark theme).
+>
+> **Nine weaknesses remain, all deliberately deferred**, and one threat is
+> still live and still costs money: the old Maps key has not been revoked.
+> That is now the only urgent item, and it cannot be closed from the codebase.
+
+---
+
+## Verified state
+
+| Check | Result |
+|---|---|
+| Unit tests | 94 pass, 0 fail |
+| Auth e2e (`npm run test:auth`) | 7 checks pass — revocation and rate limiting |
+| Typecheck | clean |
+| Lint | clean |
+| Production build | succeeds, 59/59 pages |
+| `npm audit` | 0 critical, 3 high (deferred by decision) |
+| Version control | 2 commits on `security-hardening`, pushed, tree clean |
 
 ---
 
@@ -25,49 +42,50 @@
 
 **S3 — Authorization is applied consistently.** Every admin page and every admin server action calls `requireAdmin()`. There is no mutation path that relies on the UI hiding a button.
 
-**S4 — Authentication is now genuinely defended, not just correct.** *(strengthened)* On top of bcrypt, `timingSafeEqual` cookie verification and the dummy-hash compare that stops user enumeration, sign-in is now rate limited per address **and** per account, on both the public and admin logins — and expiry is enforced server-side from the timestamp in the cookie payload rather than trusting the browser to honour `maxAge`. The limiter was verified against the real admin login in a browser: blocked from the 6th attempt.
+**S4 — Authentication is genuinely defended, not just correct.** On top of bcrypt, `timingSafeEqual` cookie verification and the dummy-hash compare that stops user enumeration, sign-in is rate limited per address **and** per account on both logins, and expiry is enforced server-side rather than trusting the browser to honour `maxAge`.
 
-**S5 — The pure domain layer is now actually tested.** *(strengthened)* `engine.ts`, `search.ts` and `geo.ts` took their data as arguments all along; 78 unit tests now hold that behaviour in place, including the honesty rules — that an unrated place is excluded from "Top rated" rather than ranked last, that an empty subcategory reports zero instead of disappearing, and that sub-kilometre district distances are suppressed.
+**S5 — Sessions are revocable despite being stateless.** *(new)* `User.tokenVersion` rides in the cookie payload; bumping the column invalidates every cookie already issued, with nothing to delete server-side. Changing a password bumps it and re-issues a cookie for the current browser — so the device that proved it knows the password stays in and a stolen session dies with the password it outlived. Settings also exposes an explicit "sign out on all devices". Verified end to end: a replayed pre-change cookie is refused.
 
-**S6 — Honesty is engineered into the UI, and no longer contradicted.** Ratings render only where real; district coordinates are marked `~`; empty categories say "Coming soon". The About page's stale claim that "Tembera has no public accounts" — false since accounts became database-backed — has been corrected.
+**S6 — The security-critical code is now the tested code.** *(new)* The session token's format and cryptography live in `lib/session-token.ts`, pure and Next-free, so the tests cover what actually runs: payload forgery, a rotated secret, expiry, future-dated cookies, the pre-upgrade cookie format, and the `timingSafeEqual` length trap that would otherwise throw a 500 rather than reject. `npm run test:auth` makes the two browser-level checks repeatable instead of remembered.
 
-**S7 — Real product depth.** Search, map, nearby-ranking, saved places, visit history, reviews, bookings and a full CMS, with per-account state syncing across devices and a localStorage fallback for guests.
+**S7 — The pure domain layer is tested.** `engine.ts`, `search.ts` and `geo.ts` took their data as arguments all along; the unit tests now hold that behaviour in place, including the honesty rules — that an unrated place is excluded from "Top rated" rather than ranked last, that an empty subcategory reports zero instead of disappearing, and that sub-kilometre district distances are suppressed.
 
-**S8 — Data-protection posture is ahead of most products this size.** *(new)* A privacy policy that states what is collected and why, one-click export of everything held about a user, and account deletion that unlinks bookings rather than destroying them — because those are commercial records. Most projects at this stage have none of it.
+**S8 — The work is in version control with a pipeline behind it.** *(new)* Two commits on a branch, pushed, with CI running lint, typecheck, tests, a seeded build against real Postgres, an audit, and a scan for committed API keys.
 
-**S9 — There is now a defined quality gate.** *(new)* A CI workflow runs lint, typecheck, unit tests, a seeded build against a real Postgres, an audit, and a scan for committed API keys — on every push and weekly, so dependency rot surfaces without anyone remembering to look.
+**S9 — Honesty is engineered into the UI, and no longer contradicted.** Ratings render only where real; district coordinates are marked `~`; empty categories say "Coming soon". The About page's stale claim that "Tembera has no public accounts" — false since accounts became database-backed — has been corrected.
 
-**S10 — Documentation is good and, as of now, accurate.** `HANDOFF.md` records not just what exists but what was tried and rejected. The stale sections have been corrected.
+**S10 — Real product depth.** Search, map, nearby-ranking, saved places, visit history, reviews, bookings and a full CMS, with per-account state syncing across devices and a localStorage fallback for guests.
+
+**S11 — Data-protection posture is ahead of most products this size.** A privacy policy that states what is collected and why, one-click export of everything held about a user, and account deletion that unlinks bookings rather than destroying them — because those are commercial records. Most projects at this stage have none of it.
+
+**S12 — Documentation is good and, as of now, accurate.** `HANDOFF.md` records not just what exists but what was tried and rejected, including the traps that cost real debugging time. The stale sections have been corrected.
 
 ---
 
 ## Weaknesses
 
-**W1 — None of this work is committed.** *(new, most urgent)* Every change described above sits in the working tree of a repository whose last commit is still `f020607`. One careless `git checkout` or `git clean` destroys it. It is also why W2 exists.
+> Four weaknesses from the second assessment are now closed: the work is
+> committed and pushed (W1), CI has been triggered (W2), the auth code has real
+> coverage (W3), and sessions are revocable (W5). The nine below remain, all
+> deferred on purpose.
 
-**W2 — The CI pipeline has never actually run.** *(new)* The workflow is written and its steps have all been run by hand, but GitHub has never executed it. Until the branch is pushed, it is an untested script, not a safety net.
+**W1 — The data is still demo-grade, and the product is the data.** *(now unambiguously the largest)* ~200 real Rwandan institutions with district-level coordinates only, no asserted phone numbers or opening hours, and several dead image URLs. Two rounds of hardening did not touch it, and it is what determines whether the product is worth using. Everything else on this list is smaller than this one.
 
-**W3 — Test coverage is narrow, and thinnest exactly where the new risk is.** *(new)* The 78 tests cover pure logic and the rate limiter's counting. Zero tests cover server actions: login, registration, the admin mutations, booking validation, or account deletion. The security wiring was verified once, manually, in a browser — that check is not repeatable and will not run in CI. A refactor that silently disconnects the limiter would pass every test.
+**W2 — There is no email capability anywhere in the system.** No provider is configured, so there is no password reset (a user who forgets is locked out until someone runs a CLI script), no email verification (anyone can register against an address they do not own), and no booking confirmation. One decision — pick a provider — unblocks all three.
 
-**W4 — There is no email capability anywhere in the system.** *(new)* No provider is configured, so there is no password reset (a user who forgets is locked out until someone runs a CLI script), no email verification (anyone can register against an address they do not own), and no booking confirmation. This now blocks more than it did, because accounts are real.
+**W3 — There is still no deployment path.** CI stops at a successful build. No Dockerfile, no hosting configuration, no environment provisioning. Shipping remains a manual act that has never been rehearsed.
 
-**W5 — Sessions cannot be revoked.** *(new)* Changing a password does not sign out other sessions, and there is no way to force a logout. The cookie is stateless and self-validating, so a stolen one stays valid for its full 30 days. Fixing this needs either a session table or a per-user token version column.
+**W4 — The rate limiter's memory is per-process and its IP key is spoofable.** Counters reset on deploy, and behind more than one instance the effective limit multiplies by the instance count. The address is read from `x-forwarded-for`, which the client supplies. The per-account limit is the half that actually protects a specific password; the per-address half is a speed bump. All documented in `lib/rate-limit-core.ts`, but it is a real ceiling.
 
-**W6 — The rate limiter's memory is per-process and its IP key is spoofable.** Counters reset on deploy, and behind more than one instance the effective limit multiplies by the instance count. The address is read from `x-forwarded-for`, which the client supplies. The per-account limit is the half that actually protects a specific password; the per-address half is a speed bump. All documented in `lib/rate-limit-core.ts`, but it is a real ceiling.
+**W5 — Three high advisories remain, by decision.** `postcss` and `sharp`, both inside Next's own transitive tree, clearable only by upgrading to Next 16. The critical one was cleared by moving to 15.5.23. Exploitability here is low — the postcss issues are build-time and process only your own CSS, and the sharp ones need a malicious image through the optimizer, which is limited to six whitelisted CDN hosts. Deferred deliberately; CI gates on `critical` so it does not sit permanently red.
 
-**W7 — The data is still demo-grade, and the product is the data.** *(unchanged — now the largest weakness)* ~200 real Rwandan institutions with district-level coordinates only, no asserted phone numbers or opening hours, and several dead image URLs. Nothing in the security work touched this, and it is what determines whether the product is worth using.
+**W6 — Booking is still lead capture.** Validation is now sound — guest count capped, dates bounded, price derived server-side — but there is no payment, no availability check and no confirmation.
 
-**W8 — Three high advisories remain, by decision.** `postcss` and `sharp`, both inside Next's own transitive tree, clearable only by upgrading to Next 16. The critical one was cleared by moving to 15.5.23. Exploitability here is low — the postcss issues are build-time and process only your own CSS, and the sharp ones need a malicious image through the optimizer, which is limited to six whitelisted CDN hosts. Deferred deliberately; CI gates on `critical` so it does not sit permanently red.
+**W7 — Admins still cannot upload an image.** Photos are remote URLs from six whitelisted CDNs plus legacy `data:` URIs.
 
-**W9 — Every query still loads the entire catalog.** `getPlace(id)` scans all 495 rows in memory to find one, so the declared database indexes go unused. Correct call at this size; a rewrite at 50,000.
+**W8 — Every query still loads the entire catalog.** `getPlace(id)` scans all 495 rows in memory to find one, so the declared database indexes go unused. Correct call at this size; a rewrite at 50,000.
 
-**W10 — There is still no deployment path.** CI stops at a successful build. No Dockerfile, no hosting configuration, no environment provisioning. Shipping remains a manual act that has never been rehearsed.
-
-**W11 — Booking is still lead capture.** Validation is now sound — guest count capped, dates bounded, price derived server-side — but there is no payment, no availability check and no confirmation.
-
-**W12 — Admins still cannot upload an image.** Photos are remote URLs from six whitelisted CDNs plus legacy `data:` URIs.
-
-**W13 — The local environment is still fragile.** The project sits in a OneDrive-synced folder, which is the documented cause of `prisma generate` failing with `EPERM`. Separately, three dev servers were found running simultaneously against one `.next` directory during this session — that, not any code change, was the cause of a mid-session build failure.
+**W9 — The local environment is still fragile.** The project sits in a OneDrive-synced folder, the documented cause of `prisma generate` failing with `EPERM`. Separately, three dev servers were found running simultaneously against one `.next` directory during this work — that, not any code change, caused a build failure that looked exactly like a code regression.
 
 ---
 
@@ -117,17 +135,16 @@
 
 | Cross-read | Action |
 |---|---|
-| **W1 × W2 × T7** — nothing committed, CI unproven, one maintainer | Commit and push today. It protects the work, proves the pipeline, and is the precondition for everything else on this list. Ten minutes. |
-| **S4 × W3** — security implemented, security untested | The manual browser check that confirmed rate limiting must become a repeatable test. Right now the strongest new code has the weakest regression protection. |
-| **S8 × O2** — real data rights, institutions holding real data | Lead the partnership conversation with the compliance posture. It is the difference between a student project and a system an institution can defend having chosen. |
-| **W4 × W5** — no email, no revocation | Both resolve with one decision: add an email provider. It unlocks password reset, verification, and booking confirmation, and gives session revocation somewhere to send the notice. |
-| **T1** — a live key in git history | Revoke it. No amount of code closes this one, and it is billing to a real project today. |
-| **W7 × T6** — unverified data, and data that decays | The same fix serves both: a partnership for the initial verification (O2), and user corrections for the ongoing drift (O6). |
+| **T1** — a live key in git history | Revoke it. No amount of code closes this one, it is billing to a real project today, and it is now the only urgent item on the board. |
+| **W1 × T6** — unverified data, and data that decays | The same fix serves both: a partnership for the initial verification (O2), and user corrections for the ongoing drift (O6). This is now the centre of gravity of the whole project. |
+| **S5 × S6 × O2** — revocable sessions, tested security, institutions holding data | The security work's real return is not the vulnerabilities closed; it is that a partnership conversation now survives diligence. Lead with it. |
+| **W2 × T5** — no email, and a privacy contact nobody reads | Both are the same missing capability. An email provider gives you password reset, address verification, booking confirmation, and a reachable privacy contact. |
+| **W3 × T7** — no deployment path, one maintainer | Rehearse a deploy before it is urgent. A first deploy performed under pressure, by the only person who knows the system, is how outages start. |
 
 ### Priority actions
 
-1. **Today** — commit and push (W1, W2). Revoke the Maps key in the Google Cloud console and restrict the live one by referrer (T1, T3). Point the privacy contact at a real mailbox (T5).
-2. **This week** — add tests around the auth server actions so the rate limiting and session expiry are protected by CI rather than by memory (W3). Move the project out of OneDrive (W13).
-3. **This month** — configure an email provider, then build password reset and email verification on top of it (W4, W5).
-4. **This quarter** — the data verification partnership (O2, W7). It is the highest-value work remaining and the only one that changes whether the product is genuinely useful.
-5. **Watch, do not act** — the in-memory catalog; revisit at roughly 5,000 listings (W9, T8). Next 16; revisit after launch (W8).
+1. **Today** — revoke the Maps key in the Google Cloud console and restrict the live one by referrer (T1, T3). Point the privacy contact at a real mailbox (T5). These are the last two items that only the owner can do.
+2. **Before real users** — confirm the CI run passed, then merge the branch. Note that the session format change signs every existing user out once, by design.
+3. **This month** — configure an email provider, then build password reset and email verification on it (W2). Move the project out of OneDrive (W9).
+4. **This quarter** — the data verification partnership (O2, W1). The highest-value work remaining by a wide margin, and the only one that changes whether the product is genuinely useful to anyone.
+5. **Watch, do not act** — the in-memory catalog; revisit at roughly 5,000 listings (W8, T8). Next 16; revisit after launch (W5).

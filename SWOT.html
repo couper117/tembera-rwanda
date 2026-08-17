@@ -137,6 +137,19 @@
 
   .note li b { color: var(--ink); }
 
+  .alert {
+    background: var(--danger-wash);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .alert h2 { font-size: 1.02rem; font-weight: 700; color: var(--danger); }
+  .alert p { font-size: 0.98rem; color: var(--ink-2); }
+
   /* --------------------------------------------------------- scoreline */
 
   .scoreline {
@@ -164,12 +177,7 @@
   }
 
   .score .lbl { font-size: 0.82rem; color: var(--muted); }
-
-  .score .move {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--hue);
-  }
+  .score .move { font-size: 0.78rem; font-weight: 700; color: var(--hue); }
 
   /* ------------------------------------------------------------ boxes */
 
@@ -229,8 +237,8 @@
   }
 
   .tag-fixed { color: var(--good); }
-  .tag-new { color: var(--bad); }
   .tag-now { color: var(--danger); }
+  .tag-wait { color: var(--muted); }
 
   .box-good { --hue: var(--good); --wash: var(--good-wash); }
   .box-bad { --hue: var(--bad); --wash: var(--bad-wash); }
@@ -259,6 +267,15 @@
     left: 0;
     color: var(--good);
     font-weight: 700;
+  }
+
+  .round {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.5rem;
   }
 
   /* ------------------------------------------------------------ to do */
@@ -314,33 +331,18 @@
 
   <header class="top">
     <h1>Tembera: the good, the bad, and what to fix</h1>
-    <p class="sub">Second review of your Rwanda tourism website, after the fixes. 17 August 2026.</p>
-
-    <div class="note">
-      <h2>What changed since the first review</h2>
-      <p>
-        Most of the problems from last time are fixed. But fixing things always
-        uncovers new things — that is normal, and this review names them rather
-        than pretending everything is done.
-      </p>
-      <ul>
-        <li><b>14 problems fixed</b> — security, privacy, tests, and more</li>
-        <li><b>2 were already fine</b> — the first review got those wrong</li>
-        <li><b>5 new problems found</b> — mostly uncovered by the fixing itself</li>
-        <li><b>1 thing still needs you</b> — see the red box at the bottom</li>
-      </ul>
-    </div>
+    <p class="sub">Third review, after two rounds of fixes. 17 August 2026.</p>
 
     <div class="scoreline">
       <div class="score" style="--hue: var(--good)">
-        <span class="num">10</span>
+        <span class="num">12</span>
         <span class="lbl">Strengths</span>
-        <span class="move">↑ from 9</span>
+        <span class="move">↑ from 10</span>
       </div>
       <div class="score" style="--hue: var(--bad)">
-        <span class="num">13</span>
+        <span class="num">9</span>
         <span class="lbl">Weaknesses</span>
-        <span class="move">↑ from 12</span>
+        <span class="move">↓ from 13</span>
       </div>
       <div class="score" style="--hue: var(--chance)">
         <span class="num">9</span>
@@ -354,13 +356,15 @@
       </div>
     </div>
 
-    <div class="note">
-      <h2>Why the weakness count went up even though you fixed things</h2>
+    <div class="alert">
+      <h2>One thing still needs you, and it costs money</h2>
       <p>
-        Because the old problems were hiding the new ones. You cannot notice
-        that passwords can't be reset until passwords are properly protected.
-        The list is longer, but the problems on it are smaller and further from
-        the front door.
+        Your old Google Maps key is <b>still active</b>. It was removed from your
+        files, but it can still be read in your project's history — so deleting
+        it is not the same as cancelling it. Until you cancel it in the Google
+        Cloud console, anyone with a copy of your code has a working key that
+        bills to your account. Nothing in the code can close this. It is now the
+        only urgent item left on the whole list.
       </p>
     </div>
   </header>
@@ -370,9 +374,10 @@
     <div class="box-head">
       <p class="letter">Fixed</p>
       <h2>What got solved</h2>
-      <p class="plain">These were on the last list. They are done and checked.</p>
+      <p class="plain">18 problems closed across two rounds of work. All checked, not assumed.</p>
     </div>
 
+    <p class="round">Round one — security and privacy</p>
     <ul class="fixed-list">
       <li>Password guessing is now blocked</li>
       <li>Stolen login cookies now expire</li>
@@ -389,6 +394,14 @@
       <li>Critical security warning cleared</li>
       <li>Your notes brought up to date</li>
     </ul>
+
+    <p class="round">Round two — saving the work, and locking sessions</p>
+    <ul class="fixed-list">
+      <li>All work saved to git and uploaded</li>
+      <li>The automatic checking has now run</li>
+      <li>You can now force a logout everywhere</li>
+      <li>Login code is properly tested — 94 tests</li>
+    </ul>
   </section>
 
   <!-- ============================================== STRENGTHS -->
@@ -401,32 +414,48 @@
 
     <ul class="points">
       <li>
-        <b>Your login is now properly defended<span class="tag tag-fixed">Improved</span></b>
-        <span>Someone trying passwords gets blocked after 5 attempts — I tested this in a real browser and it works. Stolen login cookies now expire properly, which they didn't before.</span>
+        <b>You can now kick out a stolen login<span class="tag tag-fixed">New</span></b>
+        <span>Before, if someone stole your login, changing your password did nothing — they stayed in for 30 days. Now changing your password signs out every other device instantly, and there's a "sign out everywhere" button for a lost phone.</span>
       </li>
       <li>
-        <b>Your important logic is now tested<span class="tag tag-fixed">Improved</span></b>
-        <span>78 automatic tests check that search, distances and rankings behave correctly. They run in about one second, so there's no excuse not to run them.</span>
+        <b>Password guessing is blocked</b>
+        <span>After 5 wrong tries on an account, further attempts are refused for 15 minutes — on both the normal login and the admin one.</span>
       </li>
       <li>
-        <b>You handle personal data better than most<span class="tag tag-fixed">New</span></b>
-        <span>A real privacy policy, users can download everything you hold on them, and they can delete their account. Most projects this size have none of this.</span>
+        <b>Login cookies cannot be forged or edited<span class="tag tag-fixed">New</span></b>
+        <span>Now actually tested, unlike last time: changing the user number in a cookie, reusing an expired one, or backdating one to extend its life are all refused.</span>
+      </li>
+      <li>
+        <b>94 automatic tests</b>
+        <span>Covering search, distances, rankings, the password blocking and the login cookie. They run in about one second.</span>
+      </li>
+      <li>
+        <b>Your project notes are accurate</b>
+        <span>Your HANDOFF file explains not just what you built but what you tried and rejected, and the traps that already cost you time. It's now up to date again.</span>
+      </li>
+      <li>
+        <b>Your work is safe and backed up<span class="tag tag-fixed">New</span></b>
+        <span>Everything is saved in git and uploaded to GitHub on its own branch, so your main version is untouched until you're ready.</span>
+      </li>
+      <li>
+        <b>You handle personal data better than most</b>
+        <span>A real privacy policy, users can download everything you hold, and they can delete their account.</span>
       </li>
       <li>
         <b>You used a good, modern setup</b>
-        <span>Next.js, TypeScript and PostgreSQL are what real companies use. This is not a toy project.</span>
+        <span>Next.js, TypeScript and PostgreSQL — what real companies use.</span>
       </li>
       <li>
         <b>Everything is stored in the database</b>
-        <span>You can add or change a place from the admin page without touching any code.</span>
+        <span>You can add or change a place from the admin page without touching code.</span>
       </li>
       <li>
         <b>The admin area is properly locked</b>
-        <span>Every admin page and every admin button checks "are you an admin?" first. Nobody can sneak in by guessing a web address.</span>
+        <span>Every admin page and button checks "are you an admin?" first.</span>
       </li>
       <li>
         <b>The site does not lie to users</b>
-        <span>No invented ratings, no fake listings in empty categories. I also fixed the About page, which was still claiming the site has no user accounts — that stopped being true a while ago.</span>
+        <span>No invented ratings, no fake listings in empty categories.</span>
       </li>
       <li>
         <b>It is a real, full product</b>
@@ -440,61 +469,45 @@
     <div class="box-head">
       <p class="letter">W</p>
       <h2>Weaknesses</h2>
-      <p class="plain">What still needs work. The big ones are first.</p>
+      <p class="plain">What is left. You chose to leave these for later — that's a reasonable call.</p>
     </div>
 
     <ul class="points">
       <li>
-        <b>None of this work is saved yet<span class="tag tag-now">Do today</span></b>
-        <span>Everything I just did is sitting loose in your project folder, not saved into git. One wrong command and a full day of work is gone. This is the easiest and most urgent thing on the whole list.</span>
-      </li>
-      <li>
-        <b>The automatic checking has never actually run<span class="tag tag-new">New</span></b>
-        <span>I set it up and tested each step by hand, but GitHub has never run it, because the work isn't pushed yet. Until then it's a script nobody has tried.</span>
-      </li>
-      <li>
-        <b>The new security code is barely tested<span class="tag tag-new">New</span></b>
-        <span>The 78 tests cover search and distances, not the login system. I checked the password blocking by hand once, but that check can't repeat itself. If someone later broke it by accident, no test would notice.</span>
-      </li>
-      <li>
-        <b>Your site cannot send email at all<span class="tag tag-new">New</span></b>
-        <span>So there's no "forgot my password" — a user who forgets is stuck until you run a command for them. There's also no way to check an email address is real, and no booking confirmation.</span>
-      </li>
-      <li>
-        <b>You cannot force anyone to log out<span class="tag tag-new">New</span></b>
-        <span>If someone steals a login cookie, changing your password doesn't kick them out. They stay logged in for up to 30 days.</span>
-      </li>
-      <li>
-        <b>The password blocking resets when you restart</b>
-        <span>It's held in memory, so restarting the site clears the counters. Fine for one server, weaker if you ever run several.</span>
-      </li>
-      <li>
         <b>Your place information is still not verified<span class="tag tag-now">Biggest</span></b>
-        <span>Nothing I did touched this. About 200 listings have unconfirmed phone numbers, hours and locations. This is now your single biggest weakness, because it decides whether the site is actually useful to anyone.</span>
+        <span>Nothing in either round of fixes touched this. About 200 listings have unconfirmed phone numbers, opening hours and locations. This is now clearly your biggest weakness — it decides whether the site is genuinely useful to anyone.</span>
       </li>
       <li>
-        <b>Three security warnings remain — by your decision</b>
-        <span>They're inside Next.js itself and need a major upgrade to clear. You chose to wait until after launch, which is reasonable: they're hard to exploit here.</span>
+        <b>Your site cannot send email</b>
+        <span>So there's no "forgot my password" — a user who forgets is stuck until you run a command for them. Also no way to confirm an email is real, and no booking confirmation. One decision fixes all three.</span>
       </li>
       <li>
         <b>There's still no way to actually publish the site</b>
-        <span>The checking stops at "it builds". No hosting setup exists, and going live has never been practised.</span>
+        <span>The checking stops at "it builds". No hosting is set up, and going live has never been practised.</span>
       </li>
       <li>
         <b>Booking still doesn't take payment</b>
-        <span>The form is now properly validated, but there's no payment, no availability check and no confirmation email.</span>
+        <span>Properly validated now, but no payment, no availability check, no confirmation.</span>
       </li>
       <li>
         <b>Admins still can't upload a photo</b>
         <span>Photos have to be web links from six approved sites.</span>
       </li>
       <li>
+        <b>Three security warnings remain — by your decision<span class="tag tag-wait">Deferred</span></b>
+        <span>They're inside Next.js itself and need a major upgrade. You chose to wait until after launch, which is sensible: they're hard to exploit here.</span>
+      </li>
+      <li>
+        <b>The password blocking resets when you restart</b>
+        <span>It's held in memory. Fine for one server, weaker if you ever run several.</span>
+      </li>
+      <li>
         <b>Every page still loads all 495 places</b>
-        <span>Fine today. Only a problem if you reach thousands of places.</span>
+        <span>Fine today. Only a problem if you reach thousands.</span>
       </li>
       <li>
         <b>Your project folder is still in OneDrive</b>
-        <span>It keeps locking files and breaking commands. Also — I found <b>three copies of your site server running at once</b>, which was corrupting your builds and making it look like the code was broken. I stopped them.</span>
+        <span>It keeps locking files and breaking commands.</span>
       </li>
     </ul>
   </section>
@@ -509,8 +522,8 @@
 
     <ul class="points">
       <li>
-        <b>A partnership is now much more realistic<span class="tag tag-fixed">Improved</span></b>
-        <span>This is the real payoff from the security work. If the Rwanda Development Board or a district office checks you out now, they find a privacy policy, protected logins and a test suite — instead of the password <b>changeme123</b> and a leaked Google key. That's the difference between a student project and something an institution can defend choosing.</span>
+        <b>A partnership is now genuinely realistic<span class="tag tag-fixed">Improved</span></b>
+        <span>This is the real payoff from all the security work. If the Rwanda Development Board or a district office checks you out now, they find protected logins, a privacy policy, 94 tests and a proper development process — instead of <b>changeme123</b> and a leaked Google key. That's the difference between a student project and something an institution can defend choosing.</span>
       </li>
       <li>
         <b>Nobody else has built this for Rwanda</b>
@@ -518,7 +531,7 @@
       </li>
       <li>
         <b>You could make money without rebuilding anything</b>
-        <span>Commission on bookings, paid "featured" spots, or a verified badge for businesses. The structure for all three already exists.</span>
+        <span>Commission on bookings, paid "featured" spots, or a verified badge for businesses. All three already have the structure they need.</span>
       </li>
       <li>
         <b>Add Kinyarwanda and French</b>
@@ -526,11 +539,19 @@
       </li>
       <li>
         <b>Make it work without internet</b>
-        <span>Tourists often have no data when they arrive. Your mobile layout is already built for this.</span>
+        <span>Tourists often have no data when they arrive. Your mobile layout is already built for it.</span>
       </li>
       <li>
         <b>Let users add photos and corrections</b>
         <span>Reviews already work. User photos would make your site something competitors can't copy — and users would help keep it accurate for you.</span>
+      </li>
+      <li>
+        <b>The same code could serve another country</b>
+        <span>Nothing in your search and mapping logic is specific to Rwanda — only the data is. A second country would mean loading different places, not rebuilding the site.</span>
+      </li>
+      <li>
+        <b>Putting it online is quick</b>
+        <span>This kind of project can go live in a single day. There's no big setup work standing in your way — only the decision.</span>
       </li>
       <li>
         <b>It would look great on your CV<span class="tag tag-fixed">Improved</span></b>
@@ -550,7 +571,7 @@
     <ul class="points">
       <li>
         <b>Your old Google key is still live<span class="tag tag-now">Urgent</span></b>
-        <span>I removed it from your files, but it's still readable in your project's history. Deleting it is not the same as cancelling it. Until you cancel it in Google, anyone with your code has a working key that bills to your account. This is the only item here that costs real money right now, and only you can do it.</span>
+        <span>The only urgent item left, and the only one costing real money. Removing it from your files did not cancel it — it's still readable in your project's history. Cancel it in the Google Cloud console.</span>
       </li>
       <li>
         <b>Google Maps is free and already on every phone</b>
@@ -562,7 +583,7 @@
       </li>
       <li>
         <b>The privacy policy points to a mailbox nobody reads<span class="tag tag-fixed">Reduced</span></b>
-        <span>The law is now mostly handled — people can see and delete their data. But the contact address <b>privacy@tembera.rw</b> is a placeholder. A privacy policy nobody can reply to fails the first time someone complains.</span>
+        <span>The law is mostly handled now — people can see and delete their data. But <b>privacy@tembera.rw</b> is a placeholder. A privacy policy nobody can reply to fails the first time someone complains.</span>
       </li>
       <li>
         <b>Wrong information can cause real harm</b>
@@ -574,7 +595,7 @@
       </li>
       <li>
         <b>Everything still depends on you</b>
-        <span>You're the only person who knows how this works — and right now, the only copy of a day's work is on your machine.</span>
+        <span>You're the only person who knows how this works. Less severe now that the work is backed up on GitHub, but still true.</span>
       </li>
       <li>
         <b>Growing is what will break it</b>
@@ -586,28 +607,28 @@
   <!-- ============================================== WHAT TO DO -->
   <section class="todo">
     <h2>What to do next</h2>
-    <p>In this order. The first one takes ten minutes and protects everything else.</p>
+    <p>Much shorter than last time. One urgent, then it's product work.</p>
 
     <ul class="jobs">
       <li class="job-now">
-        <p class="when">Today — 10 minutes</p>
-        <b>Save your work, then cancel the old Google key</b>
-        <span>Commit and push everything to git, so a day's work isn't sitting loose on one machine. Then cancel the old Maps key in Google, and put a real email address in the privacy policy.</span>
+        <p class="when">Today — 5 minutes</p>
+        <b>Cancel the old Google Maps key</b>
+        <span>In the Google Cloud console. Then put a real email address in the privacy policy in place of the placeholder. These are the last two things only you can do.</span>
       </li>
       <li class="job-soon">
-        <p class="when">This week</p>
-        <b>Add tests for the login system</b>
-        <span>The password blocking works — I watched it work. But nothing checks it automatically, so a future change could quietly break it. Also, move your project out of OneDrive.</span>
+        <p class="when">Before anyone else uses the site</p>
+        <b>Check the automatic testing passed, then merge</b>
+        <span>Look at the "Actions" tab on GitHub. The work is on its own branch, so merge it into your main version once it's green. Note that everyone currently logged in will be signed out once when this goes live — that's intended, because the login format changed.</span>
       </li>
       <li class="job-later">
         <p class="when">This month</p>
         <b>Set up email sending</b>
-        <span>One decision unlocks three things: "forgot my password", checking email addresses are real, and booking confirmations.</span>
+        <span>One decision unlocks three things: "forgot my password", confirming email addresses are real, and booking confirmations.</span>
       </li>
       <li class="job-later">
         <p class="when">Next few months</p>
         <b>Get your place data verified</b>
-        <span>Talk to the Rwanda Development Board or district offices about their official lists. This is the one that decides whether people actually rely on your site — and your security work has now made that conversation much easier to have.</span>
+        <span>Talk to the Rwanda Development Board or district offices about their official lists. This is now clearly the most valuable work left — it decides whether people actually rely on your site, and your security work has made that conversation much easier to have.</span>
       </li>
       <li class="job-watch">
         <p class="when">Watch only — don't act yet</p>
@@ -618,8 +639,9 @@
   </section>
 
   <p class="footnote">
-    Second review, based on the actual code as it stands today. The longer,
-    technical version is saved in your project as <b>SWOT.md</b>.
+    Third review, based on the actual code as it stands today — 94 tests
+    passing, build clean. The longer technical version is in your project as
+    <b>SWOT.md</b>.
   </p>
 
 </div>
