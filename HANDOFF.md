@@ -14,7 +14,22 @@ Next's own transitive tree (`postcss`, `sharp`). Clearing them requires
 **Next 16**, a major upgrade. Next 15.5.23 cleared the critical one. See
 "Dependencies" below.
 
-### What changed
+### What changed (second pass — session revocation and auth tests)
+- **Sessions are now revocable.** `User.tokenVersion` is carried in the cookie
+  payload; `getCurrentUser` refuses a cookie whose version is stale. Changing a
+  password bumps it and re-issues a cookie for the current browser, so the
+  device that proved it knows the password stays in and everything else is
+  signed out. Settings also has an explicit "sign out on all devices".
+  - Cookies issued before this change have a two-part payload and are rejected,
+    so **everyone is signed out once** on deploy. That is intended.
+- **The token format and its crypto moved to `lib/session-token.ts`** — pure,
+  no Next runtime — so forgery, expiry, future-dating and the old cookie format
+  are all covered by unit tests (94 total now).
+- **`npm run test:auth`** (`scripts/e2e-auth.cjs`) makes the two manual browser
+  checks repeatable: rate limiting blocks by the 6th attempt, and a replayed
+  pre-change cookie is refused. It restores the demo password afterwards.
+
+### What changed (first pass)
 - **Rate limiting** on public login, registration and admin login
   (`lib/rate-limit-core.ts` for the logic, `lib/rate-limit.ts` for the request
   side). Per-address *and* per-account, because they stop different attacks.

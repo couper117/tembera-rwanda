@@ -6,9 +6,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import {
+  createSession,
   destroySession,
   getCurrentUser,
   hashPassword,
+  revokeAllSessions,
   verifyPassword,
 } from "@/lib/auth";
 import { PLACES_TAG } from "@/lib/data/places";
@@ -146,7 +148,28 @@ export async function changePasswordAction(
     data: { passwordHash: await hashPassword(parsed.data.next) },
   });
 
+  // Changing a password is how someone responds to a session they think was
+  // stolen, so it has to end that session. This invalidates every cookie
+  // issued so far — including this browser's — and then re-issues one, so the
+  // person who just proved they know the password stays signed in and
+  // everybody else does not.
+  await revokeAllSessions(user.id);
+  await createSession(user.id);
+
   return { ok: true };
+}
+
+/**
+ * Sign out everywhere, including here. Useful when a device is lost and the
+ * password itself is not believed to be compromised.
+ */
+export async function signOutEverywhereAction(): Promise<{ error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not signed in." };
+
+  await revokeAllSessions(user.id);
+  await destroySession();
+  redirect("/login");
 }
 
 /* ------------------------------------------------- data rights (GDPR-style) */

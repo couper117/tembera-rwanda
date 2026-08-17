@@ -136,15 +136,20 @@ prisma/
 ## Testing
 
 ```bash
-npm test          # unit tests — pure logic, no database, ~1s
+npm test               # unit tests — pure logic, no database, ~1s
+npm run test:auth      # auth behaviour in a real browser; needs the dev server
 node scripts/e2e.cjs   # full browser pass; needs the dev server and a DB
 ```
 
-`tests/` covers the pure domain layer — `lib/places/engine.ts`, `search.ts`,
-`geo.ts` — and the rate limiter's counting logic. These take their data as
-arguments, so the tests need neither a database nor a server. Anything needing
-a real request (session cookies, `clientIp`) is covered by the e2e pass
-instead.
+`tests/` covers the pure layers — `lib/places/engine.ts`, `search.ts`,
+`geo.ts`, the rate limiter's counting (`rate-limit-core.ts`) and the session
+token's format and cryptography (`session-token.ts`). These take their data as
+arguments, so they need neither a database nor a server.
+
+`npm run test:auth` covers what genuinely needs a request and a cookie jar:
+that repeated bad logins get blocked, and that changing a password revokes
+sessions on other devices while keeping the current one. It restores the demo
+account afterwards, so it needs a seed with `SEED_DEMO_USER=true`.
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, a seeded
 build against a real Postgres, an `npm audit`, and a scan for committed API
@@ -155,6 +160,10 @@ keys — on every push and PR, plus weekly so dependency rot surfaces on its own
 - **Sessions** are signed with HMAC-SHA256 and verified with
   `timingSafeEqual`. Expiry is enforced **server-side** from the timestamp in
   the cookie payload, not by trusting the browser to honour `maxAge`.
+- **Sessions are revocable** despite being stateless. The cookie carries the
+  user's `tokenVersion`; bumping that column invalidates every cookie already
+  issued. Changing a password bumps it — so a stolen session dies with the
+  password it outlived — and Settings has a "sign out on all devices" control.
 - **Sign-in is rate limited** per address and per account: 5 attempts per
   account per 15 minutes on both the public and admin login. The counters are
   in process memory — see the note in `lib/rate-limit-core.ts` before running

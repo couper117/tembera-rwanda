@@ -46,6 +46,12 @@ model User {
   bio          String   @default("")
   homeCity     String   @default("Kigali") @map("home_city")
   role         Role     @default(USER)
+  /// Bumped to invalidate every existing session for this user. Sessions are
+  /// stateless signed cookies, so there is nothing to delete server-side —
+  /// the cookie carries the version it was issued at, and a mismatch means
+  /// "signed out". Raised on password change so a stolen cookie dies with the
+  /// password it outlived.
+  tokenVersion Int      @default(0) @map("token_version")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
