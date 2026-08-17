@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Dependencies rot without anyone touching the code, so the audit also runs
+  # on a schedule rather than only when something is pushed.
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    # The build prerenders DB-backed pages, so it needs a real Postgres.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tourism_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tourism_db?schema=public
+      # CI-only value. The real secret lives in the deployment environment and
+      # is never committed — this exists so the build can sign a cookie.
+      ADMIN_SESSION_SECRET: ci-only-not-a-real-secret-000000000000
+      SEED_ADMIN_PASSWORD: ci-only-admin-password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Create schema and seed
+        run: |
+          npm run db:push
+          npm run db:seed
+
+      - name: Build
+        run: npm run build
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fails the job on critical findings only. Highs are reported but do not
+      # block, because the current ones sit in Next's own transitive tree and
+      # can only be cleared by a major upgrade — see HANDOFF.md. Revisit this
+      # threshold once that upgrade lands.
+      - name: Audit dependencies
+        run: npm audit --audit-level=critical
+
+      - name: Report all advisories
+        if: always()
+        run: npm audit || true
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A committed API key is what started this workstream. Cheap to check,
+      # expensive to miss.
+      - name: Scan for committed API keys
+        run: |
+          if grep -rEn 'AIza[0-9A-Za-z_-]{30,}' --exclude-dir=node_modules --exclude-dir=.git .; then
+            echo "::error::A Google API key appears to be committed."
+            exit 1
+          fi
+          echo "No Google API keys found in the working tree."

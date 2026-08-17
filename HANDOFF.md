@@ -1,22 +1,42 @@
 # HANDOFF
 
 ## Current Task
-Simplify the map to an ordinary one (the bespoke district map was over-built
-and its side panel was poor), then build a real profile screen on a local
-demo account.
+Close out the weaknesses and threats found in the SWOT review (`SWOT.md`):
+security hardening, data-protection compliance, tests and CI.
 
 ## Status
-Solved. Both are done and verified: build passes (553 pages), lint and
-typecheck are clean, and **26/26 interactive flows pass** in a real browser at
-390px and 1440px.
+Done and verified. Lint, typecheck and a clean production build all pass;
+**78 unit tests pass**; rate limiting was confirmed against the real admin
+login in a browser (blocked from the 6th attempt, as designed).
 
-**One known issue left, deliberately:** `/c/<unknown>` serves the correct
-not-found screen with a **200** instead of a 404. See the note in
-`app/(site)/c/[category]/page.tsx` — it is the only one of the three dynamic
-routes that reads `searchParams`, so `dynamicParams = false` (which fixed
-`/place/[id]` and `/city/[city]`) cannot apply. Fixing it means moving `?type=`
-into `PlaceBrowser`, which costs server-rendered filtering on linked filtered
-URLs. Left for a decision.
+**One decision left for the owner:** three `high` npm advisories remain in
+Next's own transitive tree (`postcss`, `sharp`). Clearing them requires
+**Next 16**, a major upgrade. Next 15.5.23 cleared the critical one. See
+"Dependencies" below.
+
+### What changed
+- **Rate limiting** on public login, registration and admin login
+  (`lib/rate-limit-core.ts` for the logic, `lib/rate-limit.ts` for the request
+  side). Per-address *and* per-account, because they stop different attacks.
+- **Server-side session expiry.** `getCurrentUser` now checks the timestamp in
+  the cookie payload. A stolen cookie is replayed by a client that has no
+  reason to honour `maxAge`, so the browser dropping it protects nobody.
+- **No default passwords.** The seed generates and prints one; the demo account
+  is opt-in via `SEED_DEMO_USER=true`. `npm run set-password` resets any
+  account, and users can change their own in Settings.
+- **The committed Google Maps key is out of `legacy/pages/map.php`.** It is
+  still in git history — **it must be revoked in the Google Cloud console.**
+- **Privacy**: `/privacy` policy page, data export and account deletion in
+  Settings (Law N° 058/2021). Deleting an account unlinks bookings rather than
+  destroying them — they are commercial records.
+- **Booking validation**: guest count capped at 20 (matching the stepper), so
+  the price can no longer overflow the `int4` column into a 500; dates must be
+  in the future and within two years.
+- **Tests and CI**: 78 unit tests on the pure layer via `node:test` (no new
+  dependencies), and `.github/workflows/ci.yml`.
+- **`scripts/e2e.cjs` could not start on this machine** — it hardcoded
+  `Program Files\Google\Chrome`, but Chrome here is in `Program Files (x86)`.
+  It now probes both, plus Edge, plus `CHROME_PATH`.
 
 ## Progress
 - [x] **Map cut back to an ordinary Google map.** Deleted the district
@@ -190,18 +210,17 @@ Still true and worth keeping:
   of them, so this is a data-quality limit, not a map bug. Clustering would be
   the fix if the coordinates ever improve.
 
-### Profile and the demo account
-- `lib/client/account.tsx` holds the one local profile (`AccountProvider`,
-  mounted in `app/(site)/layout.tsx`). Seeded as "Demo User", every field
-  editable, persisted to localStorage. `joinedAt` is deliberately not editable.
-- The seed identity is obviously a placeholder on purpose — a plausible
-  invented person would be worse.
+### Profile and accounts
+- Accounts are **database-backed** (`users` table). The old localStorage-only
+  "demo account" is gone; `lib/client/account.tsx` is now a provider that
+  reflects the signed-in user and falls back to local state for guests.
 - `lib/client/visited.ts` + `components/place/VisitRecorder.tsx` record real
   visits, so "Places visited" and "Districts" are derived from behaviour rather
   than seeded. `VisitRecorder` exists so the place page can stay a server
   component.
-- Storage keys in use: `tembera.account`, `tembera.saved`, `tembera.visited`,
-  `tembera.recent`, `tembera.city`. Settings can clear the last three.
+- Storage keys still used for **guests**: `tembera.saved`, `tembera.visited`,
+  `tembera.recent`, `tembera.city`. Signed in, those live in the database
+  instead and sync across devices.
 
 ### Keys — open actions
 - A working `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is in `.env` (gitignored). Two others
@@ -212,9 +231,26 @@ Still true and worth keeping:
   and wired but has never been exercised.
 - **Restrict the key by HTTP referrer.** A `NEXT_PUBLIC_*` key ships to the
   browser by design; referrer restriction is the actual protection.
-- `legacy/pages/map.php` still contains a different hardcoded Google key that
-  is committed to git. **It should be revoked**, whether or not it still works.
-- The default admin password is still `changeme123`.
+- **REVOKE the key that was committed in `legacy/pages/map.php`.** It has been
+  removed from the working tree, but it remains readable in git history, so
+  removal is not containment — only revocation is. This is an owner action in
+  the Google Cloud console and is still outstanding.
+
+### Dependencies
+- `npm audit` is at **3 high, 0 critical**. Next 15.5.23 cleared the critical.
+- The three remaining sit in **Next's own transitive tree** (`postcss`,
+  `sharp`) and `npm audit fix --force` resolves them only by installing
+  **Next 16** — a major upgrade. Not taken unilaterally.
+- Exploitability here is low but not zero: the postcss advisories are
+  build-time and process *our own* CSS, and the sharp/libvips ones need a
+  malicious image through the optimizer, which is restricted to six whitelisted
+  CDN hosts in `next.config.mjs`.
+- When the Next 16 upgrade is taken, note that **`next lint` is removed in 16**
+  — the lint script and CI both need migrating to the ESLint CLI
+  (`npx @next/codemod@canary next-lint-to-eslint-cli .`).
+- CI fails on `critical` only, deliberately, so the build is not permanently
+  red on findings that cannot be fixed without that major bump. Tighten the
+  threshold once it lands.
 
 ### Loading states
 - **Skeletons for data**, spinner for everything else. Anything resolving into
@@ -241,8 +277,10 @@ Still true and worth keeping:
 ### Local setup (unchanged from before)
 - Postgres 18, service `postgresql-x64-18`, `postgres`/`postgres`;
   `psql` is at `C:\Program Files\PostgreSQL\18\bin\psql.exe`.
-- Port 3000 belongs to unrelated work — **do not kill it**. `next dev` lands on
-  **3001**.
+- **Port 3000 is free on this machine** (the earlier note claiming it belonged
+  to unrelated work is out of date — `next dev` binds 3000 fine). If it is in
+  use, it is almost certainly an orphaned dev server of your own; check before
+  assuming otherwise.
 - **Never run two dev servers against this project.** They share `.next` and
   corrupt each other: the symptoms are `SyntaxError: Unexpected end of JSON
   input`, phantom 404s on `/` and `/map`, and `ChunkLoadError` in the browser.
@@ -279,20 +317,41 @@ Still true and worth keeping:
   fault — the identical build passes on retry.
 
 ### Not done / next candidates
-- **`/c/<unknown>` returns 200, not 404** — the one known defect. See Status
-  and the note in `app/(site)/c/[category]/page.tsx`.
-- Enable **Directions API** so in-app routing can actually be used, and
-  restrict the Maps key by referrer. See "Keys — open actions".
-- No dark theme. Tokens are structured for it (all colour lives on `:root`),
-  but no dark palette exists yet.
+**Owner actions — cannot be done from the codebase:**
+- **Revoke the Google Maps key** that was committed in `legacy/pages/map.php`
+  (still in git history), and **restrict the live key by HTTP referrer**.
+- **Fill in the privacy contact.** `app/(site)/privacy/page.tsx` uses
+  `privacy@tembera.rw`; point it at a mailbox somebody reads. If Tembera is
+  offered commercially, check registration with the supervisory authority
+  under Law N° 058/2021.
+- **Decide on Next 16** — see "Dependencies".
+- **Move the project out of the OneDrive-synced folder.** It is the cause of
+  the `EPERM` on `prisma generate` and the intermittent build races below.
+
+**Product / engineering:**
+- **Data verification** is the highest-value work left. `sources/directory.ts`
+  is a demo seed, and the product is only as good as its records. An RDB or
+  district-level partnership is the route.
+- No password *reset* flow (no email sending is wired up at all). Users can
+  change a known password; a forgotten one needs `npm run set-password`.
+- Bookings are still lead capture: no payment, no availability, no confirmation
+  email.
+- Admins cannot upload an image — place photos are remote URLs from the six
+  whitelisted CDNs plus legacy `data:` URIs.
+- Enable **Directions API** so in-app routing can actually be used.
 - The map uses the deprecated `google.maps.Marker`; moving to
   `AdvancedMarkerElement` needs a Map ID.
-- Default admin password is still `changeme123`.
-- `npm audit` still reports 3 vulnerabilities (2 high, 1 critical) in the tree.
-- `package-lock.json` carries a trivial npm-generated diff from an earlier
-  `npm install`.
+- `getPlace(id)` still scans the whole in-memory catalog (`lib/data/places.ts`).
+  Fine at 495 places; push filtering into Prisma at roughly 5,000.
+
+**Done since this list was last written:** `/c/<unknown>` now returns a real
+404 (verified); the dark theme exists (`lib/client/theme.tsx`); the critical
+advisory is cleared.
 
 ## Recently Completed
+- Closed out the SWOT weaknesses: rate limiting, server-side session expiry,
+  no default passwords, privacy policy, data export and account deletion,
+  booking validation, 78 unit tests, and CI.
 - Cut the bespoke Rwanda map back to an ordinary one; rebuilt its side panel.
 - Built the profile screen on a local demo account with real visit history.
 - Fixed `/place/<unknown>` and `/city/<unknown>` returning 200 instead of 404.

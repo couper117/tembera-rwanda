@@ -1,0 +1,625 @@
+<title>Tembera — SWOT Analysis</title>
+
+<style>
+  :root {
+    --ground: #EFF2EE;
+    --card: #FBFCFA;
+    --ink: #12201B;
+    --ink-2: #44544B;
+    --muted: #6B776F;
+    --rule: #D8DED9;
+
+    --good: #1F6B4A;
+    --bad: #A8761B;
+    --chance: #2A6B8F;
+    --danger: #A63A28;
+
+    --good-wash: rgba(31, 107, 74, 0.08);
+    --bad-wash: rgba(168, 118, 27, 0.08);
+    --chance-wash: rgba(42, 107, 143, 0.08);
+    --danger-wash: rgba(166, 58, 40, 0.08);
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0E1714;
+      --card: #17221E;
+      --ink: #E8EEE9;
+      --ink-2: #BDC8C1;
+      --muted: #8A9A8F;
+      --rule: #2C3A34;
+
+      --good: #6BC496;
+      --bad: #DFAC4B;
+      --chance: #78B2D4;
+      --danger: #E2846C;
+
+      --good-wash: rgba(107, 196, 150, 0.10);
+      --bad-wash: rgba(223, 172, 75, 0.10);
+      --chance-wash: rgba(120, 178, 212, 0.10);
+      --danger-wash: rgba(226, 132, 108, 0.10);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0E1714;
+    --card: #17221E;
+    --ink: #E8EEE9;
+    --ink-2: #BDC8C1;
+    --muted: #8A9A8F;
+    --rule: #2C3A34;
+
+    --good: #6BC496;
+    --bad: #DFAC4B;
+    --chance: #78B2D4;
+    --danger: #E2846C;
+
+    --good-wash: rgba(107, 196, 150, 0.10);
+    --bad-wash: rgba(223, 172, 75, 0.10);
+    --chance-wash: rgba(120, 178, 212, 0.10);
+    --danger-wash: rgba(226, 132, 108, 0.10);
+  }
+
+  :root[data-theme="light"] {
+    --ground: #EFF2EE;
+    --card: #FBFCFA;
+    --ink: #12201B;
+    --ink-2: #44544B;
+    --muted: #6B776F;
+    --rule: #D8DED9;
+
+    --good: #1F6B4A;
+    --bad: #A8761B;
+    --chance: #2A6B8F;
+    --danger: #A63A28;
+
+    --good-wash: rgba(31, 107, 74, 0.08);
+    --bad-wash: rgba(168, 118, 27, 0.08);
+    --chance-wash: rgba(42, 107, 143, 0.08);
+    --danger-wash: rgba(166, 58, 40, 0.08);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.06rem;
+    line-height: 1.65;
+  }
+
+  .page {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 5vw, 3rem) clamp(1.1rem, 5vw, 2rem) 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* ------------------------------------------------------------- top */
+
+  .top { display: flex; flex-direction: column; gap: 1rem; }
+
+  .top h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.25rem, 8vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .top .sub { color: var(--ink-2); font-size: 1.05rem; }
+
+  .note {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .note h2 { font-size: 0.95rem; font-weight: 700; }
+  .note p { font-size: 0.98rem; color: var(--ink-2); }
+
+  .note ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.98rem;
+    color: var(--ink-2);
+  }
+
+  .note li b { color: var(--ink); }
+
+  /* --------------------------------------------------------- scoreline */
+
+  .scoreline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .score {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--hue);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .score .num {
+    font-family: var(--display);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--hue);
+  }
+
+  .score .lbl { font-size: 0.82rem; color: var(--muted); }
+
+  .score .move {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--hue);
+  }
+
+  /* ------------------------------------------------------------ boxes */
+
+  .box {
+    background: var(--wash);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: clamp(1.25rem, 4vw, 1.9rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .box-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    border-bottom: 2px solid var(--hue);
+    padding-bottom: 0.85rem;
+  }
+
+  .box-head .letter {
+    font-family: var(--display);
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--hue);
+  }
+
+  .box-head h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 5.5vw, 2.35rem);
+    line-height: 1.1;
+    color: var(--hue);
+  }
+
+  .box-head .plain { color: var(--ink-2); font-size: 1rem; }
+
+  .points { list-style: none; display: flex; flex-direction: column; gap: 1.15rem; }
+  .points li { display: flex; flex-direction: column; gap: 0.2rem; }
+  .points b { font-weight: 700; font-size: 1.02rem; }
+  .points span { color: var(--ink-2); font-size: 1rem; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    padding: 0.05rem 0.35rem;
+    margin-left: 0.4rem;
+    vertical-align: 0.12em;
+    white-space: nowrap;
+  }
+
+  .tag-fixed { color: var(--good); }
+  .tag-new { color: var(--bad); }
+  .tag-now { color: var(--danger); }
+
+  .box-good { --hue: var(--good); --wash: var(--good-wash); }
+  .box-bad { --hue: var(--bad); --wash: var(--bad-wash); }
+  .box-chance { --hue: var(--chance); --wash: var(--chance-wash); }
+  .box-danger { --hue: var(--danger); --wash: var(--danger-wash); }
+
+  /* ------------------------------------------------------------ fixed */
+
+  .fixed-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.5rem 1.5rem;
+  }
+
+  .fixed-list li {
+    font-size: 0.96rem;
+    color: var(--ink-2);
+    padding-left: 1.4rem;
+    position: relative;
+  }
+
+  .fixed-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--good);
+    font-weight: 700;
+  }
+
+  /* ------------------------------------------------------------ to do */
+
+  .todo { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .todo > h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 5.5vw, 2.35rem);
+  }
+
+  .todo > p { color: var(--ink-2); }
+
+  .jobs { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; }
+
+  .jobs li {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--hue, var(--muted));
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .jobs .when {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--hue, var(--muted));
+  }
+
+  .jobs b { font-size: 1.02rem; }
+  .jobs span { color: var(--ink-2); font-size: 0.98rem; }
+
+  .job-now { --hue: var(--danger); }
+  .job-soon { --hue: var(--bad); }
+  .job-later { --hue: var(--chance); }
+  .job-watch { --hue: var(--muted); }
+
+  .footnote {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+</style>
+
+<div class="page">
+
+  <header class="top">
+    <h1>Tembera: the good, the bad, and what to fix</h1>
+    <p class="sub">Second review of your Rwanda tourism website, after the fixes. 17 August 2026.</p>
+
+    <div class="note">
+      <h2>What changed since the first review</h2>
+      <p>
+        Most of the problems from last time are fixed. But fixing things always
+        uncovers new things — that is normal, and this review names them rather
+        than pretending everything is done.
+      </p>
+      <ul>
+        <li><b>14 problems fixed</b> — security, privacy, tests, and more</li>
+        <li><b>2 were already fine</b> — the first review got those wrong</li>
+        <li><b>5 new problems found</b> — mostly uncovered by the fixing itself</li>
+        <li><b>1 thing still needs you</b> — see the red box at the bottom</li>
+      </ul>
+    </div>
+
+    <div class="scoreline">
+      <div class="score" style="--hue: var(--good)">
+        <span class="num">10</span>
+        <span class="lbl">Strengths</span>
+        <span class="move">↑ from 9</span>
+      </div>
+      <div class="score" style="--hue: var(--bad)">
+        <span class="num">13</span>
+        <span class="lbl">Weaknesses</span>
+        <span class="move">↑ from 12</span>
+      </div>
+      <div class="score" style="--hue: var(--chance)">
+        <span class="num">9</span>
+        <span class="lbl">Opportunities</span>
+        <span class="move">— same</span>
+      </div>
+      <div class="score" style="--hue: var(--danger)">
+        <span class="num">8</span>
+        <span class="lbl">Threats</span>
+        <span class="move">— same</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <h2>Why the weakness count went up even though you fixed things</h2>
+      <p>
+        Because the old problems were hiding the new ones. You cannot notice
+        that passwords can't be reset until passwords are properly protected.
+        The list is longer, but the problems on it are smaller and further from
+        the front door.
+      </p>
+    </div>
+  </header>
+
+  <!-- ============================================== FIXED -->
+  <section class="box box-good">
+    <div class="box-head">
+      <p class="letter">Fixed</p>
+      <h2>What got solved</h2>
+      <p class="plain">These were on the last list. They are done and checked.</p>
+    </div>
+
+    <ul class="fixed-list">
+      <li>Password guessing is now blocked</li>
+      <li>Stolen login cookies now expire</li>
+      <li>No more <b>changeme123</b> password</li>
+      <li>Google key removed from your files</li>
+      <li>Privacy policy written</li>
+      <li>Users can download their data</li>
+      <li>Users can delete their account</li>
+      <li>Users can change their password</li>
+      <li>78 automatic tests added</li>
+      <li>Automatic checking set up</li>
+      <li>Booking crash on big numbers fixed</li>
+      <li>Booking dates now validated</li>
+      <li>Critical security warning cleared</li>
+      <li>Your notes brought up to date</li>
+    </ul>
+  </section>
+
+  <!-- ============================================== STRENGTHS -->
+  <section class="box box-good">
+    <div class="box-head">
+      <p class="letter">S</p>
+      <h2>Strengths</h2>
+      <p class="plain">What is good about your project now.</p>
+    </div>
+
+    <ul class="points">
+      <li>
+        <b>Your login is now properly defended<span class="tag tag-fixed">Improved</span></b>
+        <span>Someone trying passwords gets blocked after 5 attempts — I tested this in a real browser and it works. Stolen login cookies now expire properly, which they didn't before.</span>
+      </li>
+      <li>
+        <b>Your important logic is now tested<span class="tag tag-fixed">Improved</span></b>
+        <span>78 automatic tests check that search, distances and rankings behave correctly. They run in about one second, so there's no excuse not to run them.</span>
+      </li>
+      <li>
+        <b>You handle personal data better than most<span class="tag tag-fixed">New</span></b>
+        <span>A real privacy policy, users can download everything you hold on them, and they can delete their account. Most projects this size have none of this.</span>
+      </li>
+      <li>
+        <b>You used a good, modern setup</b>
+        <span>Next.js, TypeScript and PostgreSQL are what real companies use. This is not a toy project.</span>
+      </li>
+      <li>
+        <b>Everything is stored in the database</b>
+        <span>You can add or change a place from the admin page without touching any code.</span>
+      </li>
+      <li>
+        <b>The admin area is properly locked</b>
+        <span>Every admin page and every admin button checks "are you an admin?" first. Nobody can sneak in by guessing a web address.</span>
+      </li>
+      <li>
+        <b>The site does not lie to users</b>
+        <span>No invented ratings, no fake listings in empty categories. I also fixed the About page, which was still claiming the site has no user accounts — that stopped being true a while ago.</span>
+      </li>
+      <li>
+        <b>It is a real, full product</b>
+        <span>Search, maps, saved places, reviews, bookings and an admin system.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============================================== WEAKNESSES -->
+  <section class="box box-bad">
+    <div class="box-head">
+      <p class="letter">W</p>
+      <h2>Weaknesses</h2>
+      <p class="plain">What still needs work. The big ones are first.</p>
+    </div>
+
+    <ul class="points">
+      <li>
+        <b>None of this work is saved yet<span class="tag tag-now">Do today</span></b>
+        <span>Everything I just did is sitting loose in your project folder, not saved into git. One wrong command and a full day of work is gone. This is the easiest and most urgent thing on the whole list.</span>
+      </li>
+      <li>
+        <b>The automatic checking has never actually run<span class="tag tag-new">New</span></b>
+        <span>I set it up and tested each step by hand, but GitHub has never run it, because the work isn't pushed yet. Until then it's a script nobody has tried.</span>
+      </li>
+      <li>
+        <b>The new security code is barely tested<span class="tag tag-new">New</span></b>
+        <span>The 78 tests cover search and distances, not the login system. I checked the password blocking by hand once, but that check can't repeat itself. If someone later broke it by accident, no test would notice.</span>
+      </li>
+      <li>
+        <b>Your site cannot send email at all<span class="tag tag-new">New</span></b>
+        <span>So there's no "forgot my password" — a user who forgets is stuck until you run a command for them. There's also no way to check an email address is real, and no booking confirmation.</span>
+      </li>
+      <li>
+        <b>You cannot force anyone to log out<span class="tag tag-new">New</span></b>
+        <span>If someone steals a login cookie, changing your password doesn't kick them out. They stay logged in for up to 30 days.</span>
+      </li>
+      <li>
+        <b>The password blocking resets when you restart</b>
+        <span>It's held in memory, so restarting the site clears the counters. Fine for one server, weaker if you ever run several.</span>
+      </li>
+      <li>
+        <b>Your place information is still not verified<span class="tag tag-now">Biggest</span></b>
+        <span>Nothing I did touched this. About 200 listings have unconfirmed phone numbers, hours and locations. This is now your single biggest weakness, because it decides whether the site is actually useful to anyone.</span>
+      </li>
+      <li>
+        <b>Three security warnings remain — by your decision</b>
+        <span>They're inside Next.js itself and need a major upgrade to clear. You chose to wait until after launch, which is reasonable: they're hard to exploit here.</span>
+      </li>
+      <li>
+        <b>There's still no way to actually publish the site</b>
+        <span>The checking stops at "it builds". No hosting setup exists, and going live has never been practised.</span>
+      </li>
+      <li>
+        <b>Booking still doesn't take payment</b>
+        <span>The form is now properly validated, but there's no payment, no availability check and no confirmation email.</span>
+      </li>
+      <li>
+        <b>Admins still can't upload a photo</b>
+        <span>Photos have to be web links from six approved sites.</span>
+      </li>
+      <li>
+        <b>Every page still loads all 495 places</b>
+        <span>Fine today. Only a problem if you reach thousands of places.</span>
+      </li>
+      <li>
+        <b>Your project folder is still in OneDrive</b>
+        <span>It keeps locking files and breaking commands. Also — I found <b>three copies of your site server running at once</b>, which was corrupting your builds and making it look like the code was broken. I stopped them.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============================================== OPPORTUNITIES -->
+  <section class="box box-chance">
+    <div class="box-head">
+      <p class="letter">O</p>
+      <h2>Opportunities</h2>
+      <p class="plain">Good things that could happen from outside.</p>
+    </div>
+
+    <ul class="points">
+      <li>
+        <b>A partnership is now much more realistic<span class="tag tag-fixed">Improved</span></b>
+        <span>This is the real payoff from the security work. If the Rwanda Development Board or a district office checks you out now, they find a privacy policy, protected logins and a test suite — instead of the password <b>changeme123</b> and a leaked Google key. That's the difference between a student project and something an institution can defend choosing.</span>
+      </li>
+      <li>
+        <b>Nobody else has built this for Rwanda</b>
+        <span>Tourism is a national priority and there's no strong local directory, especially outside Kigali.</span>
+      </li>
+      <li>
+        <b>You could make money without rebuilding anything</b>
+        <span>Commission on bookings, paid "featured" spots, or a verified badge for businesses. The structure for all three already exists.</span>
+      </li>
+      <li>
+        <b>Add Kinyarwanda and French</b>
+        <span>Your categories and cities are stored as data, so this means adding columns — not rebuilding.</span>
+      </li>
+      <li>
+        <b>Make it work without internet</b>
+        <span>Tourists often have no data when they arrive. Your mobile layout is already built for this.</span>
+      </li>
+      <li>
+        <b>Let users add photos and corrections</b>
+        <span>Reviews already work. User photos would make your site something competitors can't copy — and users would help keep it accurate for you.</span>
+      </li>
+      <li>
+        <b>It would look great on your CV<span class="tag tag-fixed">Improved</span></b>
+        <span>Lots of people can show a website. Far fewer can show a security review, a test suite, and a privacy implementation built against a named law.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============================================== THREATS -->
+  <section class="box box-danger">
+    <div class="box-head">
+      <p class="letter">T</p>
+      <h2>Threats</h2>
+      <p class="plain">Dangers from outside. You can't stop these, but you can prepare.</p>
+    </div>
+
+    <ul class="points">
+      <li>
+        <b>Your old Google key is still live<span class="tag tag-now">Urgent</span></b>
+        <span>I removed it from your files, but it's still readable in your project's history. Deleting it is not the same as cancelling it. Until you cancel it in Google, anyone with your code has a working key that bills to your account. This is the only item here that costs real money right now, and only you can do it.</span>
+      </li>
+      <li>
+        <b>Google Maps is free and already on every phone</b>
+        <span>You win by having better Rwandan information than Google has — not by being another map.</span>
+      </li>
+      <li>
+        <b>You depend on Google for your map</b>
+        <span>If they raise prices or change the rules, you follow. Your map also uses an old feature they'll eventually switch off.</span>
+      </li>
+      <li>
+        <b>The privacy policy points to a mailbox nobody reads<span class="tag tag-fixed">Reduced</span></b>
+        <span>The law is now mostly handled — people can see and delete their data. But the contact address <b>privacy@tembera.rw</b> is a placeholder. A privacy policy nobody can reply to fails the first time someone complains.</span>
+      </li>
+      <li>
+        <b>Wrong information can cause real harm</b>
+        <span>If someone drives across the country on a wrong address from your site, that's your reputation.</span>
+      </li>
+      <li>
+        <b>Information goes stale</b>
+        <span>Businesses close and numbers change. Some of your photo links are already dead — that's the warning sign.</span>
+      </li>
+      <li>
+        <b>Everything still depends on you</b>
+        <span>You're the only person who knows how this works — and right now, the only copy of a day's work is on your machine.</span>
+      </li>
+      <li>
+        <b>Growing is what will break it</b>
+        <span>The "loads all 495 places" problem only hurts once you're successful.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============================================== WHAT TO DO -->
+  <section class="todo">
+    <h2>What to do next</h2>
+    <p>In this order. The first one takes ten minutes and protects everything else.</p>
+
+    <ul class="jobs">
+      <li class="job-now">
+        <p class="when">Today — 10 minutes</p>
+        <b>Save your work, then cancel the old Google key</b>
+        <span>Commit and push everything to git, so a day's work isn't sitting loose on one machine. Then cancel the old Maps key in Google, and put a real email address in the privacy policy.</span>
+      </li>
+      <li class="job-soon">
+        <p class="when">This week</p>
+        <b>Add tests for the login system</b>
+        <span>The password blocking works — I watched it work. But nothing checks it automatically, so a future change could quietly break it. Also, move your project out of OneDrive.</span>
+      </li>
+      <li class="job-later">
+        <p class="when">This month</p>
+        <b>Set up email sending</b>
+        <span>One decision unlocks three things: "forgot my password", checking email addresses are real, and booking confirmations.</span>
+      </li>
+      <li class="job-later">
+        <p class="when">Next few months</p>
+        <b>Get your place data verified</b>
+        <span>Talk to the Rwanda Development Board or district offices about their official lists. This is the one that decides whether people actually rely on your site — and your security work has now made that conversation much easier to have.</span>
+      </li>
+      <li class="job-watch">
+        <p class="when">Watch only — don't act yet</p>
+        <b>Speed, and the Next.js upgrade</b>
+        <span>The "loads all places" issue matters at around 5,000 places, not 495. The Next.js 16 upgrade can wait until after launch. Acting on either now would be solving a problem you don't have.</span>
+      </li>
+    </ul>
+  </section>
+
+  <p class="footnote">
+    Second review, based on the actual code as it stands today. The longer,
+    technical version is saved in your project as <b>SWOT.md</b>.
+  </p>
+
+</div>

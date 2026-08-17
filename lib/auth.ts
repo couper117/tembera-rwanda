@@ -12,6 +12,7 @@ import type { Role, User } from "@prisma/client";
 
 export const COOKIE_NAME = "tembera_session";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const MAX_AGE_MS = MAX_AGE_SECONDS * 1000;
 
 function secret(): string {
   const s = process.env.ADMIN_SESSION_SECRET;
@@ -74,8 +75,19 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   const store = await cookies();
   const value = verify(store.get(COOKIE_NAME)?.value);
   if (!value) return null;
-  const userId = Number(value.split(":")[0]);
+
+  const [rawId, rawIssuedAt] = value.split(":");
+  const userId = Number(rawId);
+  const issuedAt = Number(rawIssuedAt);
   if (!Number.isInteger(userId)) return null;
+
+  // Expiry is enforced here, not by the cookie's maxAge. A stolen cookie is
+  // replayed by a client that has no reason to honour maxAge, so the browser
+  // dropping it on schedule protects nobody — the server has to check.
+  if (!Number.isFinite(issuedAt) || Date.now() - issuedAt > MAX_AGE_MS) {
+    return null;
+  }
+
   return prisma.user.findUnique({ where: { id: userId } });
 });
 

@@ -100,10 +100,37 @@ export default async function AboutPage() {
               />
               <Note
                 icon="bookmark"
-                title="Saves stay on your device"
-                text="Tembera has no public accounts. Saved places and recent searches live in this browser only."
+                title="Saves follow your account"
+                text="Signed in, your saved places, visit history and reviews are stored against your account and sync across devices. Signed out, they stay in this browser only."
               />
             </div>
+          </section>
+
+          <section className="t-section">
+            <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
+              Your data
+            </h2>
+            <div className="t-card">
+              <Link
+                href="/privacy"
+                className="t-fact"
+                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
+              >
+                <span className="t-fact__icon">
+                  <Icon name="info" size={17} />
+                </span>
+                <span className="t-row__name" style={{ flex: 1 }}>
+                  Privacy policy
+                </span>
+                <span className="t-row__chev">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </Link>
+            </div>
+            <p className="t-small t-muted" style={{ marginTop: "var(--t-3)" }}>
+              You can download everything we hold about you, or delete your
+              account entirely, from Settings.
+            </p>
           </section>
 
         </div>

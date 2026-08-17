@@ -90,11 +90,24 @@ prisma/
    ```
 
    The seed migrates the full catalog (~500 places, 16 categories, 30
-   districts) into Postgres and creates two accounts:
+   districts) into Postgres and creates the admin account:
 
-   - **Admin:** `admin@tembera.rw` / `changeme123` — change after first login
-     (or set `SEED_ADMIN_PASSWORD` before seeding)
-   - **Demo user:** `demo@tembera.rw` / `demo12345`
+   - **Admin:** `admin@tembera.rw`. The password is **generated and printed
+     once** by the seed — save it then. Set `SEED_ADMIN_PASSWORD` (12+
+     characters) beforehand to choose your own. There is deliberately no
+     default password.
+   - **Demo user:** only created when `SEED_DEMO_USER=true`
+     (`demo@tembera.rw` / `demo12345`). Its password is published in this
+     README, so it must never exist in production.
+
+   To change a password later:
+
+   ```bash
+   npm run set-password -- admin@tembera.rw          # generates one
+   npm run set-password -- admin@tembera.rw "chosen" # or set your own
+   ```
+
+   Signed-in users can also change their own password in Settings.
 
 5. **Run**
 
@@ -106,16 +119,51 @@ prisma/
 
 ## Scripts
 
-| Script               | Purpose                              |
-| -------------------- | ------------------------------------ |
-| `npm run dev`        | Dev server                           |
-| `npm run build`      | Production build (runs `prisma generate`) |
-| `npm run start`      | Serve the production build           |
-| `npm run lint`       | ESLint                               |
-| `npm run db:push`    | Push schema to the database          |
-| `npm run db:migrate` | Create/apply a dev migration         |
-| `npm run db:seed`    | Migrate the catalog + seed accounts  |
-| `npm run db:studio`  | Prisma Studio                        |
+| Script                  | Purpose                                   |
+| ----------------------- | ----------------------------------------- |
+| `npm run dev`           | Dev server                                |
+| `npm run build`         | Production build (runs `prisma generate`)  |
+| `npm run start`         | Serve the production build                |
+| `npm run lint`          | ESLint                                    |
+| `npm run typecheck`     | `tsc --noEmit`                            |
+| `npm test`              | Unit tests (`node:test`, no extra deps)   |
+| `npm run db:push`       | Push schema to the database               |
+| `npm run db:migrate`    | Create/apply a dev migration              |
+| `npm run db:seed`       | Migrate the catalog + seed the admin      |
+| `npm run db:studio`     | Prisma Studio                             |
+| `npm run set-password`  | Reset any account's password from the CLI |
+
+## Testing
+
+```bash
+npm test          # unit tests — pure logic, no database, ~1s
+node scripts/e2e.cjs   # full browser pass; needs the dev server and a DB
+```
+
+`tests/` covers the pure domain layer — `lib/places/engine.ts`, `search.ts`,
+`geo.ts` — and the rate limiter's counting logic. These take their data as
+arguments, so the tests need neither a database nor a server. Anything needing
+a real request (session cookies, `clientIp`) is covered by the e2e pass
+instead.
+
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, a seeded
+build against a real Postgres, an `npm audit`, and a scan for committed API
+keys — on every push and PR, plus weekly so dependency rot surfaces on its own.
+
+## Security notes
+
+- **Sessions** are signed with HMAC-SHA256 and verified with
+  `timingSafeEqual`. Expiry is enforced **server-side** from the timestamp in
+  the cookie payload, not by trusting the browser to honour `maxAge`.
+- **Sign-in is rate limited** per address and per account: 5 attempts per
+  account per 15 minutes on both the public and admin login. The counters are
+  in process memory — see the note in `lib/rate-limit-core.ts` before running
+  more than one instance.
+- **No default passwords.** The seed generates one and prints it once.
+- `ADMIN_SESSION_SECRET` is required at runtime; the app throws without it.
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` ships to the browser by design. **Restrict it
+  by HTTP referrer in the Google Cloud console** — that is its only real
+  protection.
 
 ## Notes
 
