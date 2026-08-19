@@ -4,120 +4,145 @@
 **Companion to:** `SWOT.md` (third assessment, 17 August 2026)
 **Date:** 19 August 2026
 
-> **What this adds.** The SWOT assesses the project. PESTEL assesses the
-> environment the project has to survive in — six external forces, none of them
-> controllable, all of them plannable. Where a force reinforces something the
-> SWOT already found, it is cross-referenced rather than repeated.
+> **Structure.** For each of the six forces: what we think is going on, how
+> Tembera fits it, how it doesn't, and a straight verdict on whether it can fit
+> at all. Every section ends with a decision, not a summary.
 >
-> Five findings here do **not** appear in the SWOT at all: image licensing,
-> the project name, memorial-site presentation, Umuganda in opening hours, and
-> mobile money as a payment prerequisite.
->
-> Legal and regulatory points are flagged as *check* rather than asserted.
-> They are the shape of the obligation, not advice — confirm specifics locally.
+> Legal and regulatory points describe the shape of an obligation, not advice.
+> Confirm specifics locally.
 
 ---
 
-## Political
+## P — Political
 
-**P1 — Tourism is national policy, not just an industry.** Rwanda promotes itself abroad deliberately and at expense; the "Visit Rwanda" sponsorships on European football shirts are the visible edge of a sustained destination-marketing strategy. A domestic product pushing the same direction is easier to get heard. *Reinforces O2 (partnership credibility).*
+**What we think.** Rwanda's government wants exactly what Tembera does: more visitors, more digital services, more of the country seen. It is also the holder of the verified place data, and the regulator of tourism businesses.
 
-**P2 — The digital-government agenda favours local tech.** Policy openly supports digitisation and local capability. This matters less for permission and more for receptiveness: an institution choosing between a foreign platform and a Rwandan-built one has a policy reason to prefer yours.
+**How it fits**
+- Tourism is national policy, not merely an industry. Sustained destination marketing — the "Visit Rwanda" sponsorships are its visible edge — means the product pushes in the same direction as the state.
+- Policy openly favours digitisation and local capability. An institution choosing between a foreign platform and a Rwandan-built one has a policy reason to prefer the latter.
+- Entry policy is comparatively open, so arrivals keep growing.
+- The most valuable potential data partner is a public body that already wants tourism to succeed.
 
-**P3 — Entry policy is comparatively open.** Rwanda has liberalised visa access relative to the region. More arrivals is straightforwardly more demand for the thing Tembera does.
+**How it doesn't fit**
+- Demand is hostage to foreign travel advisories. Regional instability suppresses precisely the high-value trekking demand the economics rely on, with zero influence available.
+- The needed partner is also the regulator. Tembera is never a fully independent commercial actor.
+- In a market this size, state priorities become the product's priorities by default.
 
-**P4 — Regional instability is a demand shock you cannot hedge.** Unrest near the north-western border periodically triggers foreign travel advisories, and those advisories suppress exactly the high-value trekking demand the economics depend on (see E1). Any plan that only works in a calm year is not a plan. *Compounds T-side fragility in the SWOT.*
-
-**P5 — Your best partner is also your regulator.** The bodies that hold the verified place data (see O2 in the SWOT) also license and grade tourism businesses. That concentration makes the relationship higher-stakes than an ordinary commercial partnership, in both directions.
-
----
-
-## Economic
-
-**E1 — The national strategy is high-value, low-volume.** Gorilla permits are priced around USD 1,500 deliberately — fewer visitors, higher spend, less pressure on the habitat. Tembera's booking table already reflects this. The consequence for the business model: revenue concentrates in a small number of affluent international visitors, so raw traffic is a poor success metric.
-
-**E2 — MICE travel is an underserved segment that fits this product exactly.** Kigali competes actively for international conferences. Those delegates arrive with unplanned evenings, disposable income, and no local knowledge — the precise gap a curated directory fills. Nobody is serving them well, and reaching them does not require competing with Google on coverage.
-
-**E3 — Local users are not a direct revenue base.** Consumer subscriptions will not scale against local incomes. Realistic revenue is B2B (paid listings, verified badges) or commission on international bookings — which is what the SWOT's O3 already scaffolds.
-
-**E4 — Costs are dollar-denominated and success-scaling.** Hosting and the Maps API bill in USD while local revenue would be in francs. The Maps bill in particular rises with usage, so the cost base grows with the thing you are trying to grow. *Compounds T3 in the SWOT.*
-
-**E5 — Mobile money is the payment rail, not cards.** Card-only checkout excludes most domestic users. If payments are added (SWOT W6), mobile money has to be in the design from the start; retrofitting a second rail is materially harder than planning for two.
+**Verdict — Yes, and this is the most favourable of the six.** But fit here means operating as part of a national programme rather than around it. Build for institutional alignment, and never assume a calm year.
 
 ---
 
-## Social
+## E — Economic
 
-**S1 — The project name aligns with national campaign language.** *(not in the SWOT)* "Tembera" means to travel or visit, and domestic tourism campaigns have used closely similar wording. The upside is real: the name is instantly legible to Rwandans. The risk is a branding or trademark collision. **Check before company registration or any printed material** — a rename after launch is expensive and a check is not.
+**What we think.** Rwanda deliberately sells few, expensive experiences rather than many cheap ones — a gorilla permit is priced around USD 1,500 on purpose. That one strategic choice determines which business models can survive.
 
-**S2 — English-only caps the domestic audience.** English serves inbound visitors and urban professional users. Kinyarwanda is what reaches the domestic market that government policy is actively trying to mobilise. *This is SWOT O5, given a demand-side reason rather than an engineering one.*
+**How it fits**
+- Booking prices already match the real market, so the product is pitched correctly rather than aspirationally.
+- MICE/conference visitors are a genuine, underserved gap: unplanned evenings, disposable income, no local knowledge. Reaching them does not require out-covering Google.
+- Paid listings, featured placement and booking commission all already have the necessary structure in the schema (SWOT O3).
 
-**S3 — Memorial sites require a different presentation.** *(not in the SWOT)* Genocide memorials are in the catalogue. Rendering them with star ratings, "book now" prompts or promotional language would cause genuine offence and lasting reputational damage. This needs an explicit design decision — a category that suppresses ratings and commercial affordances — not a default template applied uniformly. It is also fully consistent with the honesty rules the product already keeps.
+**How it doesn't fit**
+- Consumer subscriptions will not scale against local incomes.
+- Advertising will not work either: high-value/low-volume tourism never generates the traffic that ad revenue requires.
+- Costs are USD-denominated (hosting, Maps) while local revenue would be RWF — and the Maps bill grows with success.
+- Card-only checkout would exclude most domestic users, who transact by mobile money.
 
-**S4 — Review culture must be seeded, not assumed.** The review feature works, but unsolicited reviewing is a learned behaviour that is less established here than in markets the feature pattern comes from. The UGC flywheel (SWOT O6) will need deliberate priming.
-
-**S5 — The diaspora is a reachable, high-intent audience.** Rwandans abroad travel home, spend like visitors, are digitally comfortable, and are far cheaper to reach online than domestic users.
-
----
-
-## Technological
-
-**T1 — The target device is a low-end Android phone.** Performance characteristics on such hardware differ sharply from a development machine. Test on real budget hardware before launch; it is the highest-information test available and it is nearly free.
-
-**T2 — Data cost makes page weight a user-facing price.** Mobile data is expensive relative to income, so every megabyte shipped is money spent by the user. This is the strongest argument for the offline/PWA direction (SWOT O4), stronger than the convenience argument.
-
-**T3 — Connectivity is weakest where the product is most needed.** Coverage is good in Kigali and patchier around the national parks — which is exactly where a visitor is standing when they most need to know what is nearby. An online-only travel app fails at its moment of maximum value.
-
-**T4 — Platform dependency on Google Maps is a structural exposure, not just a bill.** Terms, pricing and deprecation timelines are set externally. Open alternatives exist and are worth knowing about before the cost forces the question. *SWOT T3.*
-
-**T5 — Conversational AI is displacing directory search.** Users increasingly ask an assistant where to eat rather than opening a directory. The defence is proprietary verified data a general model does not have — which is the same conclusion the SWOT reaches from the competitive angle (T2), arriving from the technology side.
+**Verdict — Yes, but only on one model.** Charging businesses, or taking commission on international bookings, fits this economy. Charging local consumers, or selling advertising against traffic, does not. The two lead to materially different products, so choose deliberately and early.
 
 ---
 
-## Environmental
+## S — Social
 
-**En1 — Conservation is the product, not context.** Gorillas, the parks and Rwanda's environmental reputation are the primary draw. A directory that reflects that credibly has something to say beyond listings, and aligns with how the country sells itself.
+**What we think.** There is no single audience. There are three — international visitors, urban Rwandans, and the diaspora — with different needs and different languages.
 
-**En2 — Umuganda materially affects opening hours.** *(not in the SWOT)* On community service mornings many businesses close and movement is restricted. Tembera publishes opening hours; hours that ignore Umuganda are wrong in a way users notice monthly. This is a concrete, fixable data-model concern — a recurring exception on hours — and it is the kind of local accuracy a foreign competitor will not encode.
+**How it fits**
+- The name is instantly legible domestically: *tembera* means to travel or visit.
+- Mobile-first design matches how people here actually go online.
+- The diaspora is high-intent, digitally comfortable, and far cheaper to reach online than domestic users.
+- Domestic tourism is being actively promoted, so a home audience is being created for you.
 
-**En3 — Seasonality is real and currently unaddressed.** Rainy seasons affect trekking conditions and some road access. Bookings will be seasonal, and "best time to visit" is genuinely useful content the product does not yet offer.
+**How it doesn't fit**
+- English-only serves visitors and urban professionals while excluding the mass domestic market (SWOT O5, given a demand-side rationale).
+- Unsolicited reviewing is a learned behaviour, less established here than in the markets this feature pattern came from. The UGC flywheel starts cold.
+- Genocide memorial sites are in the catalogue and cannot carry star ratings, booking prompts or promotional language without causing genuine offence. A uniform listing template is the wrong default.
+- The name may collide with official campaign branding or a registered mark. Untested — check before company registration or print.
 
-**En4 — Environmental rules are enforced and surprise visitors.** The single-use plastic bag ban is the well-known example. Surfacing practical compliance information is exactly the trustworthy, non-obvious content that earns a directory a place on someone's phone.
-
-**En5 — The premium segment cannot grow.** Permit numbers are capped by conservation policy. However good the product gets, that segment's volume is fixed — so growth planning has to look to the rest of the country, which conveniently is also where the data gap is largest.
-
----
-
-## Legal
-
-**L1 — Data protection is substantially handled.** Law N° 058/2021 access and erasure rights are implemented (SWOT S11). Outstanding: a monitored contact address, and **checking** whether formal registration as a data controller applies to this service.
-
-**L2 — Listing images are a live copyright exposure.** *(not in the SWOT)* Place photos are hotlinked from third-party hosts. The sources differ materially in what they permit: some are freely usable, some require attribution, and some appear to be used without any licence at all. The exposure increases the moment the site is public and commercial. **Audit the image sources before launch**, attribute what requires attribution, and drop what cannot be justified. This is the single most under-appreciated legal risk in the project.
-
-**L3 — Taking payment changes your legal category.** Collecting enquiries is low risk. Taking money for a third party's tour makes Tembera a travel intermediary, bringing licensing, consumer-protection and refund obligations. **Check requirements before enabling payments,** not after.
-
-**L4 — Publishing business data carries correction duties.** Listing a company's contact details and rating implies an obligation to correct or remove on request. A "report a problem with this listing" route discharges much of that and improves data quality simultaneously — one mechanism serving compliance and the product at once.
-
-**L5 — Monetisation triggers registration and tax obligations.** Business registration and VAT compliance follow revenue. Not urgent now; unavoidable at monetisation.
+**Verdict — It already fits visitors and the diaspora; it does not yet fit Rwandans at large.** Kinyarwanda is the gate, and until it exists the domestic market is unreachable rather than merely slow. Memorial presentation needs an explicit design decision before launch.
 
 ---
 
-## What PESTEL changes in the plan
+## T — Technological
 
-| Action | Why it is here and not in the SWOT | When |
-|---|---|---|
-| **Audit listing image licences** | External copyright regime, not a code defect (L2) | Before launch |
-| **Check the "Tembera" name** against campaign branding and trademarks | External branding and IP environment (S1) | Before registering anything |
-| **Decide memorial-site presentation** — no ratings, no booking affordances | Social and cultural expectation, not a technical requirement (S3) | Before launch |
-| **Test on a low-end Android phone** | Device reality of the market, invisible from a dev machine (T1) | This week |
-| **Plan mobile money, and Umuganda in opening hours** | Local payment rails and local calendar (E5, En2) | Before payments |
+**What we think.** The real deployment environment is cheap Android hardware, expensive mobile data, and weak signal — with the weakest signal exactly where the parks and the tourists are.
 
-### How the two analyses combine
+**How it fits**
+- Already built mobile-first, with phone-shaped layouts and a bottom bar.
+- The catalogue is only 495 places — small enough to ship to a device and keep there.
+- The architecture supports an offline mode without a rewrite.
 
-The SWOT concluded that **verified place data** is the highest-value work
-remaining. PESTEL independently supports that from four directions: it is the
-defence against AI assistants (T5), the thing a foreign competitor cannot
-replicate (En2 — local operating rhythms), the basis of the institutional
-partnership (P1, P5), and the content that serves the underserved MICE segment
-(E2). Two frameworks reaching the same conclusion by different routes is the
-strongest signal either can give.
+**How it doesn't fit**
+- It requires a connection today. A travel app that fails at the trailhead fails at its moment of maximum value.
+- It has never been tested on genuinely low-end hardware; a development machine reveals nothing about that experience.
+- Every megabyte shipped is money spent by the user, and images are the heavy part.
+- The map needs both connectivity and Google's continued terms (SWOT T3).
+- Conversational AI is displacing directory search outright.
+
+**Verdict — Not yet, but this is the closest of the six to fitting.** One change flips it: make it work offline. That single piece of work answers the connectivity problem, the data-cost problem and much of the AI-substitution problem simultaneously. Until then the product performs best exactly where it is least needed.
+
+---
+
+## E — Environmental
+
+**What we think.** Rwandan tourism is built on conservation, and daily life runs on local rhythms — Umuganda, the rainy seasons — that a directory must encode to be correct.
+
+**How it fits**
+- The existing honesty rules (no invented ratings, no padded categories) sit naturally alongside a conservation-credible national brand.
+- The parks provide genuinely strong, actively searched content.
+- Practical compliance information visitors get caught out by — the single-use plastic bag ban being the famous case — is exactly the trustworthy content that earns a place on a phone.
+
+**How it doesn't fit**
+- Opening hours ignore Umuganda. On community-service mornings much of the country closes, so the site will be confidently wrong once a month.
+- No seasonality information exists, though rain materially changes what is possible.
+- The premium segment is capped by permit policy, so growth must come from the rest of the country — where the data is weakest.
+
+**Verdict — It fits in spirit but not yet in detail.** The values already align; the gap is accuracy, and accuracy is fixable. Encoding local rhythms like Umuganda is also precisely what a foreign competitor will never bother to do — so the fix doubles as a moat.
+
+---
+
+## L — Legal
+
+**What we think.** The project is now in reasonable shape on personal data and poor shape on content and commerce. Critically, its legal category *changes* the moment it takes money.
+
+**How it fits**
+- Law N° 058/2021 access and erasure rights are genuinely implemented (SWOT S11) — ahead of most products this size.
+- Collecting enquiries rather than payments keeps the current risk profile low.
+- The admin system already provides the mechanism to correct or remove a listing on request.
+
+**How it doesn't fit**
+- Listing images are hotlinked from third-party hosts under mixed terms: some freely usable, some requiring attribution, some apparently unlicensed. Exposure rises the moment the site is public and commercial. **This is the most under-appreciated legal risk in the project.**
+- Taking payment for a third party's tour makes Tembera a travel intermediary, attracting licensing, consumer-protection and refund obligations.
+- The privacy policy's contact address is a placeholder pointing at no monitored mailbox.
+- Revenue brings business registration and tax obligations not yet examined.
+
+**Verdict — It fits today, and stops fitting the day it monetises.** Two things must happen before that day: audit where every listing image comes from, and check what taking payments requires. Both are cheap now and expensive once trading.
+
+---
+
+## Conclusion — can Tembera fit, or not?
+
+**Yes. The environment is unusually favourable, and none of the poor fits are permanent.**
+
+| Force | Verdict |
+|---|---|
+| Political | Fits — strongly |
+| Economic | Fits — on one business model only |
+| Social | Fits visitors and diaspora; not yet domestic |
+| Technological | Not yet — offline support flips it |
+| Environmental | Fits in spirit, not yet in detail |
+| Legal | Fits until monetisation |
+
+Four of six already fit or nearly fit. The two that don't each have a single identified change that flips them — offline support, and image licensing before payments. Neither is a rewrite; neither is expensive today.
+
+**But it fits as one specific thing, not as anything at all.** Tembera fits as a curated directory operating alongside the national tourism effort, serving high-value inbound visitors, the diaspora, and — once it speaks Kinyarwanda — Rwandans travelling their own country. It does not fit as a mass-market consumer application funded by advertising: the economics of a high-value/low-volume market and the language barrier would defeat that version, and no amount of engineering quality would rescue it.
+
+**The deciding factor is the one the SWOT reached independently: verified place data.** PESTEL supports it from four separate directions — it is the defence against AI substitution (T), the asset a foreign competitor will not replicate (E, local operating rhythms), the basis of the institutional relationship (P), and the content the underserved conference segment actually needs (E). Two frameworks converging on the same conclusion by different routes is the strongest signal either can give.

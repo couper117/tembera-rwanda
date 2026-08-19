@@ -404,28 +404,143 @@
     width: 100%;
   }
 
-  .force ul { list-style: none; display: flex; flex-direction: column; gap: 0.95rem; }
-  .force li { display: flex; flex-direction: column; gap: 0.15rem; }
-  .force li b { font-weight: 700; font-size: 1rem; }
-  .force li span { color: var(--ink-2); font-size: 0.98rem; }
-
-  .mark {
-    display: inline-block;
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border: 1px solid currentColor;
-    border-radius: 3px;
-    padding: 0.03rem 0.32rem;
-    margin-left: 0.4rem;
-    vertical-align: 0.12em;
-    white-space: nowrap;
+  .think {
+    font-size: 1rem;
+    color: var(--ink);
   }
 
-  .mark-helps { color: var(--good); }
-  .mark-risk { color: var(--danger); }
-  .mark-watch { color: var(--muted); }
+  .think .lead {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  /* Fits / doesn't fit, side by side where there's room. The comparison is
+     the point, so they must be readable against each other, not stacked
+     paragraphs the reader has to hold in their head. */
+  .sides {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+
+  .side {
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--hue);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    background: var(--ground);
+  }
+
+  .side h4 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--hue);
+  }
+
+  .side ul { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+
+  .side li {
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    padding-left: 1.1rem;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .side li::before {
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+    color: var(--hue);
+  }
+
+  .side-fits { --hue: var(--good); }
+  .side-fits li::before { content: "+"; }
+  .side-not { --hue: var(--danger); }
+  .side-not li::before { content: "−"; }
+
+  .verdict {
+    border-top: 1px solid var(--rule);
+    padding-top: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .verdict .label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .verdict .call {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    line-height: 1.3;
+    color: var(--vhue, var(--ink));
+  }
+
+  .verdict p { font-size: 0.95rem; color: var(--ink-2); }
+
+  .v-yes { --vhue: var(--good); }
+  .v-maybe { --vhue: var(--bad); }
+  .v-no { --vhue: var(--danger); }
+
+  /* ------------------------------------------------------- final call */
+
+  .final {
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: clamp(1.35rem, 4vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .final h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 5.5vw, 2.35rem);
+    line-height: 1.1;
+  }
+
+  .final .answer {
+    font-family: var(--display);
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    line-height: 1.35;
+    color: var(--good);
+  }
+
+  .final p { color: var(--ink-2); }
+
+  .tally {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.5rem 1.25rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1rem;
+  }
+
+  .tally div {
+    font-size: 0.94rem;
+    color: var(--ink-2);
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .tally b { color: var(--ink); flex: none; }
 </style>
 
 <div class="page">
@@ -766,9 +881,9 @@
       you control. All of it is something you can plan for.
     </p>
     <p>
-      Unlike the SWOT, these aren't sorted into good and bad — a force is just
-      a force. So each point is marked instead: <b>helps you</b>,
-      <b>risk</b>, or <b>watch</b>.
+      For each of the six, the same three questions: <b>what we think</b> is
+      going on, <b>how Tembera fits</b> it, <b>how it doesn't</b> — and then a
+      straight answer to <b>can it fit or not</b>. No sitting on the fence.
     </p>
   </section>
 
@@ -776,213 +891,320 @@
     <div class="force-head">
       <span class="badge">P</span>
       <h3>Political</h3>
-      <p class="means">Government, policy and stability — who else wants this to succeed.</p>
+      <p class="means">Government, policy and stability.</p>
     </div>
-    <ul>
-      <li>
-        <b>The government actively wants more tourism<span class="mark mark-helps">Helps</span></b>
-        <span>Tourism is a stated national priority, and Rwanda spends real money promoting itself abroad — the "Visit Rwanda" sponsorships on European football shirts are the visible part. You are pushing in the same direction as national policy, which makes doors easier to open.</span>
-      </li>
-      <li>
-        <b>Rwanda's digital agenda works in your favour<span class="mark mark-helps">Helps</span></b>
-        <span>Government policy openly favours digital services and local tech. A Rwandan-built digital product is the kind of thing institutions like to be seen supporting.</span>
-      </li>
-      <li>
-        <b>Open visa policy brings more visitors<span class="mark mark-helps">Helps</span></b>
-        <span>Rwanda has made entry easier than most countries in the region. More arrivals means more people needing exactly what your site does.</span>
-      </li>
-      <li>
-        <b>Regional instability can cut bookings overnight<span class="mark mark-risk">Risk</span></b>
-        <span>Unrest in the wider region — particularly near the north-western border — can trigger foreign travel warnings. Those warnings hit gorilla-trekking demand hard, and you have no influence over them. Don't build a business plan that only works in a good year.</span>
-      </li>
-      <li>
-        <b>The government is also a gatekeeper<span class="mark mark-watch">Watch</span></b>
-        <span>The same body you'd want as a data partner also regulates tourism. That's an opportunity, but it means staying on good terms matters more than it would in a purely private market.</span>
-      </li>
-    </ul>
+
+    <p class="think">
+      <span class="lead">What we think</span>
+      Rwanda's government wants exactly what Tembera does — more visitors, more
+      digital services, more of the country seen. It is also the body that holds
+      the verified place data, and the body that regulates tourism.
+    </p>
+
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Tourism is national policy, not just an industry. You are pushing the same direction as the state, which makes doors open rather than close.</li>
+          <li>Policy actively favours digital services and local tech. A Rwandan-built product is the kind of thing institutions like to support.</li>
+          <li>Entry rules are open compared with the region, so visitor numbers keep growing.</li>
+          <li>Your best data source is a public body that already wants tourism to succeed.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn't fit</h4>
+        <ul>
+          <li>Your demand is hostage to travel advisories from foreign governments. Regional unrest can cut bookings overnight and you have no influence at all.</li>
+          <li>The partner you need is also the regulator, so you are never a fully independent player.</li>
+          <li>In a small market, government priorities effectively become your priorities. That limits how far you can go your own way.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="verdict v-yes">
+      <span class="label">Can it fit?</span>
+      <p class="call">Yes — this is the most favourable of the six.</p>
+      <p>
+        But fit here means being <b>part of a national programme</b>, not a
+        disruptor working around it. Build the plan to work with institutions,
+        and don't assume a calm year every year.
+      </p>
+    </div>
   </section>
 
   <section class="force">
     <div class="force-head">
       <span class="badge">E</span>
       <h3>Economic</h3>
-      <p class="means">Money — where it comes from, and how people actually pay.</p>
+      <p class="means">Money — where it comes from, and how people pay.</p>
     </div>
-    <ul>
-      <li>
-        <b>Rwanda chose high-value tourism, not high-volume<span class="mark mark-watch">Watch</span></b>
-        <span>A gorilla permit costs around $1,500 on purpose — fewer visitors, each spending more. Your booking page already reflects this. It means your money is in a small number of well-off international visitors, not in mass traffic.</span>
-      </li>
-      <li>
-        <b>Conference travel is a real, overlooked segment<span class="mark mark-helps">Helps</span></b>
-        <span>Kigali works hard to host international conferences. Those visitors have free evenings, no plans, and money — and they need exactly what a good directory gives them: where to eat, what's nearby, what's worth two hours. Almost nobody is serving them well.</span>
-      </li>
-      <li>
-        <b>Local users can't easily be charged<span class="mark mark-risk">Risk</span></b>
-        <span>Charging Rwandan users a subscription won't work at scale. Your realistic money comes from businesses paying to be listed, or commission from international bookings — not from local consumers.</span>
-      </li>
-      <li>
-        <b>Your costs are in dollars<span class="mark mark-risk">Risk</span></b>
-        <span>Hosting and Google Maps bill in USD while much of your potential local revenue is in francs. Currency movement squeezes you from both sides, and the Maps bill grows with your success.</span>
-      </li>
-      <li>
-        <b>Mobile money is how people pay here<span class="mark mark-risk">Risk</span></b>
-        <span>If you add payments and only support cards, you've excluded most Rwandans. Mobile money must be in the plan from the start, not bolted on later.</span>
-      </li>
-    </ul>
+
+    <p class="think">
+      <span class="lead">What we think</span>
+      Rwanda deliberately sells <b>few, expensive</b> tourism experiences rather
+      than mass cheap ones. A gorilla permit costs around $1,500 on purpose.
+      That single choice decides what business model can survive here.
+    </p>
+
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Your booking prices already match the real market, so the product is pitched correctly.</li>
+          <li>Conference visitors are a genuine gap: they arrive with free evenings, money and no local knowledge — exactly what a directory solves. Almost nobody serves them.</li>
+          <li>Paid listings, featured spots and booking commission all already have the structure they need in your database.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn't fit</h4>
+        <ul>
+          <li>You cannot charge local users a subscription. Incomes won't support it.</li>
+          <li>Advertising won't work either — a high-value, low-volume market never produces the traffic that ad money needs.</li>
+          <li>Your costs are in dollars while local revenue would be in francs, and the Google Maps bill grows as you succeed.</li>
+          <li>Card-only payment would exclude most Rwandans, who pay by mobile money.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="verdict v-maybe">
+      <span class="label">Can it fit?</span>
+      <p class="call">Yes — but only on one business model.</p>
+      <p>
+        Charging <b>businesses</b>, or taking commission from international
+        bookings, fits this economy. Charging local users, or selling
+        advertising against traffic, does not. Pick deliberately now, because
+        the two lead to very different products.
+      </p>
+    </div>
   </section>
 
   <section class="force">
     <div class="force-head">
       <span class="badge">S</span>
       <h3>Social</h3>
-      <p class="means">People — who uses this, in what language, and what they expect.</p>
+      <p class="means">People — who uses it, in what language, expecting what.</p>
     </div>
-    <ul>
-      <li>
-        <b>Your project name matches a national campaign<span class="mark mark-watch">Watch</span></b>
-        <span>"Tembera" means to travel or visit, and the government has run domestic tourism campaigns under very similar wording. That's helpful — the name instantly makes sense to Rwandans. But before you print anything or register a company, check the name doesn't clash with official campaign branding or an existing trademark. Better to find out now than after launch.</span>
-      </li>
-      <li>
-        <b>English alone reaches tourists, not Rwandans<span class="mark mark-risk">Risk</span></b>
-        <span>Your site is English-only. That serves visitors and educated urban users. Kinyarwanda is what unlocks the domestic audience — and domestic tourism is something the government is actively pushing.</span>
-      </li>
-      <li>
-        <b>The memorial category demands care<span class="mark mark-risk">Risk</span></b>
-        <span>Genocide memorial sites are in your catalogue. These cannot be presented like restaurants — no star ratings, no "book now", no cheerful marketing language. Getting the tone wrong here would cause real offence and real damage. Worth a deliberate design decision, not a default template.</span>
-      </li>
-      <li>
-        <b>Review culture has to be grown, not assumed<span class="mark mark-watch">Watch</span></b>
-        <span>Your review feature works, but people won't necessarily use it just because it's there. Expect to have to encourage the first wave of reviews rather than waiting for them.</span>
-      </li>
-      <li>
-        <b>The diaspora is a ready-made audience<span class="mark mark-helps">Helps</span></b>
-        <span>Rwandans abroad visit home, travel while they're here, and are comfortable with apps. They're easier to reach online than domestic users and they spend like visitors.</span>
-      </li>
-    </ul>
+
+    <p class="think">
+      <span class="lead">What we think</span>
+      There isn't one audience here, there are three — international visitors,
+      urban Rwandans, and the diaspora — and they don't want the same thing or
+      read the same language.
+    </p>
+
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>The name works instantly for Rwandans: "Tembera" means to travel.</li>
+          <li>Mobile-first design matches how people here actually go online.</li>
+          <li>The diaspora is easy to reach online, spends like visitors, and is comfortable with apps.</li>
+          <li>Domestic tourism is being actively promoted, so there is a growing home audience to capture.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn't fit</h4>
+        <ul>
+          <li>The site is English-only. That serves tourists and urban professionals, and shuts out the mass domestic audience.</li>
+          <li>Review culture is less established than in the markets this feature pattern comes from, so your user-content plan starts cold.</li>
+          <li>Genocide memorials are in your catalogue and simply do not fit a commercial listing template — star ratings and "book now" would cause real offence.</li>
+          <li>The name may collide with official campaign branding. Untested.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="verdict v-maybe">
+      <span class="label">Can it fit?</span>
+      <p class="call">It already fits visitors and the diaspora. It does not yet fit Rwandans at large.</p>
+      <p>
+        <b>Kinyarwanda is the gate.</b> Until it exists, treat the domestic
+        market as unreachable rather than slow. And decide how memorial
+        listings are presented before launch, not after a complaint.
+      </p>
+    </div>
   </section>
 
   <section class="force">
     <div class="force-head">
       <span class="badge">T</span>
       <h3>Technological</h3>
-      <p class="means">Devices, connections and platforms — the conditions your code runs in.</p>
+      <p class="means">The real conditions your code has to run in.</p>
     </div>
-    <ul>
-      <li>
-        <b>Assume a cheap Android phone, not a laptop<span class="mark mark-risk">Risk</span></b>
-        <span>Most users will be on modest Android devices. Heavy pages feel slow on those in a way they never do on your development machine. Test on a real low-end phone before launch — it is the single most revealing test you can run.</span>
-      </li>
-      <li>
-        <b>Mobile data is expensive, so page weight is a real cost<span class="mark mark-risk">Risk</span></b>
-        <span>Every megabyte you send costs your user money. This is the strongest argument for the offline version mentioned in the SWOT — and a reason to keep images lean.</span>
-      </li>
-      <li>
-        <b>Coverage is worst exactly where tourists go<span class="mark mark-risk">Risk</span></b>
-        <span>Connectivity is good in Kigali and patchier around the national parks. A travel app that needs a connection fails at the moment of greatest need — standing at a trailhead deciding where to eat.</span>
-      </li>
-      <li>
-        <b>You're tied to Google's map, and its pricing<span class="mark mark-risk">Risk</span></b>
-        <span>Already in the SWOT, but it's a platform force too: the terms and the bill are set by someone else. Worth knowing that open alternatives exist if the cost ever bites.</span>
-      </li>
-      <li>
-        <b>AI travel assistants are coming for this space<span class="mark mark-watch">Watch</span></b>
-        <span>People increasingly ask an AI "where should I eat in Kigali" instead of opening a directory. Your defence is having verified local data that a general model doesn't — which is the same conclusion the SWOT reached from a different direction.</span>
-      </li>
-    </ul>
+
+    <p class="think">
+      <span class="lead">What we think</span>
+      Your users are on <b>cheap Android phones, with expensive data, in places
+      with weak signal</b> — and the weakest signal is exactly where the parks
+      and the tourists are.
+    </p>
+
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>The app is already built mobile-first, with a bottom bar and phone-shaped layouts.</li>
+          <li>Your catalogue is small — 495 places. That's little enough to send to a phone and keep there.</li>
+          <li>The architecture can support an offline version without a rewrite.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn't fit</h4>
+        <ul>
+          <li>It needs a connection today. A travel app that fails at the trailhead fails at its most valuable moment.</li>
+          <li>Nobody has tested it on a genuinely cheap phone. Your laptop tells you nothing about that experience.</li>
+          <li>Every megabyte you send costs your user money, and images are the heavy part.</li>
+          <li>The map needs both a connection and Google's goodwill.</li>
+          <li>People increasingly ask an AI where to eat instead of opening a directory at all.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="verdict v-no">
+      <span class="label">Can it fit?</span>
+      <p class="call">Not yet — but it is the closest of the six to fitting.</p>
+      <p>
+        One change flips it: <b>make it work offline.</b> That single piece of
+        work answers the signal problem, the data-cost problem, and much of the
+        AI problem at once. Until then the product works best exactly where it
+        is least needed.
+      </p>
+    </div>
   </section>
 
   <section class="force">
     <div class="force-head">
       <span class="badge">E</span>
       <h3>Environmental</h3>
-      <p class="means">Conservation, climate and local customs — Rwanda's tourism is built on these.</p>
+      <p class="means">Conservation, climate, and the rhythms of local life.</p>
     </div>
-    <ul>
-      <li>
-        <b>Conservation is the product, not a side note<span class="mark mark-helps">Helps</span></b>
-        <span>Gorillas, national parks and Rwanda's clean-and-green reputation are the main reasons people come. A directory that respects and explains that fits the country's story — and gives you something meaningful to say beyond listings.</span>
-      </li>
-      <li>
-        <b>Umuganda closes things on the last Saturday<span class="mark mark-risk">Risk</span></b>
-        <span>On community service morning, many businesses shut and movement is restricted. Your site shows opening hours — if it tells a visitor a place is open when the whole country is at Umuganda, it's wrong in a way that's very visible. This is a concrete thing to handle in your data.</span>
-      </li>
-      <li>
-        <b>Rainy seasons change what's possible<span class="mark mark-watch">Watch</span></b>
-        <span>Trekking conditions and some road access shift with the rains. Bookings will be seasonal, and "best time to visit" is genuinely useful content you don't currently offer.</span>
-      </li>
-      <li>
-        <b>Visitor rules are stricter than people expect<span class="mark mark-helps">Helps</span></b>
-        <span>Rwanda enforces environmental rules — the plastic bag ban is the famous one — and visitors are regularly caught out. Telling them plainly is exactly the kind of practical, trustworthy content that makes a directory worth keeping.</span>
-      </li>
-      <li>
-        <b>Growth at the gorilla sites is capped by policy<span class="mark mark-watch">Watch</span></b>
-        <span>Permit numbers are limited deliberately to protect the animals. That segment cannot grow much, however good your site gets — so plan growth around the rest of the country.</span>
-      </li>
-    </ul>
+
+    <p class="think">
+      <span class="lead">What we think</span>
+      Rwanda's tourism is built on conservation, and daily life runs on local
+      rhythms — Umuganda, the rainy seasons — that a directory has to know
+      about to be correct.
+    </p>
+
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Your honesty rules — no invented ratings, no fake listings — sit naturally alongside a conservation-credible national brand.</li>
+          <li>The parks give you genuinely strong content that people actively search for.</li>
+          <li>Practical rules visitors get caught out by, like the plastic bag ban, are exactly the useful content that earns a place on someone's phone.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn't fit</h4>
+        <ul>
+          <li>Your opening hours ignore Umuganda. Once a month your site will confidently tell people places are open when the country is closed.</li>
+          <li>There's no seasonality information, though rain genuinely changes what's possible.</li>
+          <li>The premium segment is capped by permit limits, so your growth has to come from the rest of the country — where your data is weakest.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="verdict v-maybe">
+      <span class="label">Can it fit?</span>
+      <p class="call">It fits in spirit, but not yet in the details.</p>
+      <p>
+        The values line up already. The gap is <b>accuracy</b>, not intent — and
+        accuracy is fixable. Encoding things like Umuganda is also exactly what
+        a foreign competitor will never bother to do.
+      </p>
+    </div>
   </section>
 
   <section class="force">
     <div class="force-head">
       <span class="badge">L</span>
       <h3>Legal</h3>
-      <p class="means">Rules you must follow — some already handled, some not yet looked at.</p>
+      <p class="means">Rules you must follow — some handled, some not yet looked at.</p>
     </div>
-    <ul>
-      <li>
-        <b>Data protection: mostly handled<span class="mark mark-helps">Helps</span></b>
-        <span>Law N° 058/2021 rights are implemented — people can see, download and delete their data. What's left is administrative: a real contact address, and checking whether you need to register formally as a data handler.</span>
-      </li>
-      <li>
-        <b>Your place photos may not be licensed<span class="mark mark-risk">Risk</span></b>
-        <span>This one is new, and it isn't in the SWOT. Your listings pull images from other people's websites. Some sources are fine, some require crediting the photographer, and some are almost certainly being used without permission. That's a copyright exposure that grows the moment the site is public and commercial. Worth an audit before launch.</span>
-      </li>
-      <li>
-        <b>Taking bookings makes you a travel middleman<span class="mark mark-risk">Risk</span></b>
-        <span>Right now you collect enquiries, which is low risk. The moment you take money for someone else's tour, you're an intermediary — which brings licensing, consumer protection and refund obligations. Check the requirements before switching payments on, not after.</span>
-      </li>
-      <li>
-        <b>Listing real businesses carries obligations<span class="mark mark-watch">Watch</span></b>
-        <span>Publishing a company's name, contact details and a rating means being able to correct or remove it when they ask. A simple "report a problem with this listing" route protects you and improves your data at the same time.</span>
-      </li>
-      <li>
-        <b>Trading properly means registering properly<span class="mark mark-watch">Watch</span></b>
-        <span>Once money changes hands, business registration and tax obligations follow. Not urgent today; unavoidable the moment you monetise.</span>
-      </li>
-    </ul>
+
+    <p class="think">
+      <span class="lead">What we think</span>
+      You are now in reasonable shape on personal data, and in poor shape on
+      content and commerce. Your legal position also <b>changes category</b> the
+      moment you take money.
+    </p>
+
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Data protection under Law N° 058/2021 is genuinely implemented — people can see, download and delete their data.</li>
+          <li>Collecting enquiries rather than payments keeps you low-risk today.</li>
+          <li>The admin system already gives you a way to correct or remove a listing when a business asks.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn't fit</h4>
+        <ul>
+          <li>Your listing photos are pulled from other people's sites. Some need crediting; some are almost certainly not licensed at all.</li>
+          <li>Taking payment for someone else's tour makes you a travel middleman, with licensing and refund obligations attached.</li>
+          <li>The privacy policy points at a mailbox nobody reads.</li>
+          <li>Earning money brings business registration and tax duties you haven't looked at.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="verdict v-maybe">
+      <span class="label">Can it fit?</span>
+      <p class="call">It fits today. It stops fitting the day you monetise.</p>
+      <p>
+        Two things to do before that day: <b>audit where your photos come
+        from</b>, and check what taking payments requires. Both are cheap now
+        and expensive once you're trading.
+      </p>
+    </div>
   </section>
 
-  <section class="todo">
-    <h2>What PESTEL adds to your plan</h2>
-    <p>Five things the SWOT didn't surface, because they come from outside the code.</p>
+  <!-- ============================================== FINAL CALL -->
 
-    <ul class="jobs">
-      <li class="job-now">
-        <p class="when">Before launch</p>
-        <b>Audit your place photos</b>
-        <span>Check where each listing image comes from and whether you're allowed to use it. Credit what needs crediting, drop what you can't justify. Copyright complaints are cheap to avoid now and expensive later.</span>
-      </li>
-      <li class="job-now">
-        <p class="when">Before you print or register anything</p>
-        <b>Check the "Tembera" name</b>
-        <span>Confirm it doesn't clash with official campaign branding or a registered trademark. Five minutes of checking against a rename after launch.</span>
-      </li>
-      <li class="job-soon">
-        <p class="when">Soon — a design decision, not a code one</p>
-        <b>Decide how memorial sites are presented</b>
-        <span>They shouldn't carry star ratings or booking prompts like a restaurant. Choose deliberately how those listings look and read.</span>
-      </li>
-      <li class="job-soon">
-        <p class="when">Soon — one afternoon</p>
-        <b>Test on a cheap Android phone</b>
-        <span>Not your laptop, not an emulator. It's the fastest way to find out what your real users actually experience.</span>
-      </li>
-      <li class="job-later">
-        <p class="when">When you add payments</p>
-        <b>Plan for mobile money and for Umuganda</b>
-        <span>Card-only payment excludes most Rwandans. And opening hours that ignore Umuganda mornings will be visibly wrong once a month.</span>
-      </li>
-    </ul>
+  <section class="final">
+    <h2>So — can Tembera fit or not?</h2>
+
+    <p class="answer">
+      Yes. The environment is unusually favourable, and none of the poor fits
+      are permanent.
+    </p>
+
+    <p>
+      Four of the six forces already fit or nearly fit. The two that don't
+      each have <b>one identified change</b> that flips them: make it work
+      offline, and sort out photo licensing before taking money. Neither is a
+      rewrite. Neither is expensive today.
+    </p>
+
+    <div class="tally">
+      <div><b>Political</b> fits — strongly</div>
+      <div><b>Economic</b> fits — one model only</div>
+      <div><b>Social</b> fits visitors, not yet locals</div>
+      <div><b>Technological</b> not yet — offline flips it</div>
+      <div><b>Environmental</b> fits in spirit, not detail</div>
+      <div><b>Legal</b> fits until you monetise</div>
+    </div>
+
+    <p>
+      <b>But it fits as one specific thing, not as anything you like.</b>
+      Tembera fits as a curated directory working alongside the national
+      tourism effort, serving high-value visitors, the diaspora, and — once it
+      speaks Kinyarwanda — Rwandans travelling their own country. It does not
+      fit as a mass-market consumer app funded by advertising. The economics
+      and the language barrier would defeat that version, and no amount of good
+      engineering would rescue it.
+    </p>
+
+    <p>
+      The deciding factor is the same one the SWOT landed on from a completely
+      different direction: <b>verified place data.</b> It is what makes the
+      institutional partnership possible, what an AI assistant cannot
+      replicate, what a foreign competitor won't bother to encode, and what the
+      conference-visitor segment actually needs. Two frameworks arriving at the
+      same answer by separate routes is the strongest signal either one can
+      give you.
+    </p>
   </section>
 
   <p class="footnote">
