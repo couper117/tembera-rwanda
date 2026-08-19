@@ -50,7 +50,7 @@
 
 **S7 — The pure domain layer is tested.** `engine.ts`, `search.ts` and `geo.ts` took their data as arguments all along; the unit tests now hold that behaviour in place, including the honesty rules — that an unrated place is excluded from "Top rated" rather than ranked last, that an empty subcategory reports zero instead of disappearing, and that sub-kilometre district distances are suppressed.
 
-**S8 — The work is in version control with a pipeline behind it.** *(new)* Two commits on a branch, pushed, with CI running lint, typecheck, tests, a seeded build against real Postgres, an audit, and a scan for committed API keys.
+**S8 — The work is in version control with a pipeline behind it.** *(new)* Commits on a pushed branch, with CI defined to run lint, typecheck, tests, a seeded build against real Postgres, an audit, and a scan for committed API keys. The push triggered its first run; **that run's result has not been confirmed** — check the Actions tab before treating the pipeline as proven.
 
 **S9 — Honesty is engineered into the UI, and no longer contradicted.** Ratings render only where real; district coordinates are marked `~`; empty categories say "Coming soon". The About page's stale claim that "Tembera has no public accounts" — false since accounts became database-backed — has been corrected.
 
