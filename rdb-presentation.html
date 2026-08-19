@@ -186,8 +186,114 @@
     color: var(--dot);
     font-size: 1.05em;
   }
+  ul.planned li::before {
+    content: var(--glyph);
+    background: none;
+    top: 0;
+    width: auto;
+    height: auto;
+    font-weight: 700;
+    color: var(--dot);
+    font-size: 1.05em;
+  }
+
   ul.check { --dot: var(--accent); --glyph: "\2713"; }
   ul.cross { --dot: var(--clay); --glyph: "\2014"; }
+  /* Planned work is marked with an arrow, never a tick. The distinction
+     between what runs today and what is proposed has to survive a glance
+     from the back of the room. */
+  ul.planned { --dot: var(--blue); --glyph: "\2192"; }
+
+  /* ------------------------------------------------------------ phases */
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: clamp(0.8rem, 1.8vw, 1.4rem);
+  }
+
+  .phase {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--hue, var(--accent));
+    border-radius: 10px;
+    padding: clamp(1rem, 1.8vw, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .phase .step {
+    font-family: var(--mono);
+    font-size: clamp(0.68rem, 1.05vw, 0.85rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hue, var(--accent));
+  }
+
+  .phase h3 { color: var(--ink); }
+
+  .phase .when {
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    color: var(--muted);
+  }
+
+  .phase ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+  }
+
+  .phase li {
+    font-size: clamp(0.92rem, 1.4vw, 1.15rem);
+    color: var(--ink-2);
+    line-height: 1.35;
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .phase li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: var(--hue, var(--accent));
+  }
+
+  .badge-live {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: clamp(0.62rem, 0.95vw, 0.78rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    vertical-align: 0.2em;
+    margin-left: 0.6rem;
+    white-space: nowrap;
+  }
+
+  .badge-plan {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: clamp(0.62rem, 0.95vw, 0.78rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    vertical-align: 0.2em;
+    margin-left: 0.6rem;
+    white-space: nowrap;
+  }
 
   /* ------------------------------------------------------------ grids */
 
@@ -437,7 +543,7 @@
   <!-- 3 ------------------------------------------------------------- -->
   <section class="slide">
     <div class="stack">
-      <p class="eyebrow">What it is</p>
+      <p class="eyebrow">What it is <span class="badge-live">Working now</span></p>
       <h2>A searchable guide to where to eat, stay, worship, shop and visit.</h2>
       <p class="lede">
         Search it, filter it, find what is near you, get directions. That is
@@ -466,7 +572,7 @@
   <!-- 4 ------------------------------------------------------------- -->
   <section class="slide">
     <div class="stack">
-      <p class="eyebrow">Status — what is built and working today</p>
+      <p class="eyebrow">Status <span class="badge-live">Working now</span></p>
       <h2>This is a working system, not a concept.</h2>
       <div class="cols">
         <ul class="marks check">
@@ -494,17 +600,55 @@
   <!-- 5 ------------------------------------------------------------- -->
   <section class="slide">
     <div class="stack">
-      <p class="eyebrow">Status — what is not built yet</p>
-      <h2>What we have not done, said plainly.</h2>
+      <p class="eyebrow">Our approach</p>
+      <h2>Today we are showing you the experience. The rest is built on your go-ahead.</h2>
+      <p class="lede">
+        We chose to build the thing you can actually see and judge first, rather
+        than ask you to fund a description.
+      </p>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>What that means today</h3>
+          <p>A complete, working front end you can click through, on real
+          Rwandan data, with the admin system behind it. Nothing on the next
+          slides is a mock-up.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>What comes with a go-ahead</h3>
+          <p>Verified data, five languages, offline use, payments, and a
+          business portal. The plan is costed, sequenced and ready — it needs a
+          mandate, not a research phase.</p>
+        </div>
+      </div>
+      <p>
+        Throughout this deck: <span class="badge-live">Working now</span>
+        <span class="badge-plan">Planned</span> — so it is always clear which
+        is which.
+      </p>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>This is the framing slide. Say plainly that the front end is real and
+      the operational build follows their decision. Keep the two labels honest
+      all the way through — the moment a planned feature is described as
+      working, everything else on the deck becomes questionable.</p>
+    </div>
+  </section>
+
+  <!-- 5b ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Being straight with you</p>
+      <h2>What today's version cannot do yet.</h2>
       <div class="cols">
         <ul class="marks cross">
-          <li><strong>The place data is not verified.</strong> Real institutions, but not a checked register. This is what we are here to discuss.</li>
-          <li><strong>English only.</strong> French, Kinyarwanda, Swahili, Chinese and German are planned.</li>
+          <li><strong>The place data is researched, not officially verified.</strong> Real institutions, but not a checked register. This is the main reason we are here.</li>
+          <li><strong>English only.</strong> Five more languages are designed and scheduled.</li>
         </ul>
         <ul class="marks cross">
-          <li><strong>It needs an internet connection.</strong> Offline support is the next major piece of work.</li>
-          <li><strong>No payments.</strong> Bookings are enquiries, and are described that way to users.</li>
-          <li><strong>Not yet publicly launched.</strong></li>
+          <li><strong>It needs an internet connection.</strong> Offline use is the first thing we build next.</li>
+          <li><strong>Bookings are enquiries, not payments</strong> — and are described that way to users.</li>
+          <li><strong>Not publicly launched.</strong> By choice, until the data is right.</li>
         </ul>
       </div>
       <p style="margin-top:0.5rem;">
@@ -513,9 +657,9 @@
     </div>
     <div class="notes">
       <span class="tag">Speaker note</span>
-      <p>This slide is the one that earns trust. Do not skip it or rush it.
-      Institutions have seen many polished pitches that fell apart on contact
-      with reality — showing the gaps yourself is what separates you.</p>
+      <p>Do not skip or rush this. Institutions have seen many polished pitches
+      that fell apart on contact with reality. Naming the gaps yourself is what
+      separates you — and every one of them is answered by the roadmap later.</p>
     </div>
   </section>
 
@@ -751,32 +895,114 @@
     </div>
   </section>
 
-  <!-- 14 ------------------------------------------------------------ -->
+  <!-- 13b ----------------------------------------------------------- -->
   <section class="slide">
     <div class="stack">
-      <p class="eyebrow">The ask</p>
-      <h2>Access to verified place data.</h2>
-      <p class="lede">
-        The platform is built. The gap is that our listings are researched
-        rather than officially verified — and RDB holds registers that are.
-      </p>
+      <p class="eyebrow">The vision <span class="badge-plan">Planned</span></p>
+      <h2>What Tembera becomes once it is fully built.</h2>
       <div class="cols">
-        <div class="panel h-accent">
-          <h3>What we are asking for</h3>
-          <p>Access to official registers of accommodation, tour operators and
-          licensed attractions — and a route to keep them current.</p>
-        </div>
         <div class="panel h-blue">
-          <h3>What we are not asking for</h3>
-          <p>No funding. No endorsement. No exclusivity. If a working
-          relationship earns those later, that is a separate conversation.</p>
+          <h3>In a visitor's hand</h3>
+          <ul class="marks planned" style="margin-top:0.3rem;">
+            <li>Installed on the phone like an app, working with no signal at all</li>
+            <li>In their own language — French, Kinyarwanda, Swahili, Chinese, German</li>
+            <li>Book and pay for a tour, by card or mobile money</li>
+            <li>Told what is open today, in a country whose calendar it understands</li>
+          </ul>
+        </div>
+        <div class="panel h-accent">
+          <h3>For a Rwandan business</h3>
+          <ul class="marks planned" style="margin-top:0.3rem;">
+            <li>Claim your own listing and keep it correct yourself</li>
+            <li>Add your photos, hours and menu without asking anyone</li>
+            <li>A verified badge when you are on the official register</li>
+            <li>See how many people found you this month</li>
+          </ul>
         </div>
       </div>
     </div>
     <div class="notes">
       <span class="tag">Speaker note</span>
-      <p>Asking for nothing but data is a strong position. Hold it — do not
-      soften it into a funding request in the room.</p>
+      <p>This is the slide that shows ambition. Say clearly that none of it
+      exists today — the badge on the eyebrow does that visually, but say it
+      out loud too.</p>
+    </div>
+  </section>
+
+  <!-- 13c ----------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The vision <span class="badge-plan">Planned</span></p>
+      <h2>And a live picture of visitor demand, for RDB.</h2>
+      <p class="lede">
+        A guide that people search generates something no survey can: a
+        continuous record of what visitors are actually looking for, and where.
+      </p>
+      <div class="cols">
+        <div class="panel h-ochre">
+          <h3>Demand, by district</h3>
+          <p>Which districts are being searched, and how that moves through the
+          year. Interest that arrives before the infrastructure does.</p>
+        </div>
+        <div class="panel h-clay">
+          <h3>Gaps worth filling</h3>
+          <p>Searches that return little or nothing — a direct signal of where
+          investment or licensing attention would pay.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>Corrections flowing back</h3>
+          <p>Every report from a visitor or a business, shared back so the
+          official register improves as the guide is used.</p>
+        </div>
+      </div>
+      <p>
+        Reported in aggregate only. No individual visitor is ever identified,
+        and the privacy policy already commits us to that.
+      </p>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>This is probably the most valuable slide for RDB specifically, because
+      it offers them something they cannot easily buy. Be firm on the privacy
+      line — aggregate only, never individuals.</p>
+    </div>
+  </section>
+
+  <!-- 14 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The ask</p>
+      <h2>A go-ahead, and access to verified place data.</h2>
+      <p class="lede">
+        The platform is built and paid for. What we need now is a decision, and
+        the registers that turn a good guide into an authoritative one.
+      </p>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>What we are asking for</h3>
+          <ul class="marks" style="margin-top:0.3rem;">
+            <li>A go-ahead to proceed to phase two</li>
+            <li>Access to official registers of accommodation, operators and licensed attractions</li>
+            <li>A named contact to keep that data current</li>
+          </ul>
+        </div>
+        <div class="panel h-blue">
+          <h3>What we are not asking for</h3>
+          <ul class="marks" style="--dot: var(--muted); margin-top:0.3rem;">
+            <li>No funding</li>
+            <li>No public endorsement</li>
+            <li>No exclusivity</li>
+          </ul>
+          <p>If a working relationship earns those later, that is a separate
+          conversation — and one we would rather have on evidence.</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Asking for a decision and data, rather than money, is a strong
+      position. Hold it — do not soften it into a funding request in the room.
+      If they ask what it costs you, answer honestly and move on.</p>
     </div>
   </section>
 
@@ -813,31 +1039,62 @@
   <!-- 16 ------------------------------------------------------------ -->
   <section class="slide">
     <div class="stack">
-      <p class="eyebrow">What happens next</p>
-      <h2>The roadmap, in order.</h2>
-      <div class="cols">
-        <div class="panel h-clay">
-          <h3>Before launch</h3>
-          <ul class="marks" style="--dot: var(--clay); margin-top:0.3rem;">
-            <li>Confirm every listing photograph is properly licensed</li>
-            <li>Begin verifying listings against official registers</li>
+      <p class="eyebrow">The plan</p>
+      <h2>Four phases. Phase one is already done.</h2>
+      <div class="phases">
+        <div class="phase h-accent">
+          <span class="step">Phase 1 · Complete</span>
+          <h3>The platform</h3>
+          <p class="when">Built, at our own cost</p>
+          <ul>
+            <li>495 places, all 30 districts</li>
+            <li>Search, map, accounts, reviews</li>
+            <li>Full admin system</li>
+            <li>Security and data-protection law</li>
+            <li>Rwandan calendar built in</li>
           </ul>
         </div>
-        <div class="panel h-ochre">
-          <h3>Next three months</h3>
-          <ul class="marks" style="--dot: var(--ochre); margin-top:0.3rem;">
-            <li>Offline support, so the guide works without a signal</li>
+        <div class="phase h-blue">
+          <span class="step">Phase 2 · 3 months</span>
+          <h3>Trustworthy and usable</h3>
+          <p class="when">Starts on your go-ahead</p>
+          <ul>
+            <li>Verify listings against official registers</li>
+            <li>Works offline, installs like an app</li>
             <li>Kinyarwanda and French</li>
+            <li>Photo licensing confirmed</li>
+            <li>Public launch</li>
           </ul>
         </div>
-        <div class="panel h-blue">
-          <h3>After that</h3>
-          <ul class="marks" style="--dot: var(--blue); margin-top:0.3rem;">
+        <div class="phase h-ochre">
+          <span class="step">Phase 3 · 6 months</span>
+          <h3>Businesses join in</h3>
+          <p class="when">Once the data is solid</p>
+          <ul>
+            <li>Businesses claim and manage listings</li>
+            <li>Verified badge for the official register</li>
             <li>Swahili, Chinese and German</li>
-            <li>Business listings and booking confirmations</li>
+            <li>Real bookings with mobile money</li>
+          </ul>
+        </div>
+        <div class="phase h-clay">
+          <span class="step">Phase 4 · 12 months</span>
+          <h3>A national asset</h3>
+          <p class="when">Once it is being used</p>
+          <ul>
+            <li>Demand dashboard for RDB</li>
+            <li>Data shared back to partners</li>
+            <li>Seasonal and accessibility information</li>
+            <li>Self-sustaining on business listings</li>
           </ul>
         </div>
       </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Emphasise that phase one was funded and delivered before asking them
+      for anything. That is the strongest fact in the deck. Timings are working
+      estimates — say so if pressed rather than defending a date.</p>
     </div>
   </section>
 
@@ -847,12 +1104,16 @@
       <p class="eyebrow">Thank you</p>
       <h1>Tembera</h1>
       <p class="lede">
-        Built in Rwanda. Honest about what it knows and what it does not.
-        Ready to carry data that is worth trusting.
+        Built in Rwanda, at our own cost, before asking you for anything.
+        Honest about what it knows and what it does not.
       </p>
       <p style="margin-top:0.5rem;">
-        <strong>The ask:</strong> access to verified place data, and someone to
-        talk to about keeping it current.
+        <strong>The ask:</strong> a go-ahead to build phase two, access to the
+        official registers, and a named person to work with.
+      </p>
+      <p>
+        <strong>What you get:</strong> a Rwandan-built guide carrying Rwandan
+        data, and a live picture of what visitors are looking for.
       </p>
     </div>
     <div class="notes">
@@ -867,7 +1128,7 @@
 <p class="hint">← → to move · N for notes</p>
 
 <div class="chrome">
-  <span class="counter" id="counter">1 / 17</span>
+  <span class="counter" id="counter">1 / 20</span>
   <div class="bar"><span id="bar"></span></div>
   <div class="nav">
     <button id="prev" type="button" aria-label="Previous slide">Prev</button>
