@@ -12,6 +12,7 @@ export interface CategoryFormValues {
   title: string;
   icon: string;
   primary: boolean;
+  sensitive: boolean;
   sortOrder: number;
 }
 
@@ -89,6 +90,20 @@ export default function CategoryForm({
               defaultChecked={values?.primary ?? false}
             />
             <span className={styles.hint}>Show in the home Explore row.</span>
+          </div>
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Place of remembrance</label>
+          <div className={styles.checkRow}>
+            <input
+              type="checkbox"
+              name="sensitive"
+              defaultChecked={values?.sensitive ?? false}
+            />
+            <span className={styles.hint}>
+              For memorials and similar. Removes ratings, reviews, prices and
+              promotional placement everywhere, and uses a restrained layout.
+            </span>
           </div>
         </div>
       </div>

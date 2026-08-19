@@ -2,7 +2,13 @@
 
 **Date:** 19 August 2026
 **Branch:** `security-hardening` (or a new branch per item)
-**Status:** proposed — nothing below has been started
+**Status:** jobs 1 and 3 in progress; 2, 4, 5, 6 not started
+
+**Decisions made (19 August 2026)**
+- **Languages:** French, Kinyarwanda, Swahili, Chinese (Simplified), German.
+  Kinyarwanda is included deliberately — it is the one that opens the domestic
+  market both analyses point at.
+- **Starting with:** jobs 1 and 3 together.
 
 Six pieces of work, in the order I suggest doing them. Each one says what is
 wrong now, what I will do, how I will do it, roughly how long it takes, and

@@ -5,11 +5,12 @@ import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import PlaceActions from "@/components/place/PlaceActions";
 import VisitRecorder from "@/components/place/VisitRecorder";
+import ReportProblem from "@/components/place/ReportProblem";
 import ReviewSection from "@/components/place/ReviewSection";
 import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { groupTitle } from "@/lib/data/categories";
+import { getGroup, groupTitle } from "@/lib/data/categories";
 import { getPlace, nearest } from "@/lib/data/places";
 import { getCurrentUser } from "@/lib/auth";
 import { getPlaceReviews } from "@/lib/data/user";
@@ -59,11 +60,18 @@ export default async function PlaceDetailPage({
   // The category's display title, resolved server-side for the badge below.
   const categoryTitle = await groupTitle(place.categoryId);
 
-  // Reviews + who's reading, for the ratings section.
-  const [reviews, currentUser] = await Promise.all([
-    getPlaceReviews(place.id),
-    getCurrentUser(),
-  ]);
+  // A place of remembrance is not a place to consume. Memorial sites reach
+  // this page through the same route as a restaurant, so the page itself has
+  // to know the difference: no rating out of five, no reviews, no price, no
+  // "what to expect" chips. See Category.sensitive in schema.prisma.
+  const group = await getGroup(place.categoryId);
+  const isSensitive = group?.sensitive === true;
+
+  // Reviews + who's reading, for the ratings section. Skipped entirely for
+  // sensitive places — not fetched, not rendered, not collectable.
+  const [reviews, currentUser] = isSensitive
+    ? [[], null]
+    : await Promise.all([getPlaceReviews(place.id), getCurrentUser()]);
 
   return (
     <>
@@ -104,7 +112,7 @@ export default async function PlaceDetailPage({
                 <h1 className="t-display">{place.name}</h1>
 
                 <div className="t-detail__metarow">
-                  {place.rating !== undefined && (
+                  {place.rating !== undefined && !isSensitive && (
                     <>
                       <span className="t-rating">
                         <Icon name="star" size={15} filled />
@@ -158,7 +166,7 @@ export default async function PlaceDetailPage({
                     }
                   />
 
-                  {place.priceFrom !== undefined && (
+                  {place.priceFrom !== undefined && !isSensitive && (
                     <Fact
                       icon="sparkle"
                       label="From"
@@ -167,8 +175,25 @@ export default async function PlaceDetailPage({
                   )}
                 </div>
 
+                {isSensitive && (
+                  <div className="t-remember__note" style={{ marginTop: "var(--t-5)" }}>
+                    <p>
+                      This is a place of remembrance. Visitors are asked to dress
+                      modestly, keep their voices low, and follow the guidance of
+                      staff on site — including where photography is and is not
+                      permitted.
+                    </p>
+                    <p>
+                      Tembera does not rate or review memorial sites. Please
+                      confirm opening times with the site before travelling.
+                    </p>
+                  </div>
+                )}
+
                 {/* -------------------------------------- highlights --- */}
-                {place.highlights && place.highlights.length > 0 && (
+                {/* "What to expect", framed as attractions, is the wrong
+                    register for a memorial. Suppressed rather than reworded. */}
+                {!isSensitive && place.highlights && place.highlights.length > 0 && (
                   <section style={{ marginTop: "var(--t-6)" }}>
                     <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
                       What to expect
@@ -211,21 +236,26 @@ export default async function PlaceDetailPage({
             )}
 
             {/* ---------------------------------------------- reviews --- */}
-            <section className="t-section">
-              <SectionHeader
-                title="Ratings & reviews"
-                subtitle={
-                  reviews.length
-                    ? `${reviews.length} review${reviews.length > 1 ? "s" : ""}`
-                    : "Share your experience"
-                }
-              />
-              <ReviewSection
-                placeId={place.id}
-                reviews={reviews}
-                currentUserId={currentUser?.id ?? null}
-              />
-            </section>
+            {!isSensitive && (
+              <section className="t-section">
+                <SectionHeader
+                  title="Ratings & reviews"
+                  subtitle={
+                    reviews.length
+                      ? `${reviews.length} review${reviews.length > 1 ? "s" : ""}`
+                      : "Share your experience"
+                  }
+                />
+                <ReviewSection
+                  placeId={place.id}
+                  reviews={reviews}
+                  currentUserId={currentUser?.id ?? null}
+                />
+              </section>
+            )}
+
+            {/* ---------------------------------------------- report --- */}
+            <ReportProblem placeId={place.id} placeName={place.name} />
           </div>
         </div>
       </main>

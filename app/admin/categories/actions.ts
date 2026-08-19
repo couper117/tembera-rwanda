@@ -25,6 +25,7 @@ export async function createCategory(
     title: formData.get("title"),
     icon: formData.get("icon"),
     primary: formData.get("primary"),
+    sensitive: formData.get("sensitive"),
     sortOrder: formData.get("sortOrder"),
   });
   if (!parsed.success) return { error: firstError(parsed.error) };
@@ -51,6 +52,7 @@ export async function updateCategory(
     title: formData.get("title"),
     icon: formData.get("icon"),
     primary: formData.get("primary"),
+    sensitive: formData.get("sensitive"),
     sortOrder: formData.get("sortOrder"),
   });
   if (!parsed.success) return { error: firstError(parsed.error) };

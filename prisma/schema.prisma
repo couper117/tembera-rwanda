@@ -70,6 +70,14 @@ model Category {
   title     String
   icon      String
   primary   Boolean  @default(false)
+  /// Places of remembrance rather than places to consume. Memorial sites are
+  /// the reason this exists: rating a memorial out of five stars, listing a
+  /// price, or promoting it in a "Top rated" row is not a bug in taste, it is
+  /// a serious harm. A sensitive category suppresses ratings, reviews, prices
+  /// and promotional placement everywhere, and renders in a restrained style.
+  /// Held as a flag rather than a hardcoded id so an admin can mark future
+  /// categories without a code change.
+  sensitive Boolean  @default(false)
   sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -141,6 +149,7 @@ model Place {
   saves    SavedPlace[]
   visits   VisitedPlace[]
   reviews  Review[]
+  reports  Report[]
 
   @@index([categoryId])
   @@index([city])
@@ -195,6 +204,40 @@ model Review {
   @@unique([userId, placeId])
   @@index([placeId])
   @@map("reviews")
+}
+
+enum ReportStatus {
+  open
+  resolved
+  dismissed
+}
+
+/// Someone telling us a listing is wrong.
+///
+/// Publishing a business's contact details and hours carries a duty to correct
+/// them on request, and there was previously no route to do so — a person who
+/// found their own business listed wrongly had no way to say so. Open to
+/// signed-out visitors on purpose: requiring an account to report an error
+/// would defeat the point.
+model Report {
+  id        Int          @id @default(autoincrement())
+  placeId   String       @map("place_id")
+  /// What kind of problem: closed, wrong details, wrong location, photo, other.
+  kind      String
+  body      String
+  /// Optional — how to reach the reporter for a follow-up. Not required, so a
+  /// correction can be made anonymously.
+  contact   String?
+  status    ReportStatus @default(open)
+  /// Set when an admin resolves or dismisses it, for a basic audit trail.
+  handledAt DateTime?    @map("handled_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([placeId])
+  @@map("reports")
 }
 
 /// Trip booking requests. Price is derived server-side from a trusted table.

@@ -9,6 +9,12 @@ import type { Coords, Place, PlaceWithDistance } from "./types";
 import { distanceKm } from "./geo";
 import type { CategoryGroup } from "./taxonomy";
 
+/**
+ * Default for the `sensitive` argument on the ranking functions. Shared and
+ * frozen so the common case allocates nothing per call.
+ */
+const EMPTY_SET: ReadonlySet<string> = new Set<string>();
+
 /* ------------------------------------------------------------- geography */
 
 /** Kigali's three districts read as one city to a user. */
@@ -133,12 +139,18 @@ export function nearest(
  * behind a "popular" claim). Round-robins across categories so one category
  * can't fill the row.
  */
-export function topRated(places: Place[], limit = 10, categoryId?: string): Place[] {
+export function topRated(
+  places: Place[],
+  limit = 10,
+  categoryId?: string,
+  sensitive: ReadonlySet<string> = EMPTY_SET,
+): Place[] {
   const eligible = places
     .filter(
       (p) =>
         p.rating !== undefined &&
         isRenderableImage(p.image) &&
+        !sensitive.has(p.categoryId) &&
         (!categoryId || p.categoryId === categoryId),
     )
     .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
@@ -171,11 +183,25 @@ export function topRated(places: Place[], limit = 10, categoryId?: string): Plac
 /**
  * Editorial row: Rwanda's recognisable destinations. Nature, wonders and
  * heritage only, and only records whose image will actually load.
+ *
+ * "memorials" was in this list. It has been removed: a memorial site is not
+ * promotional material, and a home-page carousel is exactly the wrong frame
+ * for one. The `sensitive` filter below is the general guard; dropping the id
+ * here is the specific fix.
  */
-export function featured(places: Place[], limit = 8): Place[] {
-  const wanted = ["nature", "wonders", "memorials", "arts"];
+export function featured(
+  places: Place[],
+  limit = 8,
+  sensitive: ReadonlySet<string> = EMPTY_SET,
+): Place[] {
+  const wanted = ["nature", "wonders", "arts"];
   return places
-    .filter((p) => wanted.includes(p.categoryId) && isRenderableImage(p.image))
+    .filter(
+      (p) =>
+        wanted.includes(p.categoryId) &&
+        !sensitive.has(p.categoryId) &&
+        isRenderableImage(p.image),
+    )
     .slice(0, limit);
 }
 

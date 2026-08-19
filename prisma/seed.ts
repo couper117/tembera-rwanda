@@ -72,6 +72,7 @@ async function seedTaxonomy() {
         title: g.title,
         icon: g.icon,
         primary: g.primary ?? false,
+        sensitive: g.sensitive ?? false,
         sortOrder: i,
         subcategories: {
           create: g.subcategories.map((name, j) => ({ name, sortOrder: j })),

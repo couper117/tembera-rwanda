@@ -3,7 +3,11 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import type { Place as DbPlace } from "@prisma/client";
 import type { Coords, Place } from "@/lib/places/types";
-import { getCategories } from "@/lib/data/categories";
+import {
+  CATEGORIES_TAG,
+  getCategories,
+  sensitiveCategoryIds,
+} from "@/lib/data/categories";
 import * as engine from "@/lib/places/engine";
 import { searchPlaces } from "@/lib/places/search";
 
@@ -34,14 +38,29 @@ function toDomain(row: DbPlace): Place {
   };
 }
 
-/** The whole catalog, cached until an admin edit revalidates the tag. */
+/**
+ * The whole catalog, cached until an admin edit revalidates the tag.
+ *
+ * Ratings and prices are stripped from sensitive categories here, at the
+ * source, rather than hidden in each component that might render them. A
+ * memorial site with no `rating` field cannot be given stars by a card, a row,
+ * a search result or a future screen nobody has written yet — the guarantee
+ * holds by construction instead of by everyone remembering.
+ */
 export const getPlaces = unstable_cache(
   async (): Promise<Place[]> => {
-    const rows = await prisma.place.findMany({ orderBy: { name: "asc" } });
-    return rows.map(toDomain);
+    const [rows, sensitive] = await Promise.all([
+      prisma.place.findMany({ orderBy: { name: "asc" } }),
+      sensitiveCategoryIds(),
+    ]);
+    return rows.map((row) => {
+      const place = toDomain(row);
+      if (!sensitive.has(place.categoryId)) return place;
+      return { ...place, rating: undefined, priceFrom: undefined };
+    });
   },
   ["places-all"],
-  { tags: [PLACES_TAG] },
+  { tags: [PLACES_TAG, CATEGORIES_TAG] },
 );
 
 /* ------------------------------------------------------ lookups & lists */
@@ -84,12 +103,20 @@ export async function nearest(
   return engine.nearest(await getPlaces(), origin, options);
 }
 
+/**
+ * Both rows are promotional, so both exclude sensitive categories — a memorial
+ * site must never be ranked out of five or paraded on the home page. The
+ * exclusion is applied here, where the taxonomy is available, rather than in
+ * the engine, which stays pure.
+ */
 export async function topRated(limit = 10, categoryId?: string): Promise<Place[]> {
-  return engine.topRated(await getPlaces(), limit, categoryId);
+  const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
+  return engine.topRated(places, limit, categoryId, sensitive);
 }
 
 export async function featured(limit = 8): Promise<Place[]> {
-  return engine.featured(await getPlaces(), limit);
+  const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
+  return engine.featured(places, limit, sensitive);
 }
 
 /* ------------------------------------------------------------- search */

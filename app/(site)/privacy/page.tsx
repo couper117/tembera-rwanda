@@ -11,12 +11,27 @@ export const metadata: Metadata = {
 // personal data and privacy: say what is collected, why, how long it is kept,
 // and how the data subject exercises their rights.
 //
-// The placeholders below are the parts only the operator can fill in — a real
-// contact address and, if the service is offered commercially, the registration
-// details with the supervisory authority. They are marked rather than invented,
-// because a plausible-looking fake contact is worse than an obvious gap.
-const CONTACT_EMAIL = "privacy@tembera.rw";
-const LAST_UPDATED = "17 August 2026";
+// The contact address comes from the environment so it can be corrected
+// without a code change. There is deliberately no plausible-looking default:
+// if PRIVACY_CONTACT_EMAIL is unset the page says so plainly, because a policy
+// that points at a mailbox nobody reads is worse than one that admits the gap.
+const CONTACT_EMAIL = process.env.PRIVACY_CONTACT_EMAIL?.trim() || null;
+const LAST_UPDATED = "19 August 2026";
+
+function Contact() {
+  if (!CONTACT_EMAIL) {
+    return (
+      <strong style={{ fontWeight: 600 }}>
+        [no contact address configured &mdash; set PRIVACY_CONTACT_EMAIL]
+      </strong>
+    );
+  }
+  return (
+    <a href={`mailto:${CONTACT_EMAIL}`} style={{ fontWeight: 600 }}>
+      {CONTACT_EMAIL}
+    </a>
+  );
+}
 
 export default function PrivacyPage() {
   return (
@@ -120,7 +135,7 @@ export default function PrivacyPage() {
             </ul>
             <P>
               If something is wrong and you cannot fix it yourself, write to{" "}
-              <B>{CONTACT_EMAIL}</B> and we will put it right.
+              <Contact /> and we will put it right.
             </P>
           </Section>
 
@@ -132,7 +147,7 @@ export default function PrivacyPage() {
             </P>
             <P>
               No system is perfect. If you find a security problem, please report
-              it to <B>{CONTACT_EMAIL}</B> rather than posting it publicly, and
+              it to <Contact /> rather than posting it publicly, and
               we will fix it.
             </P>
           </Section>

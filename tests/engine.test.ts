@@ -276,6 +276,81 @@ describe("topRated", () => {
   });
 });
 
+describe("sensitive categories are never promoted", () => {
+  // Memorial sites must not be rated out of five, ranked, or paraded on a home
+  // page. These tests exist because that failure would be a serious harm and
+  // an easy one to reintroduce by accident — a refactor that drops the
+  // `sensitive` argument would restore the old behaviour silently.
+  const sensitive = new Set(["memorials"]);
+
+  const catalog = [
+    place({
+      id: "memorial",
+      categoryId: "memorials",
+      rating: 5,
+      image: "https://images.unsplash.com/m",
+    }),
+    place({
+      id: "restaurant",
+      categoryId: "dining",
+      rating: 4,
+      image: "https://images.unsplash.com/r",
+    }),
+  ];
+
+  test("topRated excludes a sensitive place even when it is rated highest", () => {
+    const results = engine.topRated(catalog, 10, undefined, sensitive);
+    assert.deepEqual(
+      results.map((r) => r.id),
+      ["restaurant"],
+    );
+  });
+
+  test("topRated excludes it even when that category is asked for by name", () => {
+    // Browsing the category is fine. Ranking inside it is not.
+    const results = engine.topRated(catalog, 10, "memorials", sensitive);
+    assert.deepEqual(results, []);
+  });
+
+  test("featured excludes sensitive categories", () => {
+    const results = engine.featured(
+      [
+        place({ id: "memorial", categoryId: "memorials", image: "https://x/m" }),
+        place({ id: "park", categoryId: "nature", image: "https://x/p" }),
+      ],
+      10,
+      sensitive,
+    );
+    assert.deepEqual(
+      results.map((r) => r.id),
+      ["park"],
+    );
+  });
+
+  test("featured no longer lists memorials even without the sensitive set", () => {
+    // Belt and braces: the id was removed from the editorial list too, so a
+    // caller that forgets to pass the set still cannot promote a memorial.
+    const results = engine.featured([
+      place({ id: "memorial", categoryId: "memorials", image: "https://x/m" }),
+    ]);
+    assert.deepEqual(results, []);
+  });
+
+  test("ordinary categories are unaffected", () => {
+    const results = engine.topRated(catalog, 10, undefined, new Set<string>());
+    assert.equal(results.length, 2, "no exclusions when nothing is sensitive");
+  });
+
+  test("browsing a sensitive category still works normally", () => {
+    // Suppressing promotion must not make the places unreachable.
+    const results = engine.placesInCategory(catalog, "memorials");
+    assert.deepEqual(
+      results.map((r) => r.id),
+      ["memorial"],
+    );
+  });
+});
+
 describe("featured", () => {
   test("only includes the editorial categories", () => {
     const results = engine.featured([

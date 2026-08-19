@@ -256,6 +256,21 @@ export default function SettingsScreen() {
                 </span>
               </Link>
               <Link
+                href="/terms"
+                className="t-fact"
+                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
+              >
+                <span className="t-fact__icon">
+                  <Icon name="info" size={17} />
+                </span>
+                <span className="t-row__name" style={{ flex: 1 }}>
+                  Terms of use
+                </span>
+                <span className="t-row__chev">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </Link>
+              <Link
                 href="/about"
                 className="t-fact"
                 style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
