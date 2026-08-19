@@ -2,7 +2,7 @@
 
 **Subject:** Tembera, a tourism discovery platform and directory for Rwanda
 **Companion to:** `SWOT.md` (third assessment, 17 August 2026)
-**Date:** 19 August 2026 — revised the same day, after jobs 1 and 3 of PLAN.md
+**Date:** 19 August 2026 — revised after jobs 1, 3 and 4 of PLAN.md
 
 > **Structure.** For each of the six forces: what we think is going on, how
 > Tembera fits it, how it doesn't, and a straight verdict on whether it can fit
@@ -99,13 +99,13 @@
 - The existing honesty rules (no invented ratings, no padded categories) sit naturally alongside a conservation-credible national brand.
 - The parks provide genuinely strong, actively searched content.
 - Practical compliance information visitors get caught out by — the single-use plastic bag ban being the famous case — is exactly the trustworthy content that earns a place on a phone.
+- **The Rwandan calendar is now encoded.** Umuganda (computed as the last Saturday), the fixed public holidays, Good Friday, Umuganura and the April mourning week all raise a notice — on the home page, and directly above the opening hours on a place page. Eid is deliberately not guessed; it comes from an admin-managed table. *Closed 19 August 2026.*
 
 **How it doesn't fit**
-- Opening hours ignore Umuganda. On community-service mornings much of the country closes, so the site will be confidently wrong once a month.
 - No seasonality information exists, though rain materially changes what is possible.
 - The premium segment is capped by permit policy, so growth must come from the rest of the country — where the data is weakest.
 
-**Verdict — It fits in spirit but not yet in detail.** The values already align; the gap is accuracy, and accuracy is fixable. Encoding local rhythms like Umuganda is also precisely what a foreign competitor will never bother to do — so the fix doubles as a moat.
+**Verdict — Yes. This force now fits.** The accuracy gap that defined it is closed: the app no longer asserts a place is open while the country is at Umuganda. Encoding local rhythms is also precisely what a foreign competitor will not bother to do, so the fix doubles as a moat. What remains is smaller and is content rather than mismatch — seasonality guidance — plus the structural reminder that growth must come from outside the permit-capped premium segment.
 
 ---
 
@@ -115,6 +115,7 @@
 
 **How it fits**
 - Law N° 058/2021 access and erasure rights are genuinely implemented (SWOT S11) — ahead of most products this size.
+- **A working contact address is now published on the privacy page**, closing the last placeholder on it. *Closed 19 August 2026.*
 - Collecting enquiries rather than payments keeps the current risk profile low.
 - **A public correction route now exists.** Any visitor can report a wrong listing from the place page without an account, and reports are triaged in the admin. This is the mechanism the correction duty assumes. *Closed 19 August 2026.*
 - **Terms of use are published**, stating that listings are a guide rather than a guarantee and that bookings are enquiries only. *Closed 19 August 2026.*
@@ -123,10 +124,10 @@
 **How it doesn't fit**
 - Listing images are hotlinked from third-party hosts under mixed terms: some freely usable, some requiring attribution, some apparently unlicensed. Exposure rises the moment the site is public and commercial. **This is the most under-appreciated legal risk in the project.**
 - Taking payment for a third party's tour makes Tembera a travel intermediary, attracting licensing, consumer-protection and refund obligations.
-- The privacy policy still has no working contact address. It no longer prints a fake-looking one — the page now states plainly that none is configured — but a data subject still cannot reach anybody.
+- The published contact is a personal Gmail address. Adequate to launch, but it will be scraped; a dedicated Tembera mailbox is the right end state.
 - Revenue brings business registration and tax obligations not yet examined.
 
-**Verdict — It fits today, better than it did, and still stops fitting the day it monetises.** Two obligations are now discharged: the correction route and the terms. Two remain: audit where every listing image comes from, and set a real privacy contact. Image licensing is now the single largest legal gap. Both are cheap now and expensive once trading.
+**Verdict — It fits today, and still stops fitting the day it monetises.** Three obligations are now discharged: the correction route, the terms, and a reachable privacy contact. **Image licensing is the single remaining legal gap before launch**, and it is cheap now and expensive once trading.
 
 ---
 
@@ -140,10 +141,10 @@
 | Economic | Fits — on one business model only |
 | Social | Fits visitors and diaspora; not yet domestic (memorials resolved) |
 | Technological | Not yet — offline support flips it |
-| Environmental | Fits in spirit, not yet in detail |
-| Legal | Fits until monetisation (correction route and terms now in place) |
+| Environmental | **Fits** — Rwandan calendar encoded |
+| Legal | Fits until monetisation (photos the last gap) |
 
-Four of six already fit or nearly fit. The two that don't each have a single identified change that flips them — offline support, and image licensing before payments. Neither is a rewrite; neither is expensive today.
+**Five of six now fit or nearly fit**, up from four. Only the technological force is still a clear no, and it has a single identified change that flips it: offline support. Image licensing remains the gate before taking payments. Neither is a rewrite; neither is expensive today.
 
 **But it fits as one specific thing, not as anything at all.** Tembera fits as a curated directory operating alongside the national tourism effort, serving high-value inbound visitors, the diaspora, and — once it speaks Kinyarwanda — Rwandans travelling their own country. It does not fit as a mass-market consumer application funded by advertising: the economics of a high-value/low-volume market and the language barrier would defeat that version, and no amount of engineering quality would rescue it.
 
