@@ -1,0 +1,894 @@
+<title>Tembera — RDB Slide Script (for Canva)</title>
+
+<style>
+  :root {
+    --paper: #FBFCFA;
+    --page: #EFF2EE;
+    --ink: #12201B;
+    --ink-2: #415147;
+    --muted: #6E7A72;
+    --rule: #D8DED9;
+    --accent: #1F6B4A;
+    --blue: #2A6B8F;
+    --ochre: #A8761B;
+    --clay: #A63A28;
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", "SF Mono", Consolas, ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #16211D;
+      --page: #0D1512;
+      --ink: #E9EFEA;
+      --ink-2: #C1CCC5;
+      --muted: #8B9A91;
+      --rule: #2C3A34;
+      --accent: #6BC496;
+      --blue: #78B2D4;
+      --ochre: #DFAC4B;
+      --clay: #E2846C;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #16211D; --page: #0D1512; --ink: #E9EFEA; --ink-2: #C1CCC5;
+    --muted: #8B9A91; --rule: #2C3A34; --accent: #6BC496; --blue: #78B2D4;
+    --ochre: #DFAC4B; --clay: #E2846C;
+  }
+
+  :root[data-theme="light"] {
+    --paper: #FBFCFA; --page: #EFF2EE; --ink: #12201B; --ink-2: #415147;
+    --muted: #6E7A72; --rule: #D8DED9; --accent: #1F6B4A; --blue: #2A6B8F;
+    --ochre: #A8761B; --clay: #A63A28;
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .sub { color: var(--ink-2); font-size: 1.05rem; }
+
+  .howto {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .howto h2 { font-size: 1rem; font-weight: 700; }
+  .howto p, .howto li { font-size: 0.97rem; color: var(--ink-2); }
+  .howto ol { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
+
+  /* ------------------------------------------------------------ specs */
+
+  .specs {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .specs h2 { font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.6rem; }
+
+  .sw {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.85rem;
+  }
+
+  .sw .chip { height: 2.4rem; }
+  .sw .meta { padding: 0.45rem 0.6rem; display: flex; flex-direction: column; }
+  .sw .name { font-weight: 700; font-size: 0.82rem; }
+  .sw .hex { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+
+  .fonts { font-size: 0.97rem; color: var(--ink-2); display: flex; flex-direction: column; gap: 0.4rem; }
+  .fonts b { color: var(--ink); }
+
+  /* ------------------------------------------------------------ slide */
+
+  .slide {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--hue, var(--accent));
+    border-radius: 10px;
+    padding: clamp(1.1rem, 3vw, 1.6rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .slide-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.75rem;
+  }
+
+  .num {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    color: var(--hue, var(--accent));
+    font-weight: 700;
+  }
+
+  .layout {
+    font-size: 0.78rem;
+    color: var(--muted);
+    flex: 1;
+    min-width: 10rem;
+  }
+
+  button.copy {
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.75rem;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  button.copy:hover { border-color: var(--accent); color: var(--accent); }
+  button.copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .field { display: flex; flex-direction: column; gap: 0.2rem; }
+
+  .label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .title-txt {
+    font-family: var(--display);
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    line-height: 1.2;
+  }
+
+  .lede-txt { font-size: 1.02rem; color: var(--ink-2); }
+
+  .slide ul { padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .slide li { font-size: 0.98rem; color: var(--ink-2); }
+
+  .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.9rem 1.5rem; }
+
+  .box-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.2rem; }
+
+  .note {
+    border-top: 1px dashed var(--rule);
+    padding-top: 0.7rem;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  .note b { color: var(--ochre); font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 0.2rem; }
+
+  .tagline {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 0.05rem 0.4rem;
+    margin-left: 0.4rem;
+  }
+
+  .t-live { color: var(--accent); }
+  .t-plan { color: var(--blue); }
+
+  .h-accent { --hue: var(--accent); }
+  .h-blue { --hue: var(--blue); }
+  .h-ochre { --hue: var(--ochre); }
+  .h-clay { --hue: var(--clay); }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: color-mix(in srgb, var(--page) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.7rem clamp(1rem, 4vw, 2rem);
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .toolbar .count { font-size: 0.85rem; color: var(--muted); }
+
+  button.big {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.9rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button.big.done { background: var(--blue); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  @media print {
+    .toolbar, button.copy { display: none; }
+    body { background: #fff; }
+    .slide { page-break-inside: avoid; }
+  }
+</style>
+
+<div class="toolbar">
+  <span class="count">20 slides · click Copy on any slide, or take the lot</span>
+  <button class="big" id="copyAll" type="button">Copy all 20 slides</button>
+</div>
+
+<div class="wrap">
+
+  <header>
+    <h1>Tembera — RDB slide script</h1>
+    <p class="sub">
+      Every word from the presentation, laid out so you can copy it straight
+      into Canva. Nothing here is styled for a slide — it is the text and the
+      structure only.
+    </p>
+  </header>
+
+  <div class="howto">
+    <h2>How to use this</h2>
+    <ol>
+      <li>In Canva, start a <b>Presentation (16:9)</b>.</li>
+      <li>Work down this page one slide at a time. Each block is one Canva slide.</li>
+      <li>Press <b>Copy</b> on a slide to put its text on your clipboard, then paste into Canva and lay it out.</li>
+      <li>The <b>Layout</b> line tells you the shape — one column, two columns, four boxes, and so on.</li>
+      <li><b>Speaker notes</b> go in the notes panel at the bottom of the Canva editor, not on the slide.</li>
+    </ol>
+    <p>
+      Keep the <span class="tagline t-live">Working now</span> and
+      <span class="tagline t-plan">Planned</span> labels visible on the slides
+      that have them. They are what keep the deck honest — planned features
+      should never look finished.
+    </p>
+  </div>
+
+  <div class="specs">
+    <h2>Design settings for Canva</h2>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#1F6B4A"></div><div class="meta"><span class="name">Green (main)</span><span class="hex">#1F6B4A</span></div></div>
+      <div class="sw"><div class="chip" style="background:#2A6B8F"></div><div class="meta"><span class="name">Blue (planned)</span><span class="hex">#2A6B8F</span></div></div>
+      <div class="sw"><div class="chip" style="background:#A8761B"></div><div class="meta"><span class="name">Ochre</span><span class="hex">#A8761B</span></div></div>
+      <div class="sw"><div class="chip" style="background:#A63A28"></div><div class="meta"><span class="name">Clay</span><span class="hex">#A63A28</span></div></div>
+      <div class="sw"><div class="chip" style="background:#101A16"></div><div class="meta"><span class="name">Text</span><span class="hex">#101A16</span></div></div>
+      <div class="sw"><div class="chip" style="background:#F2F4F1;border-bottom:1px solid #D6DCD7"></div><div class="meta"><span class="name">Background</span><span class="hex">#F2F4F1</span></div></div>
+    </div>
+    <div class="fonts">
+      <p><b>Headings:</b> a serif with character. In Canva try <b>Playfair Display</b>, <b>Lora</b> or <b>Source Serif Pro</b>. Regular weight, not bold — large size does the work.</p>
+      <p><b>Body text:</b> a plain sans. <b>Inter</b>, <b>Work Sans</b> or <b>Open Sans</b>. Keep body text at 20pt or larger so it reads from the back of the room.</p>
+      <p><b>Rule of thumb:</b> slide titles around 40&ndash;54pt, body 20&ndash;24pt, the small label above each title around 12&ndash;14pt in capitals with wide letter spacing.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ 1 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 1</span>
+      <span class="layout">Layout: title slide, three big numbers across the bottom</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Presentation to the Rwanda Development Board · August 2026</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Tembera</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">A digital guide to real places in Rwanda — built in Rwanda, and built to be trusted.</span></div>
+      <div class="field"><span class="label">Three numbers</span>
+        <ul>
+          <li>495 — places listed</li>
+          <li>16 — categories</li>
+          <li>30 — districts covered</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>Open by saying what you want from the meeting: you have built the platform, and you are asking for a go-ahead and access to verified data. Do not bury the ask at the end.</div>
+  </section>
+
+  <!-- ============================================================ 2 -->
+  <section class="slide h-clay">
+    <div class="slide-head">
+      <span class="num">SLIDE 2</span>
+      <span class="layout">Layout: title, then two columns of bullets</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>The gap</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">A visitor outside Kigali is largely on their own.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Left column</div>
+          <ul>
+            <li>Global map services cover central Kigali well, and thin out quickly beyond it.</li>
+            <li>Many Rwandan businesses are listed with no hours, no phone number, or nothing at all.</li>
+            <li>Nothing accounts for Umuganda, when much of the country closes for the morning.</li>
+          </ul>
+        </div>
+        <div><div class="box-title">Right column</div>
+          <ul>
+            <li>Visitors arriving for conferences have free evenings and no local knowledge.</li>
+            <li>Rwandans travelling their own country have no guide written for them.</li>
+            <li>There is no strong local alternative.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>Keep this factual and short. RDB knows the gap better than anyone in the room — you are showing that you understand it, not teaching them.</div>
+  </section>
+
+  <!-- ============================================================ 3 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 3</span>
+      <span class="layout">Layout: title, subtitle, three boxes across</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>What it is — WORKING NOW</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">A searchable guide to where to eat, stay, worship, shop and visit.</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">Search it, filter it, find what is near you, get directions. That is the whole product. It is deliberately not a social network.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Box 1 — For visitors</div><p>Find places by category, city or distance. Save what you like. Read and leave honest reviews.</p></div>
+        <div><div class="box-title">Box 2 — For Rwandans</div><p>A guide to your own country, built for the phone you already have.</p></div>
+        <div><div class="box-title">Box 3 — For operators</div><p>Every listing is editable from an admin system. No developer required to correct a phone number.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 4 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 4</span>
+      <span class="layout">Layout: title, two columns of ticked bullets (use green ticks)</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Status — WORKING NOW</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">This is a working system, not a concept.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Left column (green ticks)</div>
+          <ul>
+            <li>495 places across 16 categories and all 30 districts</li>
+            <li>Search, map, and distance-based ranking</li>
+            <li>User accounts, saved places, visit history, reviews</li>
+            <li>Booking enquiries for tours and experiences</li>
+          </ul>
+        </div>
+        <div><div class="box-title">Right column (green ticks)</div>
+          <ul>
+            <li>A complete admin system — every listing, category and city editable</li>
+            <li>135 automated tests, run on every change</li>
+            <li>Independent security review completed and acted on</li>
+            <li>Rwandan data protection law implemented in full</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>Offer a live demo here if there is a screen. Show the memorial page and a district outside Kigali — those two make the point better than any slide.</div>
+  </section>
+
+  <!-- ============================================================ 5 -->
+  <section class="slide h-blue">
+    <div class="slide-head">
+      <span class="num">SLIDE 5</span>
+      <span class="layout">Layout: title, subtitle, two boxes, then a line showing both labels</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Our approach</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Today we are showing you the experience. The rest is built on your go-ahead.</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">We chose to build the thing you can actually see and judge first, rather than ask you to fund a description.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Box 1 — What that means today</div><p>A complete, working front end you can click through, on real Rwandan data, with the admin system behind it. Nothing on the next slides is a mock-up.</p></div>
+        <div><div class="box-title">Box 2 — What comes with a go-ahead</div><p>Verified data, five languages, offline use, payments, and a business portal. The plan is sequenced and ready — it needs a mandate, not a research phase.</p></div>
+      </div>
+      <div class="field"><span class="label">Bottom line</span><span>Throughout this deck: WORKING NOW / PLANNED — so it is always clear which is which.</span></div>
+    </div>
+    <div class="note"><b>Speaker note</b>This is the framing slide. Say plainly that the front end is real and the operational build follows their decision. Keep the two labels honest all the way through — the moment a planned feature is described as working, everything else becomes questionable.</div>
+  </section>
+
+  <!-- ============================================================ 6 -->
+  <section class="slide h-clay">
+    <div class="slide-head">
+      <span class="num">SLIDE 6</span>
+      <span class="layout">Layout: title, two columns of bullets (use dashes, not ticks)</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Being straight with you</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">What today's version cannot do yet.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Left column</div>
+          <ul>
+            <li>The place data is researched, not officially verified. Real institutions, but not a checked register. This is the main reason we are here.</li>
+            <li>English only. Five more languages are designed and scheduled.</li>
+          </ul>
+        </div>
+        <div><div class="box-title">Right column</div>
+          <ul>
+            <li>It needs an internet connection. Offline use is the first thing we build next.</li>
+            <li>Bookings are enquiries, not payments — and are described that way to users.</li>
+            <li>Not publicly launched. By choice, until the data is right.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="field"><span class="label">Bottom line</span><span>We would rather show you this slide than have you find it later.</span></div>
+    </div>
+    <div class="note"><b>Speaker note</b>Do not skip or rush this. Institutions have seen many polished pitches that fell apart on contact with reality. Naming the gaps yourself is what separates you — and every one is answered by the roadmap later.</div>
+  </section>
+
+  <!-- ============================================================ 7 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 7</span>
+      <span class="layout">Layout: title, three boxes across</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>How it is built</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Built to standards a public institution can defend choosing.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Box 1 — Data protection</div><p>Law N° 058/2021 implemented: users can see, download and permanently delete everything held about them. A published privacy policy and a reachable contact.</p></div>
+        <div><div class="box-title">Box 2 — Security</div><p>Passwords hashed. Sign-in attempts rate limited. Sessions expire and can be revoked. No default passwords anywhere in the system.</p></div>
+        <div><div class="box-title">Box 3 — Honesty by design</div><p>The system never invents data. No fake ratings, no padded categories, and approximate locations are marked as approximate.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 8 -->
+  <section class="slide h-clay">
+    <div class="slide-head">
+      <span class="num">SLIDE 8</span>
+      <span class="layout">Layout: title, subtitle, two columns of bullets. Keep this one calm and plain.</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>A deliberate decision</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Memorial sites are never rated, reviewed, priced or promoted.</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">Genocide memorials are in the guide, because visitors need to find them. They are not presented like a restaurant.</span></div>
+      <div class="two-col">
+        <div>
+          <ul>
+            <li>No star ratings. No reviews. No prices.</li>
+            <li>Never placed in "top rated" or promotional rows.</li>
+            <li>A restrained page design, visibly different from a listing.</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li>Visiting guidance instead — dress, quiet, photography.</li>
+            <li>The commemoration period in April is recognised by the system.</li>
+            <li>Enforced in the data itself, so it cannot be undone by a design change.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>Worth pausing on. The catalogue originally carried a five-star rating on a memorial site, inherited from its source data. It was found and removed deliberately. Being straightforward about that is stronger than implying it was never there. Do not decorate this slide.</div>
+  </section>
+
+  <!-- ============================================================ 9 -->
+  <section class="slide h-ochre">
+    <div class="slide-head">
+      <span class="num">SLIDE 9</span>
+      <span class="layout">Layout: title, then a 3-column table with 6 rows</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>PESTEL — does Tembera fit Rwanda?</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Six outside forces, assessed honestly.</span></div>
+      <div class="field"><span class="label">Table — Force / Verdict / Why</span>
+        <ul>
+          <li>Political — Fits well — Tourism is national policy; the platform pushes the same direction.</li>
+          <li>Economic — Fits one model — Business listings and booking commission, not advertising.</li>
+          <li>Social — Partly — Serves visitors and diaspora today; Kinyarwanda opens the domestic market.</li>
+          <li>Technological — Not yet — Needs a connection. Offline support is the fix.</li>
+          <li>Environmental — Fits — Conservation-aligned, and the Rwandan calendar is now built in.</li>
+          <li>Legal — Fits today — Data law implemented. Photo licensing is the remaining task.</li>
+        </ul>
+      </div>
+      <div class="field"><span class="label">Colour hint</span><span>Green for "Fits", ochre for "Partly" and "Fits one model", clay red for "Not yet".</span></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 10 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 10</span>
+      <span class="layout">Layout: title, subtitle, two short paragraphs</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>PESTEL — the conclusion</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Yes, it fits — but as one specific thing.</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">Tembera works as a curated, trusted directory operating alongside the national tourism effort — serving visitors, the diaspora, and Rwandans travelling their own country.</span></div>
+      <div class="field"><span class="label">Paragraph</span><span>It does not work as an advertising-funded mass-market app. Rwanda deliberately attracts fewer visitors who each spend more, so there will never be the volume that advertising requires. Recognising that shapes every decision we make.</span></div>
+      <div class="field"><span class="label">Paragraph</span><span>One factor decides everything: verified place data. It is what a global search engine cannot replicate locally, what an AI assistant cannot invent, and what makes the guide worth relying on.</span></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 11 -->
+  <section class="slide h-blue">
+    <div class="slide-head">
+      <span class="num">SLIDE 11</span>
+      <span class="layout">Layout: title, four boxes (2×2), each with a big goal number</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>UN Sustainable Development Goals — direct contribution</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Four goals Tembera contributes to directly.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">8 — Decent Work &amp; Economic Growth</div><p>Target 8.9 asks for policies promoting sustainable tourism that creates jobs and promotes local culture. Making small Rwandan businesses findable is that, directly.</p></div>
+        <div><div class="box-title">9 — Industry, Innovation &amp; Infrastructure</div><p>Target 9.c concerns access to information technology. This is digital tourism infrastructure, built locally rather than imported.</p></div>
+        <div><div class="box-title">11 — Sustainable Cities &amp; Communities</div><p>Target 11.4 asks for protection of cultural and natural heritage. Memorial and heritage sites are documented with care rather than commercialised.</p></div>
+        <div><div class="box-title">17 — Partnerships for the Goals</div><p>Target 17.17 concerns effective public-private partnership. This proposal is exactly that: public data, private platform.</p></div>
+      </div>
+      <div class="field"><span class="label">Warning</span><span>Do not use the official UN SDG logos or their exact colours — that implies endorsement you do not have. Use plain numbered boxes in your own palette.</span></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 12 -->
+  <section class="slide h-ochre">
+    <div class="slide-head">
+      <span class="num">SLIDE 12</span>
+      <span class="layout">Layout: title, two columns — left is a list, right is two paragraphs</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>UN SDGs — partial, and not claimed</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Where we contribute partly, and where we do not.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Left — Partial contribution</div>
+          <ul>
+            <li>Goal 10 — Reduced Inequalities. Coverage of all 30 districts pushes visibility beyond Kigali, where listings are thinnest.</li>
+            <li>Goal 12 — Responsible Consumption. Practical guidance for visitors, including rules they routinely get wrong.</li>
+            <li>Goal 5 — Gender Equality. Women-owned businesses could be identified and surfaced. Not built yet — we are not claiming it.</li>
+          </ul>
+        </div>
+        <div><div class="box-title">Right — Not applicable</div>
+          <p>The remaining goals — including health, water, energy, and Goal 14 on oceans, for a landlocked country — have no honest connection to a tourism directory.</p>
+          <p>We are not claiming them. A project that maps itself onto all seventeen goals is telling you something about its marketing, not its impact.</p>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>This slide will do more for your credibility than the previous one. Everyone claims SDG alignment; almost nobody says which goals do not apply.</div>
+  </section>
+
+  <!-- ============================================================ 13 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 13</span>
+      <span class="layout">Layout: title, four boxes (2×2)</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Rwanda Vision 2050</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Where Tembera sits against the national pillars.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Human Development</div><p>A guide written for Rwandans as well as visitors, in their own languages, on the devices they actually own.</p></div>
+        <div><div class="box-title">Competitiveness &amp; Integration</div><p>Better information makes Rwanda easier to visit and easier to spend money in — and supports the conference sector directly.</p></div>
+        <div><div class="box-title">Urbanisation &amp; Agglomeration</div><p>Secondary cities and rural districts are listed on the same footing as Kigali, rather than as an afterthought.</p></div>
+        <div><div class="box-title">Capable State Institutions</div><p>A platform that can carry official data accurately, with a public route for corrections and a clear audit trail.</p></div>
+      </div>
+    </div>
+    <div class="note"><b>Before presenting — verify</b>Check these pillar names and wording against the current official Vision 2050 and NST documents, and adjust to match exactly. Getting a pillar name wrong in front of RDB would undercut everything else on the slide.</div>
+  </section>
+
+  <!-- ============================================================ 14 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 14</span>
+      <span class="layout">Layout: title, two columns of bullets</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Vision 2050 — the contribution</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Rwanda markets itself extremely well abroad. The gap is what happens after arrival.</span></div>
+      <div class="two-col">
+        <div>
+          <ul>
+            <li>A visitor who finds more to do stays longer and spends more.</li>
+            <li>Spending spreads beyond Kigali when the guide covers all 30 districts.</li>
+            <li>Conference delegates are a high-value group nobody currently serves well.</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li>Domestic tourism grows when Rwandans have a guide of their own.</li>
+            <li>Local ownership means the data and capability stay in Rwanda.</li>
+            <li>Every improvement compounds — corrections make the next visitor's experience better.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 15 -->
+  <section class="slide h-blue">
+    <div class="slide-head">
+      <span class="num">SLIDE 15</span>
+      <span class="layout">Layout: title, two boxes with bullet lists. Mark the whole slide PLANNED.</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>The vision — PLANNED</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">What Tembera becomes once it is fully built.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Box 1 — In a visitor's hand</div>
+          <ul>
+            <li>Installed on the phone like an app, working with no signal at all</li>
+            <li>In their own language — French, Kinyarwanda, Swahili, Chinese, German</li>
+            <li>Book and pay for a tour, by card or mobile money</li>
+            <li>Told what is open today, in a country whose calendar it understands</li>
+          </ul>
+        </div>
+        <div><div class="box-title">Box 2 — For a Rwandan business</div>
+          <ul>
+            <li>Claim your own listing and keep it correct yourself</li>
+            <li>Add your photos, hours and menu without asking anyone</li>
+            <li>A verified badge when you are on the official register</li>
+            <li>See how many people found you this month</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>This is the slide that shows ambition. Say clearly that none of it exists today — the PLANNED label does that visually, but say it out loud too.</div>
+  </section>
+
+  <!-- ============================================================ 16 -->
+  <section class="slide h-blue">
+    <div class="slide-head">
+      <span class="num">SLIDE 16</span>
+      <span class="layout">Layout: title, subtitle, three boxes, closing line. Mark PLANNED.</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>The vision — PLANNED</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">And a live picture of visitor demand, for RDB.</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">A guide that people search generates something no survey can: a continuous record of what visitors are actually looking for, and where.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Box 1 — Demand, by district</div><p>Which districts are being searched, and how that moves through the year. Interest that arrives before the infrastructure does.</p></div>
+        <div><div class="box-title">Box 2 — Gaps worth filling</div><p>Searches that return little or nothing — a direct signal of where investment or licensing attention would pay.</p></div>
+        <div><div class="box-title">Box 3 — Corrections flowing back</div><p>Every report from a visitor or a business, shared back so the official register improves as the guide is used.</p></div>
+      </div>
+      <div class="field"><span class="label">Closing line</span><span>Reported in aggregate only. No individual visitor is ever identified, and the privacy policy already commits us to that.</span></div>
+    </div>
+    <div class="note"><b>Speaker note</b>Probably the most valuable slide for RDB specifically, because it offers something they cannot easily buy. Be firm on the privacy line — aggregate only, never individuals.</div>
+  </section>
+
+  <!-- ============================================================ 17 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 17</span>
+      <span class="layout">Layout: title, two boxes with bullet lists</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>The ask</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">A go-ahead, and access to verified place data.</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">The platform is built and paid for. What we need now is a decision, and the registers that turn a good guide into an authoritative one.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">Box 1 — What we are asking for</div>
+          <ul>
+            <li>A go-ahead to proceed to phase two</li>
+            <li>Access to official registers of accommodation, operators and licensed attractions</li>
+            <li>A named contact to keep that data current</li>
+          </ul>
+        </div>
+        <div><div class="box-title">Box 2 — What we are not asking for</div>
+          <ul>
+            <li>No funding</li>
+            <li>No public endorsement</li>
+            <li>No exclusivity</li>
+          </ul>
+          <p>If a working relationship earns those later, that is a separate conversation — and one we would rather have on evidence.</p>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Speaker note</b>Asking for a decision and data, rather than money, is a strong position. Hold it — do not soften it into a funding request in the room.</div>
+  </section>
+
+  <!-- ============================================================ 18 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 18</span>
+      <span class="layout">Layout: title, four boxes (2×2)</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>The offer</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">What RDB gets in return.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">A distribution channel</div><p>Official information reaching visitors at the moment they are deciding what to do — not buried in a document.</p></div>
+        <div><div class="box-title">Corrections flowing back</div><p>Every report from a visitor or business is captured and can be shared back. The register improves as the guide is used.</p></div>
+        <div><div class="box-title">Coverage where it is thin</div><p>Visibility for districts and businesses that global platforms have little commercial reason to cover properly.</p></div>
+        <div><div class="box-title">No cost, no lock-in</div><p>Rwandan-built and Rwandan-run. Data supplied stays RDB's, and can be withdrawn.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 19 -->
+  <section class="slide h-ochre">
+    <div class="slide-head">
+      <span class="num">SLIDE 19</span>
+      <span class="layout">Layout: title, four columns as a timeline (left to right)</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>The plan</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Four phases. Phase one is already done.</span></div>
+      <div class="two-col">
+        <div><div class="box-title">PHASE 1 · COMPLETE — The platform (built, at our own cost)</div>
+          <ul>
+            <li>495 places, all 30 districts</li>
+            <li>Search, map, accounts, reviews</li>
+            <li>Full admin system</li>
+            <li>Security and data-protection law</li>
+            <li>Rwandan calendar built in</li>
+          </ul>
+        </div>
+        <div><div class="box-title">PHASE 2 · 3 MONTHS — Trustworthy and usable (starts on your go-ahead)</div>
+          <ul>
+            <li>Verify listings against official registers</li>
+            <li>Works offline, installs like an app</li>
+            <li>Kinyarwanda and French</li>
+            <li>Photo licensing confirmed</li>
+            <li>Public launch</li>
+          </ul>
+        </div>
+        <div><div class="box-title">PHASE 3 · 6 MONTHS — Businesses join in (once the data is solid)</div>
+          <ul>
+            <li>Businesses claim and manage listings</li>
+            <li>Verified badge for the official register</li>
+            <li>Swahili, Chinese and German</li>
+            <li>Real bookings with mobile money</li>
+          </ul>
+        </div>
+        <div><div class="box-title">PHASE 4 · 12 MONTHS — A national asset (once it is being used)</div>
+          <ul>
+            <li>Demand dashboard for RDB</li>
+            <li>Data shared back to partners</li>
+            <li>Seasonal and accessibility information</li>
+            <li>Self-sustaining on business listings</li>
+          </ul>
+        </div>
+      </div>
+      <div class="field"><span class="label">Colour hint</span><span>Phase 1 green, phase 2 blue, phase 3 ochre, phase 4 clay — so progress reads left to right.</span></div>
+    </div>
+    <div class="note"><b>Speaker note</b>Emphasise that phase one was funded and delivered before asking them for anything. That is the strongest fact in the deck. Timings are working estimates — say so if pressed rather than defending a date.</div>
+  </section>
+
+  <!-- ============================================================ 20 -->
+  <section class="slide h-accent">
+    <div class="slide-head">
+      <span class="num">SLIDE 20</span>
+      <span class="layout">Layout: closing slide — big title, subtitle, two short lines</span>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="copy-src">
+      <div class="field"><span class="label">Small label</span><span>Thank you</span></div>
+      <div class="field"><span class="label">Title</span><span class="title-txt">Tembera</span></div>
+      <div class="field"><span class="label">Subtitle</span><span class="lede-txt">Built in Rwanda, at our own cost, before asking you for anything. Honest about what it knows and what it does not.</span></div>
+      <div class="field"><span class="label">Line 1</span><span>The ask: a go-ahead to build phase two, access to the official registers, and a named person to work with.</span></div>
+      <div class="field"><span class="label">Line 2</span><span>What you get: a Rwandan-built guide carrying Rwandan data, and a live picture of what visitors are looking for.</span></div>
+      <div class="field"><span class="label">Add your own</span><span>Your name, email and phone number. Do not leave the room without giving them a way to reach you.</span></div>
+    </div>
+    <div class="note"><b>Speaker note</b>Close by asking for a specific next step and a named contact. A meeting that ends on "we will be in touch" usually ends there.</div>
+  </section>
+
+</div>
+
+<script>
+  (function () {
+    function textOf(el) {
+      // innerText keeps the visible line breaks, which is what makes the
+      // pasted result usable in Canva rather than one long run-on line.
+      return (el.innerText || el.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
+    }
+
+    function flash(btn, label) {
+      var original = btn.textContent;
+      btn.textContent = label;
+      btn.classList.add("done");
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.classList.remove("done");
+      }, 1400);
+    }
+
+    function copy(text, btn, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash(btn, label); },
+          function () { fallback(text, btn, label); }
+        );
+      } else {
+        fallback(text, btn, label);
+      }
+    }
+
+    function fallback(text, btn, label) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); flash(btn, label); }
+      catch (e) { flash(btn, "Press Ctrl+C"); }
+      document.body.removeChild(ta);
+    }
+
+    document.querySelectorAll("button.copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var slide = btn.closest(".slide");
+        var src = slide.querySelector(".copy-src");
+        var num = slide.querySelector(".num").textContent;
+        var note = slide.querySelector(".note");
+        var out = num + "\n\n" + textOf(src);
+        if (note) out += "\n\nSPEAKER NOTE\n" + textOf(note).replace(/^Speaker note\s*/i, "");
+        copy(out, btn, "Copied");
+      });
+    });
+
+    document.getElementById("copyAll").addEventListener("click", function () {
+      var parts = [];
+      document.querySelectorAll(".slide").forEach(function (slide) {
+        var num = slide.querySelector(".num").textContent;
+        var src = slide.querySelector(".copy-src");
+        var note = slide.querySelector(".note");
+        var block = num + "\n\n" + textOf(src);
+        if (note) block += "\n\nSPEAKER NOTE\n" + textOf(note).replace(/^Speaker note\s*/i, "");
+        parts.push(block);
+      });
+      copy(parts.join("\n\n" + "-".repeat(60) + "\n\n"), this, "Copied all 20");
+    });
+  })();
+</script>
