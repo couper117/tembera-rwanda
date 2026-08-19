@@ -2,7 +2,7 @@
 
 **Subject:** Tembera, a tourism discovery platform and directory for Rwanda
 **Companion to:** `SWOT.md` (third assessment, 17 August 2026)
-**Date:** 19 August 2026
+**Date:** 19 August 2026 — revised the same day, after jobs 1 and 3 of PLAN.md
 
 > **Structure.** For each of the six forces: what we think is going on, how
 > Tembera fits it, how it doesn't, and a straight verdict on whether it can fit
@@ -60,14 +60,14 @@
 - Mobile-first design matches how people here actually go online.
 - The diaspora is high-intent, digitally comfortable, and far cheaper to reach online than domestic users.
 - Domestic tourism is being actively promoted, so a home audience is being created for you.
+- **Memorial sites are now handled properly.** No ratings, no reviews, no prices, and excluded from every promotional row. The catalogue had the Kigali Genocide Memorial stored at 4.9 out of 5. *Closed 19 August 2026.*
 
 **How it doesn't fit**
 - English-only serves visitors and urban professionals while excluding the mass domestic market (SWOT O5, given a demand-side rationale).
 - Unsolicited reviewing is a learned behaviour, less established here than in the markets this feature pattern came from. The UGC flywheel starts cold.
-- Genocide memorial sites are in the catalogue and cannot carry star ratings, booking prompts or promotional language without causing genuine offence. A uniform listing template is the wrong default.
 - The name may collide with official campaign branding or a registered mark. Untested — check before company registration or print.
 
-**Verdict — It already fits visitors and the diaspora; it does not yet fit Rwandans at large.** Kinyarwanda is the gate, and until it exists the domestic market is unreachable rather than merely slow. Memorial presentation needs an explicit design decision before launch.
+**Verdict — It already fits visitors and the diaspora; it does not yet fit Rwandans at large.** Kinyarwanda is the gate, and until it exists the domestic market is unreachable rather than merely slow. The memorial-presentation gap is now closed in code — but the wording on those pages should be read and approved by the owner before launch.
 
 ---
 
@@ -116,15 +116,17 @@
 **How it fits**
 - Law N° 058/2021 access and erasure rights are genuinely implemented (SWOT S11) — ahead of most products this size.
 - Collecting enquiries rather than payments keeps the current risk profile low.
-- The admin system already provides the mechanism to correct or remove a listing on request.
+- **A public correction route now exists.** Any visitor can report a wrong listing from the place page without an account, and reports are triaged in the admin. This is the mechanism the correction duty assumes. *Closed 19 August 2026.*
+- **Terms of use are published**, stating that listings are a guide rather than a guarantee and that bookings are enquiries only. *Closed 19 August 2026.*
+- The admin system provides the mechanism to correct or remove a listing on request.
 
 **How it doesn't fit**
 - Listing images are hotlinked from third-party hosts under mixed terms: some freely usable, some requiring attribution, some apparently unlicensed. Exposure rises the moment the site is public and commercial. **This is the most under-appreciated legal risk in the project.**
 - Taking payment for a third party's tour makes Tembera a travel intermediary, attracting licensing, consumer-protection and refund obligations.
-- The privacy policy's contact address is a placeholder pointing at no monitored mailbox.
+- The privacy policy still has no working contact address. It no longer prints a fake-looking one — the page now states plainly that none is configured — but a data subject still cannot reach anybody.
 - Revenue brings business registration and tax obligations not yet examined.
 
-**Verdict — It fits today, and stops fitting the day it monetises.** Two things must happen before that day: audit where every listing image comes from, and check what taking payments requires. Both are cheap now and expensive once trading.
+**Verdict — It fits today, better than it did, and still stops fitting the day it monetises.** Two obligations are now discharged: the correction route and the terms. Two remain: audit where every listing image comes from, and set a real privacy contact. Image licensing is now the single largest legal gap. Both are cheap now and expensive once trading.
 
 ---
 
@@ -136,10 +138,10 @@
 |---|---|
 | Political | Fits — strongly |
 | Economic | Fits — on one business model only |
-| Social | Fits visitors and diaspora; not yet domestic |
+| Social | Fits visitors and diaspora; not yet domestic (memorials resolved) |
 | Technological | Not yet — offline support flips it |
 | Environmental | Fits in spirit, not yet in detail |
-| Legal | Fits until monetisation |
+| Legal | Fits until monetisation (correction route and terms now in place) |
 
 Four of six already fit or nearly fit. The two that don't each have a single identified change that flips them — offline support, and image licensing before payments. Neither is a rewrite; neither is expensive today.
 
