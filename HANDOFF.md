@@ -14,6 +14,30 @@ Next's own transitive tree (`postcss`, `sharp`). Clearing them requires
 **Next 16**, a major upgrade. Next 15.5.23 cleared the critical one. See
 "Dependencies" below.
 
+### What changed (third pass — the Rwandan calendar)
+- **`lib/rwanda/calendar.ts`** knows when the country closes: Umuganda (last
+  Saturday, computed), the fixed public holidays, Good Friday (computus) and
+  Umuganura (first Friday of August), plus the April mourning week.
+- **Eid is deliberately not computed.** It follows the lunar calendar and a
+  guess would be worse than an absence, so it comes from the admin-managed
+  `calendar_dates` table at **/admin/calendar**. That screen also lists the
+  computed dates read-only, so it is obvious what does and does not need input.
+- **`CalendarNotice`** renders on the home page and directly above the opening
+  hours on a place page — the line it contradicts. It returns null on an
+  ordinary day, which is most days.
+- **Timezone matters here.** Rwanda is UTC+2 with no daylight saving, and
+  `kigaliToday()` applies that explicitly. A server running in UTC would roll
+  over at 10pm Kigali time and could announce Umuganda a day early. Covered by
+  tests.
+- 35 new unit tests, including that Umuganda is always the last Saturday across
+  seven years, and that Eid never appears in the computed list.
+
+> **Trap worth knowing:** `unstable_cache` results persist in `.next/cache`
+> **across dev server restarts**. Writing to `calendar_dates` straight from a
+> script leaves the banner stale until the tag is revalidated or `.next` is
+> removed — this cost time during development and looked exactly like a logic
+> bug. The admin action calls `revalidateTag`, so the real path is fine.
+
 ### What changed (second pass — session revocation and auth tests)
 - **Sessions are now revocable.** `User.tokenVersion` is carried in the cookie
   payload; `getCurrentUser` refuses a cookie whose version is stale. Changing a

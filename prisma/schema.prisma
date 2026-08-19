@@ -206,6 +206,28 @@ model Review {
   @@map("reviews")
 }
 
+/// Dates that cannot be calculated, so an admin sets them each year.
+///
+/// Umuganda, the fixed public holidays, Good Friday and Umuganura are all
+/// derived in lib/rwanda/calendar.ts. Eid al-Fitr and Eid al-Adha follow the
+/// lunar calendar and are genuinely not derivable — guessing them would be
+/// worse than asking. Anything else the country closes for goes here too.
+model CalendarDate {
+  id     Int      @id @default(autoincrement())
+  /// Stored as a plain date: this is a day in Rwanda, not an instant.
+  date   DateTime @db.Date
+  name   String
+  /// "closed" | "closed-morning" | "reduced" — matches Effect in the calendar.
+  effect String   @default("closed")
+  note   String   @default("")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([date, name])
+  @@index([date])
+  @@map("calendar_dates")
+}
+
 enum ReportStatus {
   open
   resolved

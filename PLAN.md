@@ -2,7 +2,7 @@
 
 **Date:** 19 August 2026
 **Branch:** `security-hardening` (or a new branch per item)
-**Status:** jobs 1 and 3 in progress; 2, 4, 5, 6 not started
+**Status:** jobs 1, 3 and 4 done. Jobs 2, 5 and 6 not started.
 
 **Decisions made (19 August 2026)**
 - **Languages:** French, Kinyarwanda, Swahili, Chinese (Simplified), German.
@@ -23,10 +23,10 @@ immediately. The big features come after.
 
 | # | Job | Size | Why this order |
 |---|-----|------|----------------|
-| 1 | Fix the legal basics | Small | Protects you now, takes hours not days |
+| 1 | Fix the legal basics | Small | **Done** — reports, terms, privacy contact |
 | 2 | Check every photo | Medium | Must happen before the site is public |
-| 3 | Fix how memorials are shown | Medium | Sensitive. Should never go live wrong |
-| 4 | Add the Rwandan calendar | Medium | Makes your opening hours actually correct |
+| 3 | Fix how memorials are shown | Medium | **Done** — no ratings, reviews or promotion |
+| 4 | Add the Rwandan calendar | Medium | **Done** — Umuganda, holidays and the mourning week |
 | 5 | Make it work without internet | Large | Big win, but needs the above settled first |
 | 6 | Add other languages | Largest | Biggest job, and the least urgent |
 

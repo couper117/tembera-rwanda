@@ -5,6 +5,7 @@ import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import PlaceActions from "@/components/place/PlaceActions";
 import VisitRecorder from "@/components/place/VisitRecorder";
+import CalendarNotice from "@/components/app/CalendarNotice";
 import ReportProblem from "@/components/place/ReportProblem";
 import ReviewSection from "@/components/place/ReviewSection";
 import PlaceImage from "@/components/ui/PlaceImage";
@@ -135,8 +136,14 @@ export default async function PlaceDetailPage({
                   </p>
                 )}
 
+                {/* A closure warning sits directly above the opening hours,
+                    because that is the line it contradicts. */}
+                <div style={{ marginTop: "var(--t-5)" }}>
+                  <CalendarNotice />
+                </div>
+
                 {/* ------------------------------------------- facts --- */}
-                <div className="t-facts" style={{ marginTop: "var(--t-5)" }}>
+                <div className="t-facts">
                   {place.hours && (
                     <Fact icon="clock" label="Opening hours" value={place.hours} />
                   )}
