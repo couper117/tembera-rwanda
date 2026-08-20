@@ -20,23 +20,15 @@
     --mono: "Cascadia Mono", "SF Mono", Consolas, ui-monospace, monospace;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #0D1512;
-      --card: #16211D;
-      --ink: #E9EFEA;
-      --ink-2: #BFCAC3;
-      --muted: #8B9A91;
-      --rule: #2A3833;
-
-      --accent: #6BC496;
-      --blue: #78B2D4;
-      --ochre: #DFAC4B;
-      --clay: #E2846C;
-    }
-  }
-
+  /* This page is deliberately dark in every context.
+   It is a shared deliverable: a reader opening the link on a machine set
+   to light mode must see what the author saw, so the palette does not
+   follow prefers-color-scheme and the viewer's theme toggle cannot
+   lighten it. Both data-theme values are pinned to the same values. */
+  :root,
+  :root[data-theme="light"],
   :root[data-theme="dark"] {
+    color-scheme: dark;
     --paper: #0D1512;
     --card: #16211D;
     --ink: #E9EFEA;
@@ -47,19 +39,6 @@
     --blue: #78B2D4;
     --ochre: #DFAC4B;
     --clay: #E2846C;
-  }
-
-  :root[data-theme="light"] {
-    --paper: #F2F4F1;
-    --card: #FBFCFA;
-    --ink: #101A16;
-    --ink-2: #3E4E45;
-    --muted: #6E7A72;
-    --rule: #D6DCD7;
-    --accent: #1F6B4A;
-    --blue: #2A6B8F;
-    --ochre: #A8761B;
-    --clay: #A63A28;
   }
 
   body {

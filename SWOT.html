@@ -23,63 +23,29 @@
     --body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #0E1714;
-      --card: #17221E;
-      --ink: #E8EEE9;
-      --ink-2: #BDC8C1;
-      --muted: #8A9A8F;
-      --rule: #2C3A34;
-
-      --good: #6BC496;
-      --bad: #DFAC4B;
-      --chance: #78B2D4;
-      --danger: #E2846C;
-
-      --good-wash: rgba(107, 196, 150, 0.10);
-      --bad-wash: rgba(223, 172, 75, 0.10);
-      --chance-wash: rgba(120, 178, 212, 0.10);
-      --danger-wash: rgba(226, 132, 108, 0.10);
-    }
-  }
-
+  /* This page is deliberately dark in every context.
+   It is a shared deliverable: a reader opening the link on a machine set
+   to light mode must see what the author saw, so the palette does not
+   follow prefers-color-scheme and the viewer's theme toggle cannot
+   lighten it. Both data-theme values are pinned to the same values. */
+  :root,
+  :root[data-theme="light"],
   :root[data-theme="dark"] {
+    color-scheme: dark;
     --ground: #0E1714;
     --card: #17221E;
     --ink: #E8EEE9;
     --ink-2: #BDC8C1;
     --muted: #8A9A8F;
     --rule: #2C3A34;
-
     --good: #6BC496;
     --bad: #DFAC4B;
     --chance: #78B2D4;
     --danger: #E2846C;
-
     --good-wash: rgba(107, 196, 150, 0.10);
     --bad-wash: rgba(223, 172, 75, 0.10);
     --chance-wash: rgba(120, 178, 212, 0.10);
     --danger-wash: rgba(226, 132, 108, 0.10);
-  }
-
-  :root[data-theme="light"] {
-    --ground: #EFF2EE;
-    --card: #FBFCFA;
-    --ink: #12201B;
-    --ink-2: #44544B;
-    --muted: #6B776F;
-    --rule: #D8DED9;
-
-    --good: #1F6B4A;
-    --bad: #A8761B;
-    --chance: #2A6B8F;
-    --danger: #A63A28;
-
-    --good-wash: rgba(31, 107, 74, 0.08);
-    --bad-wash: rgba(168, 118, 27, 0.08);
-    --chance-wash: rgba(42, 107, 143, 0.08);
-    --danger-wash: rgba(166, 58, 40, 0.08);
   }
 
   body {
