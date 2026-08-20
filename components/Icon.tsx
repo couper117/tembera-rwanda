@@ -67,7 +67,8 @@ export type IconName =
   | "moon"
   | "calendar"
   | "broom"
-  | "bell";
+  | "bell"
+  | "mail";
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: IconName;
@@ -406,6 +407,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M6 10.2a6 6 0 0 1 12 0c0 4 1.4 5.6 2 6.3H4c.6-.7 2-2.3 2-6.3z" />
       <path d="M9.8 19.5a2.3 2.3 0 0 0 4.4 0" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2.2" />
+      <path d="m4.2 6.7 7.8 6.4 7.8-6.4" />
     </>
   ),
 };

@@ -1,20 +1,20 @@
 # HANDOFF
 
 ## Current Task
-Add a static (no DB, no admin) Rwanda calendar screen — public holidays,
-Umuganda, and the country's main civic/cultural fixtures — plus a header
-notification bell that surfaces the same data.
+Rebuild the login/register screens as a genuine full-bleed 50/50 split
+(photo half + form half), not the floating-card-on-empty-page layout they
+had before, and make it work on mobile too instead of just hiding the photo.
 
 ## Status
 Solved. Typecheck and lint are clean; verified in a real headless Chrome via
-Playwright-core at 390px and 1440px (calendar view, list view, mobile, the
-home page, the notifications sheet) with zero console/page errors.
+Playwright-core across desktop, mobile, a narrow-desktop (800px, just under
+the split breakpoint), and dark mode, with zero console/page errors and no
+horizontal overflow.
 
 **Not yet done:** no automated regression suite covers this beyond the ad hoc
-Playwright check above — worth folding into `scripts/e2e.cjs`'s route crawl
-(`/calendar`) if that script grows again. `npm run build` was **not** run for
-this change — a dev server was already live on :3001 and HANDOFF's own rule
-is not to build while a dev server is running against the same `.next`.
+Playwright check above. `npm run build` was **not** run — a dev server was
+already live on :3001 and HANDOFF's own rule is not to build while a dev
+server is running against the same `.next`.
 
 **One known issue left over from prior work, deliberately:**
 `/c/<unknown>` serves the correct not-found screen with a **200** instead of
@@ -25,19 +25,29 @@ apply. Fixing it means moving `?type=` into `PlaceBrowser`, which costs
 server-rendered filtering on linked filtered URLs. Left for a decision.
 
 ## Progress
-- [x] `lib/data/calendar.ts` — pure/static event data, computed from a year
-      number (no hardcoded per-year dates except where genuinely undated —
-      see below)
-- [x] `/calendar` — stat strip, "up next" card, kind filter chips,
-      Calendar/List view toggle, month grid + sticky side detail panel
-      (desktop), full-width agenda list grouped by month
-- [x] Header notification bell (`components/app/AppHeader.tsx`) surfaces the
-      next 3 calendar events — real data, not a stub
-- [x] Nav hooks: `/calendar` in the desktop rail's primary nav, and a
-      "Rwanda calendar" row in Profile → Account (mirrors "About Tembera")
-- [x] Two new icons (`calendar`, `broom`, `bell`) and one new colour token
-      pair (`--t-violet` / `--t-violet-soft`, light + dark) for the memorial
-      tag — Kwibuka's real commemoration colour
+- [x] Rebuilt `.t-auth-container` in `app/(site)/auth.css` as a true 50/50
+      grid (`1fr 1fr`, `min-height: 100dvh`) instead of a centred
+      `max-width: 1060px` container with two independent floating cards —
+      that was the actual source of the "horrible" complaint: huge empty
+      gutters on all sides, not a broken image or missing asset
+- [x] `components/auth/AuthHero.tsx` — the shared image half. Carries its
+      own floating back + theme buttons (`t-iconbtn--solid`, same pattern as
+      `.t-detail__floaters`) instead of the usual `PageHeader`, since a 56px
+      opaque bar would cut a slice off a full-bleed photo
+- [x] Mobile no longer hides the hero — it becomes a `38vh` top image band,
+      and the form rises over its bottom edge as a rounded sheet
+      (`margin-top: -22px`, `var(--t-shadow-sheet)`), same idea as
+      `.t-detail__body`'s hero-overlap treatment
+- [x] `AuthHero` takes an `image` prop — login and register now show
+      **different photos** rather than one hardcoded in CSS
+- [x] New login-only asset `public/assets/images/rwanda_forest_road.jpg`,
+      converted from a user-pasted PNG via `sharp` (2.3MB → 170KB) and
+      re-cropped (see Working Notes) so the road reads clearly instead of
+      being buried under tree canopy + the text scrim
+- [x] Fixed a real bug: the email field used the `external` icon (open-box/
+      arrow), not a mail icon. Added a proper `mail` icon to `Icon.tsx`.
+- [x] Removed the now-dead `.t-app:has(.t-auth-container) .t-header` rule in
+      `components.css` — `PageHeader` no longer renders on these routes
 
 ## Working Notes
 
@@ -223,6 +233,50 @@ Still true and worth keeping:
   stub. A `.t-dot` appears on the bell only when the nearest event is within
   7 days.
 
+### The auth screens
+- `.t-auth-container` is load-bearing beyond styling: `components.css` keys
+  `.t-main:has(.t-auth-container) { padding-left: 0; padding-bottom: 0 }` off
+  its presence to cancel the rail/bottom-nav padding `.t-main` reserves
+  everywhere else (DesktopRail and BottomNav both already `return null` on
+  `/login` and `/register` via their own pathname checks, but `.t-main`'s
+  padding doesn't know that on its own). Keep the class name if this gets
+  restructured again.
+- The split is **`1fr 1fr` at `min-width: 860px`**, full `100dvh`. Below
+  that, `AuthHero` becomes a `38vh` top band and `.t-auth-form-wrapper` rises
+  over its bottom edge by `-22px` with rounded top corners — the same
+  "sheet over a hero" move `.t-detail__body` already uses for place pages,
+  reused here instead of invented fresh.
+- `.t-authcard` itself has **no border/shadow/radius any more** — on mobile
+  the sheet chrome lives on `.t-auth-form-wrapper`, on desktop the form sits
+  directly on the plain background. A card floating inside another card read
+  as dated once the photo half became the actual visual anchor of the page.
+- The hero's gradient is anchored to the **bottom only**
+  (`linear-gradient(to top, dark 0%, dark 40%, transparent 68%)`), not a
+  diagonal wash over the whole photo — the top of whatever image is used
+  stays fully visible. `.t-auth-hero__desc` and `.t-auth-hero__stats` are
+  `display: none` below 860px; only the badge + a shorter title show in the
+  mobile band, or they'd overflow a 38vh strip.
+- **Background-position tuning only matters when the container is wider,
+  proportionally, than the image.** At `100dvh` tall and ~half-viewport
+  wide, an auth-hero column is almost always *taller* relative to its width
+  than a landscape source photo, so `cover` scales by height and shows the
+  image's full vertical extent regardless of `background-position` — the
+  only lever that actually moves what's visible is **cropping the source
+  asset itself** before it ships. This is why `rwanda_forest_road.jpg` is a
+  crop of the pasted photo (`sharp().extract()`, top 195px of 780 trimmed)
+  rather than the original — the uncropped version buried the road under
+  canopy + the text scrim with no CSS position fixing it.
+- `AuthHero` takes an `image` prop (no default) — every call site must pass
+  one. Each auth screen can carry its own photo; nothing forces them to
+  match.
+- **User-pasted images land in `~/.claude/image-cache/<session-id>/N.png`**,
+  not anywhere under the project or the usual scratchpad — worth remembering
+  next time a message references "this image" with no other path given.
+  They're typically large lossless PNGs; re-encode through `sharp` (already
+  a transitive dep via Next's image optimizer) before committing as a web
+  asset — the pasted photo here was 2.3MB PNG, 170KB as an 84%-quality JPEG
+  at the same crop.
+
 ### Keys — open actions
 - A working `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is in `.env` (gitignored). Two others
   were tried first and failed: Google's public *demo* key from their samples
@@ -313,6 +367,9 @@ Still true and worth keeping:
   `npm install`.
 
 ## Recently Completed
+- Rebuilt login/register as a true full-bleed 50/50 split (`AuthHero` +
+  per-page photos) instead of two floating cards on an empty page; mobile
+  now gets a hero band + rising sheet instead of losing the photo entirely.
 - Added the static `/calendar` screen (Rwanda holidays/Umuganda/culture/
   memorial) with a Calendar/List toggle, plus a header notification bell
   surfacing the same data.

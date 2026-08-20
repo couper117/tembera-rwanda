@@ -92,10 +92,6 @@
     padding-left: calc(var(--t-rail-w) + var(--t-gutter));
   }
 
-  .t-app:has(.t-auth-container) .t-header {
-    padding-left: var(--t-gutter) !important;
-  }
-
   .t-header__search {
     display: flex;
     align-items: center;
