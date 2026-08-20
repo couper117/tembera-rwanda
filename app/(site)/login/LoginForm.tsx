@@ -17,6 +17,14 @@ export default function LoginForm() {
         <AuthHero
           image="/assets/images/rwanda_lake_kivu_sunset.jpg"
           credit="Photo: Rwejo / Wikimedia Commons, CC BY-SA 4.0"
+          badge="Explore Rwanda"
+          title="Welcome back to the Land of a Thousand Hills."
+          description="Sign in to sync your saved places, visits and reviews across every device."
+          stats={[
+            { value: "500+", label: "Curated places" },
+            { value: "30", label: "Districts" },
+            { value: "100%", label: "Authentic experience" },
+          ]}
         />
 
         <div className="t-auth-form-wrapper">

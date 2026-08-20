@@ -82,10 +82,19 @@ export default function AuthHero({
               ))}
             </div>
           )}
+
+          {/* Part of the normal flow here, not absolutely positioned — with
+              content in play there's no fixed height to reserve space
+              against (mobile drops the description/stats, so how much room
+              the content block needs varies), so it just flows after
+              whatever's actually rendered above it. */}
+          {credit && <span className="t-auth-hero__credit t-auth-hero__credit--inline">{credit}</span>}
         </div>
       )}
 
-      {credit && <span className="t-auth-hero__credit">{credit}</span>}
+      {!hasContent && credit && (
+        <span className="t-auth-hero__credit t-auth-hero__credit--corner">{credit}</span>
+      )}
     </div>
   );
 }

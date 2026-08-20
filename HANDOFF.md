@@ -1,17 +1,24 @@
 # HANDOFF
 
 ## Current Task
-Follow-up on the auth redesign: drop the text overlay + stats from the
-**login** hero entirely (register keeps them), replace login's photo with a
-real high-quality, properly-licensed Rwanda image, and remove the light/dark
-theme toggle from both login and register.
+Third pass on login's hero: the user asked to strip the text overlay
+entirely (prior task), then immediately asked to bring the badge/title/
+description/stats block back — but with login-appropriate copy (adapted via
+`AskUserQuestion` rather than assumed), not the text-free version. The photo
+(Lake Kivu sunset) and the removed theme toggle both stayed as they were —
+only the content block was in question this time.
 
 ## Status
 Solved. Typecheck and lint are clean; verified in a real headless Chrome
-(desktop, mobile, register) with zero console/page errors and no horizontal
-overflow. One real bug caught and fixed empirically: the photo credit
-overlapped the mobile sheet's rising edge until its bottom offset was pushed
-past the sheet's 22px overlap — see Working Notes.
+(desktop, mobile, a short 700px-tall desktop) with zero console/page errors
+and no horizontal overflow.
+
+**Real bug caught by screenshot, not inspection:** reintroducing the content
+block on mobile made the two-line title collide with the photo credit,
+because the credit had been absolutely-positioned assuming an empty hero.
+Fixed by making the credit part of the normal flex flow when content exists
+(`.t-auth-hero__credit--inline`) and keeping the old absolute corner
+placement (`--corner`) only for the truly empty case — see Working Notes.
 
 **Not yet done:** no automated regression suite; `npm run build` not run
 (same reason as always — a dev server was live on :3001).
@@ -25,22 +32,23 @@ apply. Fixing it means moving `?type=` into `PlaceBrowser`, which costs
 server-rendered filtering on linked filtered URLs. Left for a decision.
 
 ## Progress
-- [x] `AuthHero`'s content props (`badge`/`title`/`description`/`stats`) are
-      now optional — omit all four and it renders as a clean, unlabelled
-      photo (no gradient overlay either, since nothing needs legibility
-      protection). Login uses this; register still passes the full set.
+- [x] `AuthHero`'s content props (`badge`/`title`/`description`/`stats`) stay
+      optional — omit all four for a clean, unlabelled photo. Login now
+      passes the full set again (adapted "welcome back" copy, not register's
+      "create an account" copy — see Working Notes for why that distinction
+      mattered), register is unchanged.
 - [x] Removed the theme toggle from `AuthHero` entirely (both screens) —
-      only the back button floats over the photo now.
-- [x] New asset `rwanda_lake_kivu_sunset.jpg` for login: a CC BY-SA 4.0 photo
+      only the back button floats over the photo now. This stuck across all
+      three passes on the login hero; never reverted.
+- [x] `rwanda_lake_kivu_sunset.jpg` stays login's photo: a CC BY-SA 4.0 photo
       by Rwejo, sourced from Wikimedia Commons (searched + verified license
       via WebSearch/WebFetch, downloaded via `curl`, resized/re-encoded
       through `sharp` — 2.24MB → 470KB at 1600×2400). Already portrait, so it
-      needed no re-cropping (unlike the forest-road photo before it).
-      `rwanda_forest_road.jpg` was deleted — no longer referenced.
-- [x] Added `AuthHero`'s `credit` prop — small, low-contrast, corner-pinned
-      attribution text (license-required, not marketing copy) — and gave it
-      a mobile-specific bottom offset so it clears the rising sheet instead
-      of getting cut off underneath it.
+      needed no re-cropping (unlike the forest-road photo before it, deleted
+      — no longer referenced anywhere).
+- [x] `AuthHero`'s `credit` prop — small, low-contrast attribution, now two
+      layout modes (`--inline` vs `--corner`, see Status) instead of one
+      always-absolute placement.
 - [x] Rebuilt `.t-auth-container` as a true 50/50 split (see prior entry in
       Recently Completed for the full writeup of that redesign).
 

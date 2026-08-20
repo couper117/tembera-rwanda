@@ -155,22 +155,34 @@
 }
 
 /* License attribution, not marketing copy — kept tiny and low-contrast on
-   purpose. Bottom-right corner, clear of the back button and (when present)
-   the content block. On mobile the form sheet rises 22px over the hero's
-   bottom edge (see .t-auth-form-wrapper), so the credit sits above that
-   band rather than getting cut off underneath it. */
+   purpose either way. */
 .t-auth-hero__credit {
-  position: absolute;
-  right: var(--t-3);
-  bottom: 36px;
-  z-index: 2;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.55);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
+/* With a badge/title/etc in play, the credit is the last thing in that flex
+   column — it just falls in after whatever's actually rendered above it, so
+   it can never collide with content that varies by breakpoint (mobile drops
+   the description and stats). */
+.t-auth-hero__credit--inline {
+  display: block;
+  margin-top: var(--t-2);
+}
+
+/* With no content at all, there's no flow to join — pin it to the corner
+   instead. Clear of the back button, and clear of the mobile-only sheet
+   that rises 22px over the hero's bottom edge (see .t-auth-form-wrapper). */
+.t-auth-hero__credit--corner {
+  position: absolute;
+  right: var(--t-3);
+  bottom: 36px;
+  z-index: 2;
+}
+
 @media (min-width: 860px) {
-  .t-auth-hero__credit {
+  .t-auth-hero__credit--corner {
     bottom: var(--t-3);
   }
 }
