@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
-import { useTheme } from "@/lib/client/theme";
 
 interface Stat {
   value: string;
@@ -11,27 +10,41 @@ interface Stat {
 
 interface Props {
   image: string;
-  badge: string;
-  title: string;
-  description: string;
-  stats: Stat[];
+  /** Omit all four to render a clean, unlabelled photo — no overlay, no
+   *  gradient, just the back button. */
+  badge?: string;
+  title?: string;
+  description?: string;
+  stats?: Stat[];
   /** Where "back" goes if there is no history to pop. */
   fallbackHref?: string;
+  /** Small corner attribution for a licensed photo (e.g. Creative Commons —
+   *  required by the license, not marketing copy, so it stays tiny and out
+   *  of the way regardless of whether badge/title/etc are set). */
+  credit?: string;
 }
 
 /**
- * The image half of the login/register split. Carries its own floating
- * back + theme controls instead of the usual PageHeader — this screen is a
- * full-bleed photo, not a bar-plus-content layout, so a 56px opaque header
- * would just cut a slice off the top of it.
+ * The image half of the login/register split. Carries its own floating back
+ * button instead of the usual PageHeader — this screen is a full-bleed
+ * photo, not a bar-plus-content layout, so a 56px opaque header would just
+ * cut a slice off the top of it.
  */
-export default function AuthHero({ image, badge, title, description, stats, fallbackHref = "/" }: Props) {
+export default function AuthHero({
+  image,
+  badge,
+  title,
+  description,
+  stats,
+  fallbackHref = "/",
+  credit,
+}: Props) {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const hasContent = Boolean(title);
 
   return (
     <div className="t-auth-hero" style={{ backgroundImage: `url(${image})` }}>
-      <div className="t-auth-hero__overlay" />
+      {hasContent && <div className="t-auth-hero__overlay" />}
 
       <div className="t-auth-floaters">
         <button
@@ -45,36 +58,34 @@ export default function AuthHero({ image, badge, title, description, stats, fall
         >
           <Icon name="arrowLeft" size={20} />
         </button>
-
-        <button
-          type="button"
-          className="t-iconbtn t-iconbtn--solid"
-          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          title={theme === "dark" ? "Light mode" : "Dark mode"}
-          onClick={toggleTheme}
-        >
-          <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
-        </button>
       </div>
 
-      <div className="t-auth-hero__content">
-        <div className="t-auth-hero__badge">
-          <Icon name="pin" size={16} />
-          <span>{badge}</span>
-        </div>
-
-        <h2 className="t-auth-hero__title">{title}</h2>
-        <p className="t-auth-hero__desc">{description}</p>
-
-        <div className="t-auth-hero__stats">
-          {stats.map((s) => (
-            <div key={s.label} className="t-auth-hero__stat">
-              <span className="t-auth-hero__stat-val">{s.value}</span>
-              <span className="t-auth-hero__stat-lbl">{s.label}</span>
+      {hasContent && (
+        <div className="t-auth-hero__content">
+          {badge && (
+            <div className="t-auth-hero__badge">
+              <Icon name="pin" size={16} />
+              <span>{badge}</span>
             </div>
-          ))}
+          )}
+
+          <h2 className="t-auth-hero__title">{title}</h2>
+          {description && <p className="t-auth-hero__desc">{description}</p>}
+
+          {stats && stats.length > 0 && (
+            <div className="t-auth-hero__stats">
+              {stats.map((s) => (
+                <div key={s.label} className="t-auth-hero__stat">
+                  <span className="t-auth-hero__stat-val">{s.value}</span>
+                  <span className="t-auth-hero__stat-lbl">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {credit && <span className="t-auth-hero__credit">{credit}</span>}
     </div>
   );
 }

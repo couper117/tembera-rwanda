@@ -1,20 +1,20 @@
 # HANDOFF
 
 ## Current Task
-Rebuild the login/register screens as a genuine full-bleed 50/50 split
-(photo half + form half), not the floating-card-on-empty-page layout they
-had before, and make it work on mobile too instead of just hiding the photo.
+Follow-up on the auth redesign: drop the text overlay + stats from the
+**login** hero entirely (register keeps them), replace login's photo with a
+real high-quality, properly-licensed Rwanda image, and remove the light/dark
+theme toggle from both login and register.
 
 ## Status
-Solved. Typecheck and lint are clean; verified in a real headless Chrome via
-Playwright-core across desktop, mobile, a narrow-desktop (800px, just under
-the split breakpoint), and dark mode, with zero console/page errors and no
-horizontal overflow.
+Solved. Typecheck and lint are clean; verified in a real headless Chrome
+(desktop, mobile, register) with zero console/page errors and no horizontal
+overflow. One real bug caught and fixed empirically: the photo credit
+overlapped the mobile sheet's rising edge until its bottom offset was pushed
+past the sheet's 22px overlap — see Working Notes.
 
-**Not yet done:** no automated regression suite covers this beyond the ad hoc
-Playwright check above. `npm run build` was **not** run — a dev server was
-already live on :3001 and HANDOFF's own rule is not to build while a dev
-server is running against the same `.next`.
+**Not yet done:** no automated regression suite; `npm run build` not run
+(same reason as always — a dev server was live on :3001).
 
 **One known issue left over from prior work, deliberately:**
 `/c/<unknown>` serves the correct not-found screen with a **200** instead of
@@ -25,29 +25,24 @@ apply. Fixing it means moving `?type=` into `PlaceBrowser`, which costs
 server-rendered filtering on linked filtered URLs. Left for a decision.
 
 ## Progress
-- [x] Rebuilt `.t-auth-container` in `app/(site)/auth.css` as a true 50/50
-      grid (`1fr 1fr`, `min-height: 100dvh`) instead of a centred
-      `max-width: 1060px` container with two independent floating cards —
-      that was the actual source of the "horrible" complaint: huge empty
-      gutters on all sides, not a broken image or missing asset
-- [x] `components/auth/AuthHero.tsx` — the shared image half. Carries its
-      own floating back + theme buttons (`t-iconbtn--solid`, same pattern as
-      `.t-detail__floaters`) instead of the usual `PageHeader`, since a 56px
-      opaque bar would cut a slice off a full-bleed photo
-- [x] Mobile no longer hides the hero — it becomes a `38vh` top image band,
-      and the form rises over its bottom edge as a rounded sheet
-      (`margin-top: -22px`, `var(--t-shadow-sheet)`), same idea as
-      `.t-detail__body`'s hero-overlap treatment
-- [x] `AuthHero` takes an `image` prop — login and register now show
-      **different photos** rather than one hardcoded in CSS
-- [x] New login-only asset `public/assets/images/rwanda_forest_road.jpg`,
-      converted from a user-pasted PNG via `sharp` (2.3MB → 170KB) and
-      re-cropped (see Working Notes) so the road reads clearly instead of
-      being buried under tree canopy + the text scrim
-- [x] Fixed a real bug: the email field used the `external` icon (open-box/
-      arrow), not a mail icon. Added a proper `mail` icon to `Icon.tsx`.
-- [x] Removed the now-dead `.t-app:has(.t-auth-container) .t-header` rule in
-      `components.css` — `PageHeader` no longer renders on these routes
+- [x] `AuthHero`'s content props (`badge`/`title`/`description`/`stats`) are
+      now optional — omit all four and it renders as a clean, unlabelled
+      photo (no gradient overlay either, since nothing needs legibility
+      protection). Login uses this; register still passes the full set.
+- [x] Removed the theme toggle from `AuthHero` entirely (both screens) —
+      only the back button floats over the photo now.
+- [x] New asset `rwanda_lake_kivu_sunset.jpg` for login: a CC BY-SA 4.0 photo
+      by Rwejo, sourced from Wikimedia Commons (searched + verified license
+      via WebSearch/WebFetch, downloaded via `curl`, resized/re-encoded
+      through `sharp` — 2.24MB → 470KB at 1600×2400). Already portrait, so it
+      needed no re-cropping (unlike the forest-road photo before it).
+      `rwanda_forest_road.jpg` was deleted — no longer referenced.
+- [x] Added `AuthHero`'s `credit` prop — small, low-contrast, corner-pinned
+      attribution text (license-required, not marketing copy) — and gave it
+      a mobile-specific bottom offset so it clears the rising sheet instead
+      of getting cut off underneath it.
+- [x] Rebuilt `.t-auth-container` as a true 50/50 split (see prior entry in
+      Recently Completed for the full writeup of that redesign).
 
 ## Working Notes
 
@@ -256,26 +251,46 @@ Still true and worth keeping:
   stays fully visible. `.t-auth-hero__desc` and `.t-auth-hero__stats` are
   `display: none` below 860px; only the badge + a shorter title show in the
   mobile band, or they'd overflow a 38vh strip.
+- **`badge`/`title`/`description`/`stats` on `AuthHero` are all optional.**
+  Omit them (login does) and there's no gradient either — nothing needs
+  legibility protection if there's no text, so the photo shows completely
+  clean. Register still passes the full set. There's no theme toggle any
+  more on either screen — just the back button.
 - **Background-position tuning only matters when the container is wider,
   proportionally, than the image.** At `100dvh` tall and ~half-viewport
   wide, an auth-hero column is almost always *taller* relative to its width
   than a landscape source photo, so `cover` scales by height and shows the
   image's full vertical extent regardless of `background-position` — the
   only lever that actually moves what's visible is **cropping the source
-  asset itself** before it ships. This is why `rwanda_forest_road.jpg` is a
-  crop of the pasted photo (`sharp().extract()`, top 195px of 780 trimmed)
-  rather than the original — the uncropped version buried the road under
-  canopy + the text scrim with no CSS position fixing it.
+  asset itself** before it ships. A **portrait-oriented source image sidesteps
+  this entirely** — `rwanda_lake_kivu_sunset.jpg` (3129×4693 native) needed no
+  cropping at all, just a resize/re-encode. The register hero's landscape
+  photo does still rely on this positioning behavior.
 - `AuthHero` takes an `image` prop (no default) — every call site must pass
   one. Each auth screen can carry its own photo; nothing forces them to
   match.
+- `AuthHero`'s `credit` prop renders small, low-contrast, corner-pinned
+  attribution — for license-required credit (e.g. Creative Commons), not
+  marketing copy, so it's exempt from the "no text over the photo" rule.
+  It needs a **larger bottom offset on mobile** (36px vs 12px on desktop) to
+  clear `.t-auth-form-wrapper`'s -22px rise onto the hero — first pass had it
+  at the same offset both ways and the credit text visibly overlapped the
+  sheet's rounded top edge. Caught by screenshot, not by inspection.
 - **User-pasted images land in `~/.claude/image-cache/<session-id>/N.png`**,
   not anywhere under the project or the usual scratchpad — worth remembering
   next time a message references "this image" with no other path given.
   They're typically large lossless PNGs; re-encode through `sharp` (already
   a transitive dep via Next's image optimizer) before committing as a web
-  asset — the pasted photo here was 2.3MB PNG, 170KB as an 84%-quality JPEG
-  at the same crop.
+  asset.
+- **For new stock imagery, Wikimedia Commons is the source of choice** — real
+  photographers, an explicit license on every file page (verify it, they
+  vary: CC0, CC BY, CC BY-SA all show up), and a stable direct-download URL
+  at `upload.wikimedia.org`. Workflow: `WebSearch` with `site:commons.wikimedia.org`
+  to find candidates → `WebFetch` the file page to confirm the exact license,
+  author, and get the direct URL → `curl` it into the scratchpad → `Read` it
+  to actually look at the photo before committing to it → `sharp` to
+  resize/re-encode into `public/assets/images/`. CC BY-SA requires
+  attribution — that's what `AuthHero`'s `credit` prop is for.
 
 ### Keys — open actions
 - A working `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is in `.env` (gitignored). Two others
@@ -367,6 +382,10 @@ Still true and worth keeping:
   `npm install`.
 
 ## Recently Completed
+- Stripped the text overlay off login's hero (register keeps it), removed
+  the theme toggle from both auth screens, and replaced login's photo with
+  a properly-licensed Wikimedia Commons image (Lake Kivu sunset, CC BY-SA
+  4.0, credited).
 - Rebuilt login/register as a true full-bleed 50/50 split (`AuthHero` +
   per-page photos) instead of two floating cards on an empty page; mobile
   now gets a hero band + rising sheet instead of losing the photo entirely.

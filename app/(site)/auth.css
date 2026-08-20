@@ -154,6 +154,27 @@
   margin-top: 2px;
 }
 
+/* License attribution, not marketing copy — kept tiny and low-contrast on
+   purpose. Bottom-right corner, clear of the back button and (when present)
+   the content block. On mobile the form sheet rises 22px over the hero's
+   bottom edge (see .t-auth-form-wrapper), so the credit sits above that
+   band rather than getting cut off underneath it. */
+.t-auth-hero__credit {
+  position: absolute;
+  right: var(--t-3);
+  bottom: 36px;
+  z-index: 2;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 860px) {
+  .t-auth-hero__credit {
+    bottom: var(--t-3);
+  }
+}
+
 /* -- Form half -------------------------------------------------------------
    Mobile: a rounded sheet rising over the hero's bottom edge. Desktop: a
    plain centred column on the page background — the hero photo is the only
