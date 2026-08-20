@@ -1973,6 +1973,12 @@
   color: var(--t-danger);
 }
 
+/* Only when the notice is itself the link (e.g. the home calendar teaser) —
+   plain informational notices are never hoverable. */
+a.t-notice:hover {
+  background: var(--t-surface-2);
+}
+
 /* ======================================================= bottom sheet == */
 
 .t-sheet-backdrop {
@@ -2661,4 +2667,322 @@
     opacity: 0;
     transform: translateY(4px);
   }
+}
+
+/* ========================================================= calendar === */
+
+.t-cal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  flex-wrap: wrap;
+}
+
+.t-cal-controls .t-chiprow {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-cal-viewtoggle {
+  flex: none;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  gap: 2px;
+}
+
+.t-cal-viewtoggle__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--t-3);
+  border-radius: var(--t-r-pill);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-2);
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease),
+    box-shadow var(--t-fast) var(--t-ease);
+}
+
+.t-cal-viewtoggle__btn[aria-pressed="true"] {
+  background: var(--t-surface);
+  color: var(--t-ink);
+  box-shadow: var(--t-shadow-card);
+}
+
+/* -- Calendar-view layout: grid + a details rail alongside it on desktop -- */
+
+.t-cal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--t-4);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .t-cal-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+
+  .t-cal-layout__side {
+    position: sticky;
+    top: calc(var(--t-header-h) + var(--t-4));
+  }
+}
+
+/* Kind-coloured filter chip. Each kind sets --tag on the wrapper (see
+   inline style in CalendarScreen), so the dot, the active fill and the
+   active text all tint from one source — same trick as .t-catcard. */
+.t-cal-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  height: 38px;
+  padding: 0 var(--t-4);
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--t-ease), border-color var(--t-fast) var(--t-ease),
+    color var(--t-fast) var(--t-ease);
+}
+
+.t-cal-chip:hover {
+  border-color: var(--t-border-strong);
+}
+
+.t-cal-chip[aria-pressed="true"] {
+  background: var(--tag-soft);
+  border-color: var(--tag);
+  color: var(--tag);
+}
+
+.t-cal-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tag);
+}
+
+/* -- "Up next" hero card -------------------------------------------------- */
+
+.t-cal-next {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  padding: var(--t-4);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  box-shadow: var(--t-shadow-card);
+}
+
+.t-cal-next__date {
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--t-r-md);
+  background: var(--tag-soft);
+  color: var(--tag);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.t-cal-next__date > span:first-child {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.t-cal-next__date > span:last-child {
+  font-size: var(--t-text-title);
+  font-weight: 800;
+}
+
+.t-cal-next__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-cal-next__eta {
+  flex: none;
+}
+
+/* -- Month grid ------------------------------------------------------------ */
+
+.t-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-bottom: var(--t-3);
+}
+
+.t-cal-nav__label {
+  flex: 1;
+  text-align: center;
+  font-size: var(--t-text-heading);
+  font-weight: 700;
+}
+
+.t-cal-dow {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-bottom: var(--t-2);
+}
+
+.t-cal-dow > span {
+  text-align: center;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.t-cal-day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: var(--t-r-sm);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  color: var(--t-ink);
+  background: transparent;
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-cal-day:hover {
+  background: var(--t-surface-2);
+}
+
+.t-cal-day--outside {
+  color: var(--t-ink-3);
+  opacity: 0.45;
+}
+
+.t-cal-day--today {
+  box-shadow: inset 0 0 0 1.5px var(--t-accent);
+}
+
+.t-cal-day--selected {
+  background: var(--t-accent);
+  color: var(--t-ink-inverse);
+}
+
+.t-cal-day--selected:hover {
+  background: var(--t-accent);
+}
+
+.t-cal-day__dots {
+  display: flex;
+  gap: 2px;
+  height: 5px;
+}
+
+.t-cal-day__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+/* -- Selected-day panel + agenda rows --------------------------------------- */
+
+.t-cal-event {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  padding: var(--t-3) 0;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-cal-event:last-child {
+  border-bottom: none;
+}
+
+.t-cal-event__icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-sm);
+  background: var(--tag-soft);
+  color: var(--tag);
+}
+
+.t-cal-agendarow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-cal-agendarow:last-child {
+  border-bottom: none;
+}
+
+.t-cal-agendarow__date {
+  flex: none;
+  width: 44px;
+  border-radius: var(--t-r-sm);
+  background: var(--t-surface-2);
+  text-align: center;
+  padding: 5px 0;
+  line-height: 1.15;
+}
+
+.t-cal-agendarow__date > span:first-child {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-cal-agendarow__date > span:last-child {
+  display: block;
+  font-size: var(--t-text-body);
+  font-weight: 800;
+  color: var(--t-ink);
+}
+
+.t-cal-monthlabel {
+  position: sticky;
+  top: calc(var(--t-header-h) + 1px);
+  z-index: 1;
+  padding: var(--t-2) var(--t-4);
+  background: var(--t-surface-2);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-cal-monthlabel:first-child {
+  border-top-left-radius: var(--t-r-lg);
+  border-top-right-radius: var(--t-r-lg);
 }

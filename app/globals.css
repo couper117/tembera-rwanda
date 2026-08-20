@@ -39,6 +39,10 @@
 
   --t-danger: #a3352a;
   --t-danger-soft: #fbeceb;
+
+  /* Kwibuka's commemoration colour — used only for the memorial calendar tag. */
+  --t-violet: #5b4b8a;
+  --t-violet-soft: #efeaf7;
 }
 
 [data-theme="dark"] {
@@ -66,6 +70,9 @@
 
   --t-danger: #f85149;
   --t-danger-soft: #3c1e1e;
+
+  --t-violet: #b3a1e0;
+  --t-violet-soft: #29233d;
 
   --t-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
   --t-shadow-raised: 0 4px 16px rgba(0, 0, 0, 0.5);

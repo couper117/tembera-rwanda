@@ -64,7 +64,10 @@ export type IconName =
   | "plusDashed"
   | "panelLeft"
   | "sun"
-  | "moon";
+  | "moon"
+  | "calendar"
+  | "broom"
+  | "bell";
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: IconName;
@@ -385,6 +388,26 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" />,
+  calendar: (
+    <>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+      <path d="M3.5 9.8h17M8 3v4M16 3v4" />
+    </>
+  ),
+  // A simple broom — the everyday image of Umuganda's communal clean-up.
+  broom: (
+    <>
+      <path d="M19.5 4 10 13.5" />
+      <path d="M8 15.5 12 11.5" />
+      <path d="M10 13.5 4 20.5M10 13.5 7 21M10 13.5 10.3 21.5" />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M6 10.2a6 6 0 0 1 12 0c0 4 1.4 5.6 2 6.3H4c.6-.7 2-2.3 2-6.3z" />
+      <path d="M9.8 19.5a2.3 2.3 0 0 0 4.4 0" />
+    </>
+  ),
 };
 
 /** Only these read well as a solid shape; `filled` is ignored on the rest.

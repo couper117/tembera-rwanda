@@ -9,6 +9,14 @@ import { useAccount } from "@/lib/client/account";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
 import { useTheme } from "@/lib/client/theme";
+import {
+  EVENT_KIND_META,
+  daysBetween,
+  formatShortDate,
+  getCalendarEvents,
+  kindStyleVars,
+  nowInKigali,
+} from "@/lib/data/calendar";
 import CategoryNav from "./CategoryNav";
 import CityPicker from "./CityPicker";
 
@@ -23,6 +31,7 @@ export default function AppHeader() {
   const scrolled = useScrolled();
   const pathname = usePathname();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { authed, isAdmin } = useAccount();
@@ -30,11 +39,18 @@ export default function AppHeader() {
 
   const savedCount = ready ? ids.length : 0;
 
+  const today = nowInKigali();
+  const upcoming = getCalendarEvents(today.year)
+    .filter((e) => e.date >= today.iso)
+    .slice(0, 3);
+  const soon = upcoming[0] && daysBetween(today.iso, upcoming[0].date) <= 7;
+
   // Close on route change rather than on click. Unmounting the sheet in the
   // same tick as the click tears the anchor out mid-navigation, which cancels
   // it — the link looked dead on mobile.
   useEffect(() => {
     setCategoriesOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   return (
@@ -97,6 +113,19 @@ export default function AppHeader() {
             {savedCount > 0 && <span className="t-dot" />}
           </Link>
 
+          <button
+            type="button"
+            className="t-iconbtn"
+            aria-label="Notifications"
+            aria-haspopup="dialog"
+            onClick={() => setNotificationsOpen(true)}
+            title="Notifications"
+            style={{ position: "relative" }}
+          >
+            <Icon name="bell" size={20} />
+            {soon && <span className="t-dot" />}
+          </button>
+
           {isAdmin && (
             <Link
               href="/admin"
@@ -132,6 +161,51 @@ export default function AppHeader() {
           <CityPicker />
         </div>
         <CategoryNav summaries={summaries} />
+      </BottomSheet>
+
+      <BottomSheet
+        open={notificationsOpen}
+        title="Notifications"
+        onClose={() => setNotificationsOpen(false)}
+      >
+        {upcoming.length === 0 ? (
+          <div className="t-state" style={{ padding: "var(--t-6) 0" }}>
+            <span className="t-state__icon">
+              <Icon name="bell" size={22} />
+            </span>
+            <div className="t-state__title">You&apos;re all caught up</div>
+            <div className="t-state__text">Nothing left on the calendar this year.</div>
+          </div>
+        ) : (
+          <>
+            <p className="t-small t-muted" style={{ marginBottom: "var(--t-2)" }}>
+              From the Rwanda calendar
+            </p>
+            <div>
+              {upcoming.map((e) => (
+                <Link
+                  key={e.id}
+                  href="/calendar"
+                  className="t-cal-event"
+                  style={kindStyleVars(e.kind)}
+                >
+                  <span className="t-cal-event__icon">
+                    <Icon name={EVENT_KIND_META[e.kind].icon} size={17} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span className="t-row__name">{e.title}</span>
+                    <div className="t-small t-muted" style={{ marginTop: 2 }}>
+                      {formatShortDate(e.date)} · {e.summary}
+                    </div>
+                  </span>
+                  <span className="t-badge" style={{ flex: "none" }}>
+                    {e.date === today.iso ? "Today" : `${daysBetween(today.iso, e.date)}d`}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
       </BottomSheet>
     </>
   );

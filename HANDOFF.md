@@ -1,62 +1,43 @@
 # HANDOFF
 
 ## Current Task
-Simplify the map to an ordinary one (the bespoke district map was over-built
-and its side panel was poor), then build a real profile screen on a local
-demo account.
+Add a static (no DB, no admin) Rwanda calendar screen — public holidays,
+Umuganda, and the country's main civic/cultural fixtures — plus a header
+notification bell that surfaces the same data.
 
 ## Status
-Solved. Both are done and verified: build passes (553 pages), lint and
-typecheck are clean, and **26/26 interactive flows pass** in a real browser at
-390px and 1440px.
+Solved. Typecheck and lint are clean; verified in a real headless Chrome via
+Playwright-core at 390px and 1440px (calendar view, list view, mobile, the
+home page, the notifications sheet) with zero console/page errors.
 
-**One known issue left, deliberately:** `/c/<unknown>` serves the correct
-not-found screen with a **200** instead of a 404. See the note in
-`app/(site)/c/[category]/page.tsx` — it is the only one of the three dynamic
-routes that reads `searchParams`, so `dynamicParams = false` (which fixed
-`/place/[id]` and `/city/[city]`) cannot apply. Fixing it means moving `?type=`
-into `PlaceBrowser`, which costs server-rendered filtering on linked filtered
-URLs. Left for a decision.
+**Not yet done:** no automated regression suite covers this beyond the ad hoc
+Playwright check above — worth folding into `scripts/e2e.cjs`'s route crawl
+(`/calendar`) if that script grows again. `npm run build` was **not** run for
+this change — a dev server was already live on :3001 and HANDOFF's own rule
+is not to build while a dev server is running against the same `.next`.
+
+**One known issue left over from prior work, deliberately:**
+`/c/<unknown>` serves the correct not-found screen with a **200** instead of
+a 404. See the note in `app/(site)/c/[category]/page.tsx` — it is the only
+one of the three dynamic routes that reads `searchParams`, so
+`dynamicParams = false` (which fixed `/place/[id]` and `/city/[city]`) cannot
+apply. Fixing it means moving `?type=` into `PlaceBrowser`, which costs
+server-rendered filtering on linked filtered URLs. Left for a decision.
 
 ## Progress
-- [x] **Map cut back to an ordinary Google map.** Deleted the district
-      polygons, national mask, district labels + collision culling, palette,
-      country/detail style swap, drill-down, `public/geo/*` (239 KB) and
-      `scripts/build-rwanda-geo.mjs`. What remains: default Google basemap with
-      only `poi.business` hidden, our pins, a filter row, a results panel, the
-      selected-place sheet and in-app directions.
-- [x] Map opens framed on the **results**, not the country — every listing is
-      in Kigali, so fitting Rwanda rendered as one pin in an empty map.
-      Changing the filter reframes onto the new results.
-- [x] Rebuilt the map side panel: fixed search + filters head, scrolling
-      result list, rows that drive the map instead of navigating away.
-- [x] **Profile screen** on a local demo account (`lib/client/account.tsx`):
-      avatar initials, name, @handle, bio, home city, join date, and three
-      stats. Editable inline with validation; persists to localStorage.
-- [x] Visit history is **real**, not seeded (`lib/client/visited.ts` +
-      `VisitRecorder` on the place page), so "Places visited" and "Districts"
-      mean something. Clearable from the profile and from Settings.
-- [x] `/place/<unknown>` and `/city/<unknown>` now return a real **404**
-      instead of 200 (`dynamicParams = false`)
-- [x] Lifted 8 hardcoded per-page datasets into `lib/places/sources/*` (verbatim)
-- [x] Unified them into one catalog: now 495 places, 16 groups, 30 districts
-- [x] Two-level taxonomy in `lib/places/taxonomy.ts` (16 groups, 70 subcategories)
-- [x] Seeded `lib/places/sources/directory.ts` with ~200 real Rwandan institutions
-- [x] Rail rebuilt: branded header, colour-coded single-column category list,
-      "More categories", promo card, pinned Saved/Profile/Settings, collapsible
-- [x] Full category tree still available in the header's mobile sheet
-- [x] Per-category colour system applied across rail, tiles, cards and placeholders
-- [x] Real /settings screen (location + local data); Profile slimmed to match
-- [x] Header filled out: inline desktop search, city, categories, map, saved, profile
-- [x] Subcategory-precise search and `?type=` deep links throughout
-- [x] Design system (`app/globals.css` tokens + `app/components.css` primitives)
-- [x] Inline SVG icon set, replacing the CDN FontAwesome dependency in the app
-- [x] App shell: compact header, bottom nav, desktop rail, city picker
-- [x] Screens: home, search, explore, category, city, place, map, saved, profile
-- [x] Rebuilt booking + about on the design system (booking server action untouched)
-- [x] Legacy category routes 308-redirect to the new ones
-- [x] Empty / error / loading / no-location / no-map-key states throughout
-- [x] Verified: build, lint, tsc, 17 screens screenshotted at 390px and 1440px
+- [x] `lib/data/calendar.ts` — pure/static event data, computed from a year
+      number (no hardcoded per-year dates except where genuinely undated —
+      see below)
+- [x] `/calendar` — stat strip, "up next" card, kind filter chips,
+      Calendar/List view toggle, month grid + sticky side detail panel
+      (desktop), full-width agenda list grouped by month
+- [x] Header notification bell (`components/app/AppHeader.tsx`) surfaces the
+      next 3 calendar events — real data, not a stub
+- [x] Nav hooks: `/calendar` in the desktop rail's primary nav, and a
+      "Rwanda calendar" row in Profile → Account (mirrors "About Tembera")
+- [x] Two new icons (`calendar`, `broom`, `bell`) and one new colour token
+      pair (`--t-violet` / `--t-violet-soft`, light + dark) for the memorial
+      tag — Kwibuka's real commemoration colour
 
 ## Working Notes
 
@@ -203,6 +184,45 @@ Still true and worth keeping:
 - Storage keys in use: `tembera.account`, `tembera.saved`, `tembera.visited`,
   `tembera.recent`, `tembera.city`. Settings can clear the last three.
 
+### The calendar page
+- `lib/data/calendar.ts` is pure and static — no DB, no fetch, safe to import
+  from client components directly (unlike `lib/places/catalog`). Every
+  rule-based date (Umuganda's "last Saturday of the month", Umuganura's
+  "first Friday of August") is computed from the year, not hand-typed.
+- A few real events (Umushyikirano, Kwita Izina, Itorero Urungano) genuinely
+  move year to year with no fixed rule. They're marked `approx: true` and
+  pinned to a representative date rather than invented as exact — same
+  honesty principle as the distance-precision and rating rules on `/about`.
+- **"Today" is computed in Africa/Kigali time (UTC+2, no DST), not the
+  viewer's device timezone** — `nowInKigali()` shifts `Date.now()` by a fixed
+  2 hours and reads the UTC fields. This is deliberate, not just convenient:
+  it means server render and client hydration compute the exact same value
+  from the same instant with zero timezone library and no hydration
+  mismatch, and it's the substantively correct clock for "when things happen
+  in Rwanda" regardless of who's viewing the page.
+- The page originally shipped with the whole screen (stats, next-event card,
+  month grid, agenda) capped at `maxWidth: 760`, inherited from the `/about`
+  pattern. For a page that's actually text, that's fine; for a calendar grid
+  it read as a narrow column drowning in gutter on desktop. Only the
+  text sections (title/stats, the disclaimer notice) stay capped now — the
+  interactive `CalendarScreen` uses the full page width, and splits into a
+  **Calendar/List view toggle** (`t-cal-viewtoggle`) rather than stacking the
+  month grid and the full agenda on one screen.
+- Desktop calendar view is a two-column `t-cal-layout` (grid + a sticky
+  `320px` side panel showing the selected day) above 900px; below that it
+  collapses to one column via the same grid rule, no separate mobile markup.
+- **Playwright's `fullPage: true` screenshot is unreliable on this layout** —
+  it rendered content shifted left and cropped by roughly the rail's width,
+  with no matching `scrollX`/overflow in `page.evaluate()`. A same-viewport
+  (`fullPage: false`) screenshot of the identical page was pixel-correct.
+  Root cause not chased down (likely a Chromium fullPage + `position: fixed`
+  rail interaction) — just use `fullPage: false` for this app's screens.
+- The bell in `AppHeader` reads the same `getCalendarEvents()` /
+  `nowInKigali()` and shows the next 3 events as real notification rows
+  (`kindStyleVars()` shared with `CalendarScreen` for the icon/colour), not a
+  stub. A `.t-dot` appears on the bell only when the nearest event is within
+  7 days.
+
 ### Keys — open actions
 - A working `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is in `.env` (gitignored). Two others
   were tried first and failed: Google's public *demo* key from their samples
@@ -293,6 +313,9 @@ Still true and worth keeping:
   `npm install`.
 
 ## Recently Completed
+- Added the static `/calendar` screen (Rwanda holidays/Umuganda/culture/
+  memorial) with a Calendar/List toggle, plus a header notification bell
+  surfacing the same data.
 - Cut the bespoke Rwanda map back to an ordinary one; rebuilt its side panel.
 - Built the profile screen on a local demo account with real visit history.
 - Fixed `/place/<unknown>` and `/city/<unknown>` returning 200 instead of 404.

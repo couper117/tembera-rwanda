@@ -197,6 +197,7 @@ export default function ProfileScreen({ index }: Props) {
             <div className="t-card">
               <Row icon="settings" label="Settings" href="/settings" />
               <Row icon="ticket" label="Your bookings" href="/booking" />
+              <Row icon="calendar" label="Rwanda calendar" href="/calendar" />
               <Row icon="info" label="About Tembera" href="/about" />
               <Row icon="lock" label="Admin sign in" href="/admin" />
               {authed ? (
