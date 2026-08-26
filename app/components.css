@@ -1961,6 +1961,25 @@
   border: 1px solid var(--t-border);
 }
 
+/* --- places of remembrance ---
+   Guidance shown on memorial sites in place of the ratings, prices and
+   "what to expect" chips a normal listing carries. Deliberately quiet: a
+   left rule instead of a card, no accent colour, no icon. It should read as
+   a note from the guide, not as a feature of the product. */
+.t-remember__note {
+  border-left: 2px solid var(--t-border-strong, var(--t-border));
+  padding-left: var(--t-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+.t-remember__note p {
+  color: var(--t-ink-2);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
 .t-notice__icon {
   flex: none;
   color: var(--t-accent);

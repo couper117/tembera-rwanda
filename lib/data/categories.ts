@@ -22,12 +22,25 @@ export const getCategories = unstable_cache(
       title: r.title,
       icon: r.icon,
       primary: r.primary,
+      sensitive: r.sensitive,
       subcategories: r.subcategories.map((s) => s.name),
     }));
   },
   ["categories-list"],
   { tags: [CATEGORIES_TAG] },
 );
+
+/**
+ * The ids of categories that must not be rated, priced or promoted.
+ *
+ * Returned as a Set because the ranking functions need a cheap membership test
+ * on every place, and because passing the ids (rather than the whole taxonomy)
+ * keeps `lib/places/engine.ts` pure.
+ */
+export async function sensitiveCategoryIds(): Promise<Set<string>> {
+  const groups = await getCategories();
+  return new Set(groups.filter((g) => g.sensitive).map((g) => g.id));
+}
 
 export async function getCategoryMap(): Promise<Map<string, CategoryGroup>> {
   const groups = await getCategories();

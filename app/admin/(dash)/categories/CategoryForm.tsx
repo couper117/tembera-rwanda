@@ -11,6 +11,7 @@ export interface CategoryFormValues {
   title: string;
   icon: string;
   primary: boolean;
+  sensitive: boolean;
   sortOrder: number;
 }
 
@@ -26,8 +27,8 @@ export default function CategoryForm({
 
   return (
     <form action={formAction} className="a-form">
-      {state.error && <p className="a-error">{state.error}</p>}
-      {state.success && <p className="a-success">{state.success}</p>}
+      {state.error && <p className="a-error" role="alert">{state.error}</p>}
+      {state.success && <p className="a-success" role="status">{state.success}</p>}
 
       <div className="a-grid2">
         <div className="a-field">
@@ -88,6 +89,20 @@ export default function CategoryForm({
               defaultChecked={values?.primary ?? false}
             />
             <span className="a-hint">Show in the home Explore row.</span>
+          </div>
+        </div>
+        <div className="a-field">
+          <label className="a-label">Place of remembrance</label>
+          <div className="a-checkrow">
+            <input
+              type="checkbox"
+              name="sensitive"
+              defaultChecked={values?.sensitive ?? false}
+            />
+            <span className="a-hint">
+              For memorials and similar. Removes ratings, reviews, prices and
+              promotional placement everywhere, and uses a restrained layout.
+            </span>
           </div>
         </div>
       </div>

@@ -36,6 +36,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         sample: true,
       },
       { href: "/admin/bookings", label: "Bookings", icon: "ticket", badge: "bookings" },
+      { href: "/admin/reports", label: "Reports", icon: "alert" },
     ],
   },
   {
@@ -57,6 +58,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     title: "System",
     items: [
+      { href: "/admin/calendar", label: "Calendar", icon: "calendar" },
       { href: "/admin/activity", label: "Activity", icon: "clock", sample: true },
       { href: "/admin/settings", label: "Settings", icon: "settings", sample: true },
     ],

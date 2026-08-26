@@ -45,7 +45,11 @@
         <div id="map"></div>
     </div>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDufwDRwYRQlxg3mT72p5943l6FhvAgFis&callback=initMap&libraries=places" async defer></script>
+    <!-- The API key that was hardcoded here has been removed and should be
+         treated as compromised: it is still readable in this repository's git
+         history. Revoke it in the Google Cloud console. This legacy PHP app is
+         kept for reference only and is never built or served. -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=REMOVED_SEE_COMMENT_ABOVE&callback=initMap&libraries=places" async defer></script>
     
     <script>
         let map, userMarker;

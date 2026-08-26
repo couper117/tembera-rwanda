@@ -1,0 +1,772 @@
+<title>Tembera — SDGs &amp; Vision 2050</title>
+
+<style>
+  :root {
+    --ground: #EFF2EE;
+    --card: #FBFCFA;
+    --ink: #12201B;
+    --ink-2: #44544B;
+    --muted: #6B776F;
+    --rule: #D8DED9;
+
+    --good: #1F6B4A;
+    --bad: #A8761B;
+    --chance: #2A6B8F;
+    --danger: #A63A28;
+
+    --good-wash: rgba(31, 107, 74, 0.08);
+    --bad-wash: rgba(168, 118, 27, 0.08);
+    --danger-wash: rgba(166, 58, 40, 0.08);
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", "SF Mono", Consolas, ui-monospace, monospace;
+  }
+
+  /* This page is deliberately dark in every context.
+   It is a shared deliverable: a reader opening the link on a machine set
+   to light mode must see what the author saw, so the palette does not
+   follow prefers-color-scheme and the viewer's theme toggle cannot
+   lighten it. Both data-theme values are pinned to the same values. */
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0E1714; --card: #17221E; --ink: #E8EEE9; --ink-2: #BDC8C1;
+    --muted: #8A9A8F; --rule: #2C3A34;
+    --good: #6BC496; --bad: #DFAC4B; --chance: #78B2D4; --danger: #E2846C;
+    --good-wash: rgba(107,196,150,0.10); --bad-wash: rgba(223,172,75,0.10);
+    --danger-wash: rgba(226,132,108,0.10);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.06rem;
+    line-height: 1.65;
+  }
+
+  .page {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 5vw, 3rem) clamp(1.1rem, 5vw, 2rem) 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .top { display: flex; flex-direction: column; gap: 1rem; }
+
+  .top h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.25rem, 8vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .top .sub { color: var(--ink-2); font-size: 1.05rem; }
+
+  .alert {
+    background: var(--bad-wash);
+    border: 1px solid var(--bad);
+    border-radius: 8px;
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .alert h2 { font-size: 1.02rem; font-weight: 700; color: var(--bad); }
+  .alert p { font-size: 0.98rem; color: var(--ink-2); }
+
+  .part-break {
+    border-top: 2px solid var(--ink);
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .part-break .kicker {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .part-break h2 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(2rem, 6.5vw, 2.75rem);
+    line-height: 1.05; letter-spacing: -0.02em;
+  }
+
+  .part-break p { color: var(--ink-2); }
+
+  /* ------------------------------------------------------------ blocks */
+
+  .item {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: clamp(1.15rem, 3.5vw, 1.6rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .item-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    min-width: 2.4rem;
+    padding: 0.3rem 0.4rem;
+    text-align: center;
+    flex: none;
+  }
+
+  .item-head h3 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.25rem, 3.8vw, 1.6rem);
+    line-height: 1.15;
+  }
+
+  .item-head .target {
+    font-size: 0.85rem; color: var(--muted); width: 100%;
+  }
+
+  .sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+
+  .side {
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--hue);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    background: var(--ground);
+    display: flex; flex-direction: column; gap: 0.7rem;
+  }
+
+  .side h4 {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--hue);
+  }
+
+  .side ul { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+
+  .side li {
+    font-size: 0.95rem; color: var(--ink-2);
+    padding-left: 1.1rem; position: relative; line-height: 1.5;
+  }
+
+  .side li::before { position: absolute; left: 0; font-weight: 700; color: var(--hue); }
+  .side-fits { --hue: var(--good); }
+  .side-fits li::before { content: "+"; }
+  .side-not { --hue: var(--danger); }
+  .side-not li::before { content: "\2212"; }
+
+  .verdict {
+    border-top: 1px solid var(--rule);
+    padding-top: 0.9rem;
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+
+  .verdict .label {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .verdict .call {
+    font-family: var(--display); font-size: 1.15rem; line-height: 1.3;
+    color: var(--vhue, var(--ink));
+  }
+
+  .verdict p { font-size: 0.95rem; color: var(--ink-2); }
+
+  .v-yes { --vhue: var(--good); }
+  .v-maybe { --vhue: var(--bad); }
+  .v-no { --vhue: var(--danger); }
+
+  /* ------------------------------------------------------------ misc */
+
+  .plain-list {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 10px; padding: clamp(1.15rem, 3.5vw, 1.6rem);
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+
+  .plain-list h3 { font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+  .plain-list p { color: var(--ink-2); font-size: 0.98rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  .chip {
+    font-family: var(--mono); font-size: 0.75rem;
+    border: 1px solid var(--rule); border-radius: 5px;
+    padding: 0.2rem 0.5rem; color: var(--muted);
+  }
+
+  .final {
+    border: 2px solid var(--ink); border-radius: 10px;
+    padding: clamp(1.35rem, 4vw, 2rem);
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+
+  .final h2 { font-family: var(--display); font-weight: 400; font-size: clamp(1.75rem, 5.5vw, 2.35rem); line-height: 1.1; }
+  .final .answer { font-family: var(--display); font-size: clamp(1.3rem, 4vw, 1.7rem); line-height: 1.35; color: var(--good); }
+  .final p { color: var(--ink-2); }
+
+  .tally {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.5rem 1.25rem; border-top: 1px solid var(--rule); padding-top: 1rem;
+  }
+
+  .tally div { font-size: 0.94rem; color: var(--ink-2); display: flex; gap: 0.5rem; }
+  .tally b { color: var(--ink); flex: none; }
+
+  .footnote {
+    border-top: 1px solid var(--rule); padding-top: 1.25rem;
+    font-size: 0.92rem; color: var(--muted);
+  }
+</style>
+
+<div class="page">
+
+  <header class="top">
+    <h1>Does Tembera fit the SDGs and Vision 2050?</h1>
+    <p class="sub">
+      An honest check, done the same way as the PESTEL: how it fits, how it
+      doesn&rsquo;t, and a straight answer for each one. 19 August 2026.
+    </p>
+
+    <div class="alert">
+      <h2>Read this before anything else</h2>
+      <p>
+        <b>Almost everything below depends on two things: launching, and having
+        verified data.</b> A guide nobody uses helps nobody, however good its
+        intentions. Right now Tembera is not launched, and its listings are
+        researched rather than officially checked.
+      </p>
+      <p>
+        So most answers here are <b>&ldquo;yes, once it launches&rdquo;</b>
+        rather than <b>&ldquo;yes, today&rdquo;</b>. That difference matters,
+        and it is kept visible all the way through.
+      </p>
+    </div>
+  </header>
+
+  <section class="part-break">
+    <p class="kicker">Part one</p>
+    <h2>The UN Sustainable Development Goals</h2>
+    <p>
+      There are 17 goals. Tembera touches a handful of them properly. The rest
+      it does not touch at all, and this page says so &mdash; a project that
+      claims all seventeen is describing its marketing, not its work.
+    </p>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">8</span>
+      <h3>Decent Work &amp; Economic Growth</h3>
+      <p class="target">Target 8.9 &mdash; promote sustainable tourism that creates jobs and supports local culture</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>This is the tourism goal, almost word for word. Helping small Rwandan businesses be found is the thing the target asks for.</li>
+          <li>A restaurant or guesthouse that gets found gets customers. That is income, and income is jobs.</li>
+          <li>Covering all 30 districts means the benefit is not only Kigali&rsquo;s.</li>
+          <li>Booking enquiries go straight to local operators rather than to a foreign agency.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>Nobody is using it yet, so no business has gained a single customer from it.</li>
+          <li>Unverified listings can send people to the wrong place, which helps nobody.</li>
+          <li>You cannot yet measure any jobs or income created, so the claim stays a claim.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-yes">
+      <span class="label">Does it fit?</span>
+      <p class="call">Yes &mdash; the strongest and most direct of them all.</p>
+      <p>
+        But it becomes real on launch day, not today. To prove it later, count
+        something simple from the start: how many businesses get found through
+        Tembera, and how often.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">9</span>
+      <h3>Industry, Innovation &amp; Infrastructure</h3>
+      <p class="target">Target 9.c &mdash; increase access to information and communications technology</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>This is digital infrastructure for tourism, built in Rwanda instead of bought from abroad.</li>
+          <li>The skills and the code stay in the country.</li>
+          <li>Built for cheap phones and small data budgets, not expensive devices.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>It still needs an internet connection, so it fails exactly where connectivity is weakest.</li>
+          <li>It does not extend access to technology &mdash; it uses what already exists.</li>
+          <li>English-only limits who can actually reach it.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-maybe">
+      <span class="label">Does it fit?</span>
+      <p class="call">Partly today. Properly once it works offline.</p>
+      <p>
+        Offline support is the change that turns this from a weak claim into a
+        real one. A guide that works without signal genuinely extends access.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">11</span>
+      <h3>Sustainable Cities &amp; Communities</h3>
+      <p class="target">Target 11.4 &mdash; protect and safeguard cultural and natural heritage</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Memorial and heritage sites are documented with care, and are never rated, reviewed, priced or promoted.</li>
+          <li>That rule is enforced in the data itself, so a future design change cannot quietly undo it.</li>
+          <li>The commemoration period in April is recognised by the system.</li>
+          <li>Parks and natural sites are presented as places to respect, not products to sell.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>Listing a heritage site is not the same as protecting it. The protecting is done by other people.</li>
+          <li>More visitors can mean more wear on a site. A guide that works adds pressure as well as income.</li>
+          <li>There is no conservation information on the site yet &mdash; nothing explaining why these places matter.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-yes">
+      <span class="label">Does it fit?</span>
+      <p class="call">Yes &mdash; and this is where Tembera is furthest ahead of an ordinary directory.</p>
+      <p>
+        Most platforms would happily put five stars on a memorial. Refusing to
+        is a real contribution to safeguarding heritage, and it is already
+        built.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">17</span>
+      <h3>Partnerships for the Goals</h3>
+      <p class="target">Target 17.17 &mdash; encourage effective public-private partnerships</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>The proposal to RDB is exactly this shape: public data, private platform, no public money.</li>
+          <li>Corrections flow back, so the official register improves as the guide is used.</li>
+          <li>No exclusivity is asked for, so nobody gets locked in.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>There is no partnership yet. There is a meeting.</li>
+          <li>Until RDB agrees, this goal is a plan rather than a contribution.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-maybe">
+      <span class="label">Does it fit?</span>
+      <p class="call">Not yet. It fits the moment RDB says yes.</p>
+      <p>
+        Honest framing for the meeting: do not claim this goal in the room.
+        Offer it as what the partnership would create.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">10</span>
+      <h3>Reduced Inequalities</h3>
+      <p class="target">Spreading opportunity beyond the capital</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>All 30 districts are treated equally in the system, not as a footnote to Kigali.</li>
+          <li>Small businesses with no website get the same visibility as large ones.</li>
+          <li>Global platforms have little commercial reason to cover rural Rwanda properly. You do.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>Your data is thinnest in exactly the rural districts where the need is greatest.</li>
+          <li>English-only currently favours educated urban users &mdash; the opposite of the goal.</li>
+          <li>A phone and mobile data are still required, which is its own inequality.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-maybe">
+      <span class="label">Does it fit?</span>
+      <p class="call">Partly. The intention is right; the data is not there yet.</p>
+      <p>
+        Kinyarwanda and better rural coverage are what would make this genuine.
+        Both are on the plan.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">12</span>
+      <h3>Responsible Consumption &amp; Production</h3>
+      <p class="target">Target 12.b &mdash; monitor the impact of sustainable tourism</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Visitors are told rules they routinely get wrong, such as the plastic bag ban.</li>
+          <li>The app never invents ratings or pads empty categories, so people decide on real information.</li>
+          <li>The planned demand dashboard is, in effect, monitoring tourism patterns.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>No environmental information about the places themselves.</li>
+          <li>No way to find businesses that operate sustainably, because that is not recorded.</li>
+          <li>The monitoring part is planned, not built.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-maybe">
+      <span class="label">Does it fit?</span>
+      <p class="call">A little. Enough to mention, not enough to lead with.</p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">5</span>
+      <h3>Gender Equality</h3>
+      <p class="target">Visibility for women-owned businesses</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Nothing today. Honestly, nothing.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>The system does not record who owns a business, so it cannot surface women-owned ones.</li>
+          <li>No such filter, badge or collection exists.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-no">
+      <span class="label">Does it fit?</span>
+      <p class="call">No. Not today, and we should not claim it.</p>
+      <p>
+        It would be <b>easy to add</b> though: one field on a business, one
+        filter, one collection. A genuine opportunity rather than a genuine
+        achievement &mdash; and worth doing in phase three.
+      </p>
+    </div>
+  </section>
+
+  <section class="plain-list">
+    <h3>The other ten goals</h3>
+    <p>
+      Tembera has no honest connection to these, and this analysis does not
+      claim them. Goal 14 is about oceans, which is difficult for a landlocked
+      country.
+    </p>
+    <div class="chips">
+      <span class="chip">1 No Poverty</span>
+      <span class="chip">2 Zero Hunger</span>
+      <span class="chip">3 Good Health</span>
+      <span class="chip">4 Quality Education</span>
+      <span class="chip">6 Clean Water</span>
+      <span class="chip">7 Clean Energy</span>
+      <span class="chip">13 Climate Action</span>
+      <span class="chip">14 Life Below Water</span>
+      <span class="chip">15 Life on Land</span>
+      <span class="chip">16 Peace &amp; Justice</span>
+    </div>
+    <p>
+      Goal 15, Life on Land, is the closest of these &mdash; the parks are
+      listed and conservation is part of the story &mdash; but a directory does
+      not protect an ecosystem, so it stays out.
+    </p>
+  </section>
+
+  <section class="part-break">
+    <p class="kicker">Part two</p>
+    <h2>Rwanda Vision 2050</h2>
+    <p>
+      Vision 2050 is Rwanda&rsquo;s long-term plan: upper-middle income by 2035,
+      high income by 2050. It is organised around five pillars. Here is where
+      Tembera genuinely sits against each &mdash; including the one it barely
+      touches.
+    </p>
+    <div class="alert" style="margin-top:0.5rem;">
+      <h2>Check the wording before you use this</h2>
+      <p>
+        The pillar names below are the ones commonly cited. <b>Verify them
+        against the current official Vision 2050 and NST documents</b> before
+        putting them in front of RDB. Getting a national pillar&rsquo;s name
+        wrong would undercut everything else you say.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">1</span>
+      <h3>Human Development</h3>
+      <p class="target">Quality of life, skills and services for Rwandans</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Built for Rwandans as well as visitors &mdash; a guide to your own country.</li>
+          <li>Built in Rwanda, so the skills stay here rather than being bought in.</li>
+          <li>Runs on the phone people already own, not one they have to buy.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>English-only right now, which shuts out most Rwandans.</li>
+          <li>It is a convenience, not a service like health or education.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-maybe">
+      <span class="label">Does it fit?</span>
+      <p class="call">Partly. Kinyarwanda is what makes this pillar real.</p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">2</span>
+      <h3>Competitiveness &amp; Integration</h3>
+      <p class="target">Making Rwanda easier to do business with, and better connected</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Rwanda markets itself very well abroad. The weak point is what happens after arrival &mdash; and that is exactly what this fixes.</li>
+          <li>A visitor who finds more to do stays longer and spends more.</li>
+          <li>Conference visitors are a high-value group nobody currently serves well.</li>
+          <li>Tourism earns foreign currency, which is what this pillar is aiming at.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>None of it happens until the site launches.</li>
+          <li>No way yet to show that anybody stayed longer or spent more.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-yes">
+      <span class="label">Does it fit?</span>
+      <p class="call">Yes &mdash; this is the pillar Tembera fits best.</p>
+      <p>
+        This is the argument to lead with at RDB. It is their mandate, in their
+        language.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">3</span>
+      <h3>Agriculture for Wealth Creation</h3>
+      <p class="target">Farming as a driver of income and exports</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Markets, coffee and tea experiences and farm visits are the kind of thing a guide can send people to.</li>
+          <li>Umuganura, the harvest day, is already in the app&rsquo;s calendar.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>Tembera is a tourism directory. It does not touch farming, yields, exports or rural incomes in any direct way.</li>
+          <li>There is no agri-tourism category today.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-no">
+      <span class="label">Does it fit?</span>
+      <p class="call">Barely &mdash; and we should say so.</p>
+      <p>
+        Claiming a strong link here would be a stretch, and a stretch is what
+        people remember. If you want a real connection later, an agri-tourism
+        category &mdash; coffee tours, tea estates, farm stays, markets &mdash;
+        would be an honest one.
+      </p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">4</span>
+      <h3>Urbanisation &amp; Agglomeration</h3>
+      <p class="target">Growing secondary cities, not only Kigali</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Every district is treated equally in the system, not as an afterthought to the capital.</li>
+          <li>Visibility for secondary cities is what brings visitors and spending to them.</li>
+          <li>The planned demand dashboard would show RDB which districts people search for &mdash; useful for planning where growth is coming.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>Coverage outside Kigali is real but thin, so equal treatment in the system is not yet equal treatment in practice.</li>
+          <li>A directory does not build a city. It points at one.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-yes">
+      <span class="label">Does it fit?</span>
+      <p class="call">Yes, in intention &mdash; and verified data is what makes it true.</p>
+    </div>
+  </section>
+
+  <section class="item">
+    <div class="item-head">
+      <span class="badge">5</span>
+      <h3>Accountable &amp; Capable State Institutions</h3>
+      <p class="target">Institutions that work well and can be trusted</p>
+    </div>
+    <div class="sides">
+      <div class="side side-fits">
+        <h4>How it fits</h4>
+        <ul>
+          <li>Built to carry official data accurately, with a public route for anyone to report an error.</li>
+          <li>Rwandan data protection law is implemented in full, not partly.</li>
+          <li>Every correction is recorded, so there is a trail rather than a rumour.</li>
+          <li>The system never invents information, which is the minimum bar for carrying anything official.</li>
+        </ul>
+      </div>
+      <div class="side side-not">
+        <h4>How it doesn&rsquo;t fit</h4>
+        <ul>
+          <li>It is a private platform, not an institution.</li>
+          <li>No relationship with any institution exists yet.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict v-yes">
+      <span class="label">Does it fit?</span>
+      <p class="call">Yes &mdash; as a tool an institution could safely use.</p>
+      <p>
+        This is why the security and privacy work matters commercially and not
+        only technically. It is what makes the platform safe for RDB to be
+        associated with.
+      </p>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2>So &mdash; does it fit?</h2>
+
+    <p class="answer">
+      Yes to both, clearly &mdash; but almost all of it is potential, not yet
+      achievement.
+    </p>
+
+    <p>
+      Tembera fits <b>four SDGs</b> properly and <b>three Vision 2050
+      pillars</b> strongly. Nothing here is a stretch, and nothing has been
+      claimed that is not real.
+    </p>
+
+    <div class="tally">
+      <div><b>SDG 8</b> Yes &mdash; strongest</div>
+      <div><b>SDG 11</b> Yes &mdash; already built</div>
+      <div><b>SDG 9</b> Partly &mdash; offline fixes it</div>
+      <div><b>SDG 17</b> Not yet &mdash; needs RDB</div>
+      <div><b>SDG 10 and 12</b> Partly</div>
+      <div><b>SDG 5</b> No &mdash; but easy to add</div>
+      <div><b>Competitiveness</b> Yes &mdash; best fit</div>
+      <div><b>Urbanisation</b> Yes</div>
+      <div><b>Institutions</b> Yes</div>
+      <div><b>Human Development</b> Partly</div>
+      <div><b>Agriculture</b> Barely</div>
+    </div>
+
+    <p>
+      <b>The honest catch.</b> A guide nobody uses helps nobody. Every
+      &ldquo;yes&rdquo; on this page becomes real on the day Tembera launches
+      with data people can rely on, and stays a claim until then. That is not a
+      reason to avoid saying it at RDB. It is a reason to say it in the future
+      tense.
+    </p>
+
+    <p>
+      <b>And the same answer keeps arriving.</b> The SWOT said verified place
+      data was the most valuable work left. The PESTEL reached it from four
+      other directions. This analysis lands on it again &mdash; every SDG and
+      Vision 2050 contribution here is gated behind the same one thing. Three
+      separate ways of looking at the project, one conclusion.
+    </p>
+  </section>
+
+  <p class="footnote">
+    Based on the project as it stands today. Companion to the SWOT and PESTEL
+    analysis. Vision 2050 pillar names should be checked against the official
+    documents before use.
+  </p>
+
+</div>

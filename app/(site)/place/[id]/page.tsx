@@ -5,11 +5,13 @@ import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import PlaceActions from "@/components/place/PlaceActions";
 import VisitRecorder from "@/components/place/VisitRecorder";
+import CalendarNotice from "@/components/app/CalendarNotice";
+import ReportProblem from "@/components/place/ReportProblem";
 import ReviewSection from "@/components/place/ReviewSection";
 import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { groupTitle } from "@/lib/data/categories";
+import { getGroup, groupTitle } from "@/lib/data/categories";
 import { getPlace, isSensitivePlace, nearest } from "@/lib/data/places";
 import { getThingsToDo } from "@/lib/places/activities";
 import { getCurrentUser } from "@/lib/auth";
@@ -60,14 +62,26 @@ export default async function PlaceDetailPage({
   // The category's display title, resolved server-side for the badge below.
   const categoryTitle = await groupTitle(place.categoryId);
 
-  // Reviews + who's reading, for the ratings section.
-  const [reviews, currentUser] = await Promise.all([
-    getPlaceReviews(place.id),
-    getCurrentUser(),
-  ]);
+  // A place of remembrance is not a place to consume. Memorial sites reach
+  // this page through the same route as a restaurant, so the page itself has
+  // to know the difference: no rating out of five, no reviews, no price, no
+  // "what to expect" chips. See Category.sensitive in schema.prisma.
+  // Three ways in, because they answer different questions: the category flag
+  // covers a whole class of place, the per-place flag covers a memorial seeded
+  // under another category (the Campaign Against Genocide museum sits in
+  // "arts"), and the memorials id is the backstop for rows predating both.
+  const group = await getGroup(place.categoryId);
+  const isSensitive = group?.sensitive === true || isSensitivePlace(place);
 
-  const sensitive = isSensitivePlace(place);
-  const activities = getThingsToDo(place);
+  // Reviews + who's reading, for the ratings section. Skipped entirely for
+  // sensitive places — not fetched, not rendered, not collectable.
+  const [reviews, currentUser] = isSensitive
+    ? [[], null]
+    : await Promise.all([getPlaceReviews(place.id), getCurrentUser()]);
+
+  // "Things to do" is the wrong register for a place of remembrance, for the
+  // same reason the highlights chips are.
+  const activities = isSensitive ? [] : getThingsToDo(place);
 
   return (
     <>
@@ -108,7 +122,7 @@ export default async function PlaceDetailPage({
                 <h1 className="t-display">{place.name}</h1>
 
                 <div className="t-detail__metarow">
-                  {!sensitive && place.rating !== undefined && (
+                  {place.rating !== undefined && !isSensitive && (
                     <>
                       <span className="t-rating">
                         <Icon name="star" size={15} filled />
@@ -131,8 +145,14 @@ export default async function PlaceDetailPage({
                   </p>
                 )}
 
+                {/* A closure warning sits directly above the opening hours,
+                    because that is the line it contradicts. */}
+                <div style={{ marginTop: "var(--t-5)" }}>
+                  <CalendarNotice />
+                </div>
+
                 {/* ------------------------------------------- facts --- */}
-                <div className="t-facts" style={{ marginTop: "var(--t-5)" }}>
+                <div className="t-facts">
                   {place.hours && (
                     <Fact icon="clock" label="Opening hours" value={place.hours} />
                   )}
@@ -162,7 +182,7 @@ export default async function PlaceDetailPage({
                     }
                   />
 
-                  {place.priceFrom !== undefined && (
+                  {place.priceFrom !== undefined && !isSensitive && (
                     <Fact
                       icon="sparkle"
                       label="From"
@@ -182,6 +202,21 @@ export default async function PlaceDetailPage({
                     />
                   )}
                 </div>
+
+                {isSensitive && (
+                  <div className="t-remember__note" style={{ marginTop: "var(--t-5)" }}>
+                    <p>
+                      This is a place of remembrance. Visitors are asked to dress
+                      modestly, keep their voices low, and follow the guidance of
+                      staff on site — including where photography is and is not
+                      permitted.
+                    </p>
+                    <p>
+                      Tembera does not rate or review memorial sites. Please
+                      confirm opening times with the site before travelling.
+                    </p>
+                  </div>
+                )}
 
                 {/* ------------------------------------ things to do --- */}
                 {activities.length > 0 && (
@@ -250,33 +285,26 @@ export default async function PlaceDetailPage({
             )}
 
             {/* ---------------------------------------------- reviews --- */}
-            <section className="t-section">
-              <SectionHeader
-                title="Ratings & reviews"
-                subtitle={
-                  sensitive
-                    ? undefined
-                    : reviews.length
+            {!isSensitive && (
+              <section className="t-section">
+                <SectionHeader
+                  title="Ratings & reviews"
+                  subtitle={
+                    reviews.length
                       ? `${reviews.length} review${reviews.length > 1 ? "s" : ""}`
                       : "Share your experience"
-                }
-              />
-              {sensitive ? (
-                <div className="t-notice">
-                  <Icon name="memorial" size={18} className="t-notice__icon" />
-                  <p className="t-notice__body">
-                    Reviews and ratings are turned off for this memorial site out of
-                    respect.
-                  </p>
-                </div>
-              ) : (
+                  }
+                />
                 <ReviewSection
                   placeId={place.id}
                   reviews={reviews}
                   currentUserId={currentUser?.id ?? null}
                 />
-              )}
-            </section>
+              </section>
+            )}
+
+            {/* ---------------------------------------------- report --- */}
+            <ReportProblem placeId={place.id} placeName={place.name} />
           </div>
         </div>
       </main>

@@ -1,0 +1,503 @@
+TEMBERA — PRESENTATION TO RDB
+Slide script for building the deck in Canva
+==============================================================
+
+DESIGN SETTINGS
+  Green (main)      #1F6B4A
+  Blue (planned)    #2A6B8F
+  Ochre             #A8761B
+  Clay              #A63A28
+  Text              #101A16
+  Background        #F2F4F1
+
+  Headings: a serif — Playfair Display, Lora or Source Serif Pro. Regular weight.
+  Body: a plain sans — Inter, Work Sans or Open Sans. 20pt minimum.
+  Titles 40-54pt, body 20-24pt, small labels 12-14pt caps with wide spacing.
+
+==============================================================
+
+SLIDE 1
+  Layout: title slide, three big numbers across the bottom
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Presentation to the Rwanda Development Board · August 2026
+
+[TITLE]
+  Tembera
+
+[SUBTITLE]
+  A digital guide to real places in Rwanda — built in Rwanda, and built to be trusted.
+
+[THREE NUMBERS]
+    - 495 — places listed
+    - 16 — categories
+    - 30 — districts covered
+
+  SPEAKER NOTE: Open by saying what you want from the meeting: you have built the platform, and you are asking for a go-ahead and access to verified data. Do not bury the ask at the end.
+
+
+SLIDE 2
+  Layout: title, then two columns of bullets
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  The gap
+
+[TITLE]
+  A visitor outside Kigali is largely on their own.
+
+  Left column
+    - Global map services cover central Kigali well, and thin out quickly beyond it.
+    - Many Rwandan businesses are listed with no hours, no phone number, or nothing at all.
+    - Nothing accounts for Umuganda, when much of the country closes for the morning.
+
+  Right column
+    - Visitors arriving for conferences have free evenings and no local knowledge.
+    - Rwandans travelling their own country have no guide written for them.
+    - There is no strong local alternative.
+
+  SPEAKER NOTE: Keep this factual and short. RDB knows the gap better than anyone in the room — you are showing that you understand it, not teaching them.
+
+
+SLIDE 3
+  Layout: title, subtitle, three boxes across
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  What it is — WORKING NOW
+
+[TITLE]
+  A searchable guide to where to eat, stay, worship, shop and visit.
+
+[SUBTITLE]
+  Search it, filter it, find what is near you, get directions. That is the whole product. It is deliberately not a social network.
+
+  Box 1 — For visitors
+  Find places by category, city or distance. Save what you like. Read and leave honest reviews.
+
+  Box 2 — For Rwandans
+  A guide to your own country, built for the phone you already have.
+
+  Box 3 — For operators
+  Every listing is editable from an admin system. No developer required to correct a phone number.
+
+
+SLIDE 4
+  Layout: title, two columns of ticked bullets (use green ticks)
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Status — WORKING NOW
+
+[TITLE]
+  This is a working system, not a concept.
+
+  Left column (green ticks)
+    - 495 places across 16 categories and all 30 districts
+    - Search, map, and distance-based ranking
+    - User accounts, saved places, visit history, reviews
+    - Booking enquiries for tours and experiences
+
+  Right column (green ticks)
+    - A complete admin system — every listing, category and city editable
+    - 135 automated tests, run on every change
+    - Independent security review completed and acted on
+    - Rwandan data protection law implemented in full
+
+  SPEAKER NOTE: Offer a live demo here if there is a screen. Show the memorial page and a district outside Kigali — those two make the point better than any slide.
+
+
+SLIDE 5
+  Layout: title, subtitle, two boxes, then a line showing both labels
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Our approach
+
+[TITLE]
+  Today we are showing you the experience. The rest is built on your go-ahead.
+
+[SUBTITLE]
+  We chose to build the thing you can actually see and judge first, rather than ask you to fund a description.
+
+  Box 1 — What that means today
+  A complete, working front end you can click through, on real Rwandan data, with the admin system behind it. Nothing on the next slides is a mock-up.
+
+  Box 2 — What comes with a go-ahead
+  Verified data, five languages, offline use, payments, and a business portal. The plan is sequenced and ready — it needs a mandate, not a research phase.
+
+[BOTTOM LINE]
+  Throughout this deck: WORKING NOW / PLANNED — so it is always clear which is which.
+
+  SPEAKER NOTE: This is the framing slide. Say plainly that the front end is real and the operational build follows their decision. Keep the two labels honest all the way through — the moment a planned feature is described as working, everything else becomes questionable.
+
+
+SLIDE 6
+  Layout: title, two columns of bullets (use dashes, not ticks)
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Being straight with you
+
+[TITLE]
+  What today's version cannot do yet.
+
+  Left column
+    - The place data is researched, not officially verified. Real institutions, but not a checked register. This is the main reason we are here.
+    - English only. Five more languages are designed and scheduled.
+
+  Right column
+    - It needs an internet connection. Offline use is the first thing we build next.
+    - Bookings are enquiries, not payments — and are described that way to users.
+    - Not publicly launched. By choice, until the data is right.
+
+[BOTTOM LINE]
+  We would rather show you this slide than have you find it later.
+
+  SPEAKER NOTE: Do not skip or rush this. Institutions have seen many polished pitches that fell apart on contact with reality. Naming the gaps yourself is what separates you — and every one is answered by the roadmap later.
+
+
+SLIDE 7
+  Layout: title, three boxes across
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  How it is built
+
+[TITLE]
+  Built to standards a public institution can defend choosing.
+
+  Box 1 — Data protection
+  Law N° 058/2021 implemented: users can see, download and permanently delete everything held about them. A published privacy policy and a reachable contact.
+
+  Box 2 — Security
+  Passwords hashed. Sign-in attempts rate limited. Sessions expire and can be revoked. No default passwords anywhere in the system.
+
+  Box 3 — Honesty by design
+  The system never invents data. No fake ratings, no padded categories, and approximate locations are marked as approximate.
+
+
+SLIDE 8
+  Layout: title, subtitle, two columns of bullets. Keep this one calm and plain.
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  A deliberate decision
+
+[TITLE]
+  Memorial sites are never rated, reviewed, priced or promoted.
+
+[SUBTITLE]
+  Genocide memorials are in the guide, because visitors need to find them. They are not presented like a restaurant.
+    - No star ratings. No reviews. No prices.
+    - Never placed in "top rated" or promotional rows.
+    - A restrained page design, visibly different from a listing.
+    - Visiting guidance instead — dress, quiet, photography.
+    - The commemoration period in April is recognised by the system.
+    - Enforced in the data itself, so it cannot be undone by a design change.
+
+  SPEAKER NOTE: Worth pausing on. The catalogue originally carried a five-star rating on a memorial site, inherited from its source data. It was found and removed deliberately. Being straightforward about that is stronger than implying it was never there. Do not decorate this slide.
+
+
+SLIDE 9
+  Layout: title, then a 3-column table with 6 rows
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  PESTEL — does Tembera fit Rwanda?
+
+[TITLE]
+  Six outside forces, assessed honestly.
+
+[TABLE — FORCE / VERDICT / WHY]
+    - Political — Fits well — Tourism is national policy; the platform pushes the same direction.
+    - Economic — Fits one model — Business listings and booking commission, not advertising.
+    - Social — Partly — Serves visitors and diaspora today; Kinyarwanda opens the domestic market.
+    - Technological — Not yet — Needs a connection. Offline support is the fix.
+    - Environmental — Fits — Conservation-aligned, and the Rwandan calendar is now built in.
+    - Legal — Fits today — Data law implemented. Photo licensing is the remaining task.
+
+[COLOUR HINT]
+  Green for "Fits", ochre for "Partly" and "Fits one model", clay red for "Not yet".
+
+
+SLIDE 10
+  Layout: title, subtitle, two short paragraphs
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  PESTEL — the conclusion
+
+[TITLE]
+  Yes, it fits — but as one specific thing.
+
+[SUBTITLE]
+  Tembera works as a curated, trusted directory operating alongside the national tourism effort — serving visitors, the diaspora, and Rwandans travelling their own country.
+
+[PARAGRAPH]
+  It does not work as an advertising-funded mass-market app. Rwanda deliberately attracts fewer visitors who each spend more, so there will never be the volume that advertising requires. Recognising that shapes every decision we make.
+
+[PARAGRAPH]
+  One factor decides everything: verified place data. It is what a global search engine cannot replicate locally, what an AI assistant cannot invent, and what makes the guide worth relying on.
+
+
+SLIDE 11
+  Layout: title, four boxes (2×2), each with a big goal number
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  UN Sustainable Development Goals — direct contribution
+
+[TITLE]
+  Four goals Tembera contributes to directly.
+
+  8 — Decent Work & Economic Growth
+  Target 8.9 asks for policies promoting sustainable tourism that creates jobs and promotes local culture. Making small Rwandan businesses findable is that, directly.
+
+  9 — Industry, Innovation & Infrastructure
+  Target 9.c concerns access to information technology. This is digital tourism infrastructure, built locally rather than imported.
+
+  11 — Sustainable Cities & Communities
+  Target 11.4 asks for protection of cultural and natural heritage. Memorial and heritage sites are documented with care rather than commercialised.
+
+  17 — Partnerships for the Goals
+  Target 17.17 concerns effective public-private partnership. This proposal is exactly that: public data, private platform.
+
+[WARNING]
+  Do not use the official UN SDG logos or their exact colours — that implies endorsement you do not have. Use plain numbered boxes in your own palette.
+
+
+SLIDE 12
+  Layout: title, two columns — left is a list, right is two paragraphs
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  UN SDGs — partial, and not claimed
+
+[TITLE]
+  Where we contribute partly, and where we do not.
+
+  Left — Partial contribution
+    - Goal 10 — Reduced Inequalities. Coverage of all 30 districts pushes visibility beyond Kigali, where listings are thinnest.
+    - Goal 12 — Responsible Consumption. Practical guidance for visitors, including rules they routinely get wrong.
+    - Goal 5 — Gender Equality. Women-owned businesses could be identified and surfaced. Not built yet — we are not claiming it.
+
+  Right — Not applicable
+  The remaining goals — including health, water, energy, and Goal 14 on oceans, for a landlocked country — have no honest connection to a tourism directory.
+  We are not claiming them. A project that maps itself onto all seventeen goals is telling you something about its marketing, not its impact.
+
+  SPEAKER NOTE: This slide will do more for your credibility than the previous one. Everyone claims SDG alignment; almost nobody says which goals do not apply.
+
+
+SLIDE 13
+  Layout: title, four boxes (2×2)
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Rwanda Vision 2050
+
+[TITLE]
+  Where Tembera sits against the national pillars.
+
+  Human Development
+  A guide written for Rwandans as well as visitors, in their own languages, on the devices they actually own.
+
+  Competitiveness & Integration
+  Better information makes Rwanda easier to visit and easier to spend money in — and supports the conference sector directly.
+
+  Urbanisation & Agglomeration
+  Secondary cities and rural districts are listed on the same footing as Kigali, rather than as an afterthought.
+
+  Capable State Institutions
+  A platform that can carry official data accurately, with a public route for corrections and a clear audit trail.
+
+  BEFORE PRESENTING — VERIFY: Check these pillar names and wording against the current official Vision 2050 and NST documents, and adjust to match exactly. Getting a pillar name wrong in front of RDB would undercut everything else on the slide.
+
+
+SLIDE 14
+  Layout: title, two columns of bullets
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Vision 2050 — the contribution
+
+[TITLE]
+  Rwanda markets itself extremely well abroad. The gap is what happens after arrival.
+    - A visitor who finds more to do stays longer and spends more.
+    - Spending spreads beyond Kigali when the guide covers all 30 districts.
+    - Conference delegates are a high-value group nobody currently serves well.
+    - Domestic tourism grows when Rwandans have a guide of their own.
+    - Local ownership means the data and capability stay in Rwanda.
+    - Every improvement compounds — corrections make the next visitor's experience better.
+
+
+SLIDE 15
+  Layout: title, two boxes with bullet lists. Mark the whole slide PLANNED.
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  The vision — PLANNED
+
+[TITLE]
+  What Tembera becomes once it is fully built.
+
+  Box 1 — In a visitor's hand
+    - Installed on the phone like an app, working with no signal at all
+    - In their own language — French, Kinyarwanda, Swahili, Chinese, German
+    - Book and pay for a tour, by card or mobile money
+    - Told what is open today, in a country whose calendar it understands
+
+  Box 2 — For a Rwandan business
+    - Claim your own listing and keep it correct yourself
+    - Add your photos, hours and menu without asking anyone
+    - A verified badge when you are on the official register
+    - See how many people found you this month
+
+  SPEAKER NOTE: This is the slide that shows ambition. Say clearly that none of it exists today — the PLANNED label does that visually, but say it out loud too.
+
+
+SLIDE 16
+  Layout: title, subtitle, three boxes, closing line. Mark PLANNED.
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  The vision — PLANNED
+
+[TITLE]
+  And a live picture of visitor demand, for RDB.
+
+[SUBTITLE]
+  A guide that people search generates something no survey can: a continuous record of what visitors are actually looking for, and where.
+
+  Box 1 — Demand, by district
+  Which districts are being searched, and how that moves through the year. Interest that arrives before the infrastructure does.
+
+  Box 2 — Gaps worth filling
+  Searches that return little or nothing — a direct signal of where investment or licensing attention would pay.
+
+  Box 3 — Corrections flowing back
+  Every report from a visitor or a business, shared back so the official register improves as the guide is used.
+
+[CLOSING LINE]
+  Reported in aggregate only. No individual visitor is ever identified, and the privacy policy already commits us to that.
+
+  SPEAKER NOTE: Probably the most valuable slide for RDB specifically, because it offers something they cannot easily buy. Be firm on the privacy line — aggregate only, never individuals.
+
+
+SLIDE 17
+  Layout: title, two boxes with bullet lists
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  The ask
+
+[TITLE]
+  A go-ahead, and access to verified place data.
+
+[SUBTITLE]
+  The platform is built and paid for. What we need now is a decision, and the registers that turn a good guide into an authoritative one.
+
+  Box 1 — What we are asking for
+    - A go-ahead to proceed to phase two
+    - Access to official registers of accommodation, operators and licensed attractions
+    - A named contact to keep that data current
+
+  Box 2 — What we are not asking for
+    - No funding
+    - No public endorsement
+    - No exclusivity
+  If a working relationship earns those later, that is a separate conversation — and one we would rather have on evidence.
+
+  SPEAKER NOTE: Asking for a decision and data, rather than money, is a strong position. Hold it — do not soften it into a funding request in the room.
+
+
+SLIDE 18
+  Layout: title, four boxes (2×2)
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  The offer
+
+[TITLE]
+  What RDB gets in return.
+
+  A distribution channel
+  Official information reaching visitors at the moment they are deciding what to do — not buried in a document.
+
+  Corrections flowing back
+  Every report from a visitor or business is captured and can be shared back. The register improves as the guide is used.
+
+  Coverage where it is thin
+  Visibility for districts and businesses that global platforms have little commercial reason to cover properly.
+
+  No cost, no lock-in
+  Rwandan-built and Rwandan-run. Data supplied stays RDB's, and can be withdrawn.
+
+
+SLIDE 19
+  Layout: title, four columns as a timeline (left to right)
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  The plan
+
+[TITLE]
+  Four phases. Phase one is already done.
+
+  PHASE 1 · COMPLETE — The platform (built, at our own cost)
+    - 495 places, all 30 districts
+    - Search, map, accounts, reviews
+    - Full admin system
+    - Security and data-protection law
+    - Rwandan calendar built in
+
+  PHASE 2 · 3 MONTHS — Trustworthy and usable (starts on your go-ahead)
+    - Verify listings against official registers
+    - Works offline, installs like an app
+    - Kinyarwanda and French
+    - Photo licensing confirmed
+    - Public launch
+
+  PHASE 3 · 6 MONTHS — Businesses join in (once the data is solid)
+    - Businesses claim and manage listings
+    - Verified badge for the official register
+    - Swahili, Chinese and German
+    - Real bookings with mobile money
+
+  PHASE 4 · 12 MONTHS — A national asset (once it is being used)
+    - Demand dashboard for RDB
+    - Data shared back to partners
+    - Seasonal and accessibility information
+    - Self-sustaining on business listings
+
+[COLOUR HINT]
+  Phase 1 green, phase 2 blue, phase 3 ochre, phase 4 clay — so progress reads left to right.
+
+  SPEAKER NOTE: Emphasise that phase one was funded and delivered before asking them for anything. That is the strongest fact in the deck. Timings are working estimates — say so if pressed rather than defending a date.
+
+
+SLIDE 20
+  Layout: closing slide — big title, subtitle, two short lines
+--------------------------------------------------------------
+
+[SMALL LABEL]
+  Thank you
+
+[TITLE]
+  Tembera
+
+[SUBTITLE]
+  Built in Rwanda, at our own cost, before asking you for anything. Honest about what it knows and what it does not.
+
+[LINE 1]
+  The ask: a go-ahead to build phase two, access to the official registers, and a named person to work with.
+
+[LINE 2]
+  What you get: a Rwandan-built guide carrying Rwandan data, and a live picture of what visitors are looking for.
+
+[ADD YOUR OWN]
+  Your name, email and phone number. Do not leave the room without giving them a way to reach you.
+
+  SPEAKER NOTE: Close by asking for a specific next step and a named contact. A meeting that ends on "we will be in touch" usually ends there.
+

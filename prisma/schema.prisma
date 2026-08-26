@@ -46,6 +46,12 @@ model User {
   bio          String   @default("")
   homeCity     String   @default("Kigali") @map("home_city")
   role         Role     @default(USER)
+  /// Bumped to invalidate every existing session for this user. Sessions are
+  /// stateless signed cookies, so there is nothing to delete server-side —
+  /// the cookie carries the version it was issued at, and a mismatch means
+  /// "signed out". Raised on password change so a stolen cookie dies with the
+  /// password it outlived.
+  tokenVersion Int      @default(0) @map("token_version")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -64,6 +70,14 @@ model Category {
   title     String
   icon      String
   primary   Boolean  @default(false)
+  /// Places of remembrance rather than places to consume. Memorial sites are
+  /// the reason this exists: rating a memorial out of five stars, listing a
+  /// price, or promoting it in a "Top rated" row is not a bug in taste, it is
+  /// a serious harm. A sensitive category suppresses ratings, reviews, prices
+  /// and promotional placement everywhere, and renders in a restrained style.
+  /// Held as a flag rather than a hardcoded id so an admin can mark future
+  /// categories without a code change.
+  sensitive Boolean  @default(false)
   sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -141,6 +155,7 @@ model Place {
   saves    SavedPlace[]
   visits   VisitedPlace[]
   reviews  Review[]
+  reports  Report[]
 
   @@index([categoryId])
   @@index([city])
@@ -195,6 +210,62 @@ model Review {
   @@unique([userId, placeId])
   @@index([placeId])
   @@map("reviews")
+}
+
+/// Dates that cannot be calculated, so an admin sets them each year.
+///
+/// Umuganda, the fixed public holidays, Good Friday and Umuganura are all
+/// derived in lib/rwanda/calendar.ts. Eid al-Fitr and Eid al-Adha follow the
+/// lunar calendar and are genuinely not derivable — guessing them would be
+/// worse than asking. Anything else the country closes for goes here too.
+model CalendarDate {
+  id     Int      @id @default(autoincrement())
+  /// Stored as a plain date: this is a day in Rwanda, not an instant.
+  date   DateTime @db.Date
+  name   String
+  /// "closed" | "closed-morning" | "reduced" — matches Effect in the calendar.
+  effect String   @default("closed")
+  note   String   @default("")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([date, name])
+  @@index([date])
+  @@map("calendar_dates")
+}
+
+enum ReportStatus {
+  open
+  resolved
+  dismissed
+}
+
+/// Someone telling us a listing is wrong.
+///
+/// Publishing a business's contact details and hours carries a duty to correct
+/// them on request, and there was previously no route to do so — a person who
+/// found their own business listed wrongly had no way to say so. Open to
+/// signed-out visitors on purpose: requiring an account to report an error
+/// would defeat the point.
+model Report {
+  id        Int          @id @default(autoincrement())
+  placeId   String       @map("place_id")
+  /// What kind of problem: closed, wrong details, wrong location, photo, other.
+  kind      String
+  body      String
+  /// Optional — how to reach the reporter for a follow-up. Not required, so a
+  /// correction can be made anonymously.
+  contact   String?
+  status    ReportStatus @default(open)
+  /// Set when an admin resolves or dismisses it, for a basic audit trail.
+  handledAt DateTime?    @map("handled_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([placeId])
+  @@map("reports")
 }
 
 /// Trip booking requests. Price is derived server-side from a trusted table.

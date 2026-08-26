@@ -61,7 +61,7 @@ export default function PlaceForm({
     <form action={formAction} className="a-form">
       {mode === "edit" && <input type="hidden" name="id" defaultValue={values.id} />}
 
-      {state?.error && <p className="a-error">{state.error}</p>}
+      {state?.error && <p className="a-error" role="alert">{state.error}</p>}
 
       <div className="a-grid2">
         <div className="a-field">

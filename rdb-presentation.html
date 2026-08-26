@@ -1,0 +1,1162 @@
+<title>Tembera — Presentation to RDB</title>
+
+<style>
+  /* ------------------------------------------------------------ tokens */
+  :root {
+    --paper: #F2F4F1;
+    --card: #FBFCFA;
+    --ink: #101A16;
+    --ink-2: #3E4E45;
+    --muted: #6E7A72;
+    --rule: #D6DCD7;
+
+    --accent: #1F6B4A;   /* eucalyptus — Tembera's colour throughout */
+    --blue: #2A6B8F;     /* Kivu */
+    --ochre: #A8761B;
+    --clay: #A63A28;
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", "SF Mono", Consolas, ui-monospace, monospace;
+  }
+
+  /* This page is deliberately dark in every context.
+   It is a shared deliverable: a reader opening the link on a machine set
+   to light mode must see what the author saw, so the palette does not
+   follow prefers-color-scheme and the viewer's theme toggle cannot
+   lighten it. Both data-theme values are pinned to the same values. */
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #0D1512;
+    --card: #16211D;
+    --ink: #E9EFEA;
+    --ink-2: #BFCAC3;
+    --muted: #8B9A91;
+    --rule: #2A3833;
+    --accent: #6BC496;
+    --blue: #78B2D4;
+    --ochre: #DFAC4B;
+    --clay: #E2846C;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.5;
+    overflow: hidden;
+  }
+
+  /* ------------------------------------------------------------ stage */
+
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.5rem, 4vh, 3rem) clamp(1.25rem, 5vw, 4.5rem) clamp(4.5rem, 9vh, 6rem);
+    overflow-y: auto;
+  }
+
+  .slide.is-active { display: flex; }
+
+  .slide > * { max-width: 78rem; width: 100%; margin-inline: auto; }
+
+  /* -------------------------------------------------------- typography */
+  /* Sized for a projected room, not a laptop. Everything scales with the
+     viewport so the same deck works on a phone, a laptop and a big screen. */
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: clamp(0.72rem, 1.15vw, 0.95rem);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(3.2rem, 9vw, 7rem);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.1rem, 5.4vw, 4.1rem);
+    line-height: 1.05;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    margin-bottom: clamp(0.6rem, 1.6vh, 1.2rem);
+  }
+
+  h3 {
+    font-size: clamp(1.1rem, 1.85vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .lede {
+    font-family: var(--display);
+    font-size: clamp(1.3rem, 2.6vw, 2.1rem);
+    line-height: 1.35;
+    color: var(--ink-2);
+    max-width: 40ch;
+  }
+
+  p, li { font-size: clamp(1.05rem, 1.75vw, 1.45rem); }
+  .slide p { color: var(--ink-2); }
+  strong { color: var(--ink); font-weight: 650; }
+
+  .stack { display: flex; flex-direction: column; gap: clamp(0.85rem, 2.2vh, 1.7rem); }
+
+  /* ------------------------------------------------------------ lists */
+
+  ul.marks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.7rem, 1.6vh, 1.1rem);
+  }
+
+  ul.marks li {
+    padding-left: 1.9rem;
+    position: relative;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+
+  ul.marks li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 50%;
+    background: var(--dot, var(--accent));
+  }
+
+  ul.yes { --dot: var(--accent); }
+  ul.no { --dot: var(--clay); }
+
+  ul.check li::before,
+  ul.cross li::before {
+    content: var(--glyph);
+    background: none;
+    top: 0;
+    width: auto;
+    height: auto;
+    font-weight: 700;
+    color: var(--dot);
+    font-size: 1.05em;
+  }
+  ul.planned li::before {
+    content: var(--glyph);
+    background: none;
+    top: 0;
+    width: auto;
+    height: auto;
+    font-weight: 700;
+    color: var(--dot);
+    font-size: 1.05em;
+  }
+
+  ul.check { --dot: var(--accent); --glyph: "\2713"; }
+  ul.cross { --dot: var(--clay); --glyph: "\2014"; }
+  /* Planned work is marked with an arrow, never a tick. The distinction
+     between what runs today and what is proposed has to survive a glance
+     from the back of the room. */
+  ul.planned { --dot: var(--blue); --glyph: "\2192"; }
+
+  /* ------------------------------------------------------------ phases */
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: clamp(0.8rem, 1.8vw, 1.4rem);
+  }
+
+  .phase {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--hue, var(--accent));
+    border-radius: 10px;
+    padding: clamp(1rem, 1.8vw, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .phase .step {
+    font-family: var(--mono);
+    font-size: clamp(0.68rem, 1.05vw, 0.85rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hue, var(--accent));
+  }
+
+  .phase h3 { color: var(--ink); }
+
+  .phase .when {
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    color: var(--muted);
+  }
+
+  .phase ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+  }
+
+  .phase li {
+    font-size: clamp(0.92rem, 1.4vw, 1.15rem);
+    color: var(--ink-2);
+    line-height: 1.35;
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .phase li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: var(--hue, var(--accent));
+  }
+
+  .badge-live {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: clamp(0.62rem, 0.95vw, 0.78rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    vertical-align: 0.2em;
+    margin-left: 0.6rem;
+    white-space: nowrap;
+  }
+
+  .badge-plan {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: clamp(0.62rem, 0.95vw, 0.78rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    vertical-align: 0.2em;
+    margin-left: 0.6rem;
+    white-space: nowrap;
+  }
+
+  /* ------------------------------------------------------------ grids */
+
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+    gap: clamp(1rem, 2.6vw, 2.5rem);
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--hue, var(--accent));
+    border-radius: 10px;
+    padding: clamp(1.1rem, 2vw, 1.9rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .panel h3 { color: var(--hue, var(--accent)); }
+
+  .stat {
+    font-family: var(--display);
+    font-size: clamp(3rem, 6.5vw, 5rem);
+    line-height: 1;
+    color: var(--hue, var(--accent));
+  }
+
+  .stat-label { font-size: clamp(0.95rem, 1.5vw, 1.25rem); color: var(--muted); }
+
+  .h-accent { --hue: var(--accent); }
+  .h-blue { --hue: var(--blue); }
+  .h-ochre { --hue: var(--ochre); }
+  .h-clay { --hue: var(--clay); }
+
+  /* -------------------------------------------------------- goal tiles */
+
+  .goals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+    gap: clamp(0.8rem, 1.6vh, 1.15rem);
+  }
+
+  .goal {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--hue, var(--accent));
+    border-radius: 8px;
+    padding: clamp(0.9rem, 1.8vh, 1.3rem) clamp(1rem, 1.8vw, 1.5rem);
+    display: flex;
+    gap: 1.1rem;
+    align-items: flex-start;
+  }
+
+  .goal .num {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 3.6vw, 3.1rem);
+    line-height: 0.95;
+    color: var(--hue, var(--accent));
+    flex: none;
+    min-width: 2.2rem;
+  }
+
+  .goal .body { display: flex; flex-direction: column; gap: 0.15rem; }
+  .goal .name { font-weight: 700; font-size: clamp(1.05rem, 1.75vw, 1.4rem); }
+  .goal .why { font-size: clamp(0.95rem, 1.5vw, 1.2rem); color: var(--ink-2); line-height: 1.4; }
+
+  /* ------------------------------------------------------------ table */
+
+  .verdicts { width: 100%; border-collapse: collapse; }
+
+  .verdicts th, .verdicts td {
+    text-align: left;
+    padding: clamp(0.6rem, 1.5vh, 1rem) 1.25rem clamp(0.6rem, 1.5vh, 1rem) 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: clamp(1rem, 1.7vw, 1.4rem);
+  }
+
+  .verdicts th {
+    font-family: var(--mono);
+    font-size: clamp(0.72rem, 1.15vw, 0.92rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .verdicts td:first-child { font-weight: 700; width: 30%; }
+  .verdicts td.v { color: var(--vh, var(--ink-2)); font-weight: 650; }
+  .v-yes { --vh: var(--accent); }
+  .v-part { --vh: var(--ochre); }
+  .v-no { --vh: var(--clay); }
+
+  /* ------------------------------------------------------------- chrome */
+
+  .chrome {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem clamp(1rem, 4vw, 2.5rem);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-top: 1px solid var(--rule);
+    backdrop-filter: blur(6px);
+  }
+
+  .bar { flex: 1; height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.28s ease; }
+
+  .counter {
+    font-family: var(--mono);
+    font-size: clamp(0.78rem, 1.1vw, 0.95rem);
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .nav { display: flex; gap: 0.4rem; }
+
+  .nav button {
+    font: inherit;
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+    line-height: 1;
+    padding: 0.45rem 0.7rem;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .nav button:hover { border-color: var(--accent); color: var(--accent); }
+  .nav button:disabled { opacity: 0.35; cursor: default; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .hint {
+    position: fixed;
+    top: 0.8rem;
+    right: clamp(1rem, 4vw, 2.5rem);
+    font-family: var(--mono);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* -------------------------------------------------------- notes mode */
+
+  .notes {
+    display: none;
+    margin-top: clamp(1rem, 3vh, 1.75rem);
+    border-top: 2px solid var(--ochre);
+    padding-top: 0.9rem;
+    max-width: 62rem;
+  }
+
+  body.show-notes .notes { display: block; }
+
+  .notes p { font-size: clamp(0.95rem, 1.4vw, 1.15rem); color: var(--ink-2); }
+
+  .notes .tag {
+    font-family: var(--mono);
+    font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar span { transition: none; }
+  }
+
+  /* ------------------------------------------------------------- print */
+  /* Ctrl+P gives one slide per page, so the deck can be sent as a PDF. */
+  @media print {
+    body { overflow: visible; background: #fff; color: #000; }
+    .deck { height: auto; }
+    .chrome, .hint { display: none; }
+    .slide {
+      display: flex !important;
+      position: relative;
+      inset: auto;
+      min-height: 90vh;
+      page-break-after: always;
+      border-bottom: 1px solid #ccc;
+    }
+    .notes { display: block; }
+  }
+</style>
+
+<div class="deck" id="deck">
+
+  <!-- 1 ------------------------------------------------------------- -->
+  <section class="slide is-active">
+    <div class="stack">
+      <p class="eyebrow">Presentation to the Rwanda Development Board · August 2026</p>
+      <h1>Tembera</h1>
+      <p class="lede">
+        A digital guide to real places in Rwanda — built in Rwanda, and built
+        to be trusted.
+      </p>
+      <div class="cols" style="margin-top: 1rem;">
+        <div><span class="stat">495</span><div class="stat-label">places listed</div></div>
+        <div><span class="stat h-blue">16</span><div class="stat-label">categories</div></div>
+        <div><span class="stat h-ochre">30</span><div class="stat-label">districts covered</div></div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Open by saying what you want from the meeting: you have built the
+      platform, and you are asking about verified place data. Do not bury the
+      ask at the end.</p>
+    </div>
+  </section>
+
+  <!-- 2 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The gap</p>
+      <h2>A visitor outside Kigali is largely on their own.</h2>
+      <div class="cols">
+        <ul class="marks">
+          <li>Global map services cover central Kigali well, and thin out quickly beyond it.</li>
+          <li>Many Rwandan businesses are listed with no hours, no phone number, or nothing at all.</li>
+          <li>Nothing accounts for Umuganda, when much of the country closes for the morning.</li>
+        </ul>
+        <ul class="marks">
+          <li>Visitors arriving for conferences have free evenings and no local knowledge.</li>
+          <li>Rwandans travelling their own country have no guide written for them.</li>
+          <li>There is no strong local alternative.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Keep this factual and short. RDB knows the gap better than anyone in
+      the room — you are showing that you understand it, not teaching them.</p>
+    </div>
+  </section>
+
+  <!-- 3 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">What it is <span class="badge-live">Working now</span></p>
+      <h2>A searchable guide to where to eat, stay, worship, shop and visit.</h2>
+      <p class="lede">
+        Search it, filter it, find what is near you, get directions. That is
+        the whole product. It is deliberately not a social network.
+      </p>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>For visitors</h3>
+          <p>Find places by category, city or distance. Save what you like.
+          Read and leave honest reviews.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>For Rwandans</h3>
+          <p>A guide to your own country, built for the phone you already
+          have.</p>
+        </div>
+        <div class="panel h-ochre">
+          <h3>For operators</h3>
+          <p>Every listing is editable from an admin system. No developer
+          required to correct a phone number.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Status <span class="badge-live">Working now</span></p>
+      <h2>This is a working system, not a concept.</h2>
+      <div class="cols">
+        <ul class="marks check">
+          <li>495 places across 16 categories and all 30 districts</li>
+          <li>Search, map, and distance-based ranking</li>
+          <li>User accounts, saved places, visit history, reviews</li>
+          <li>Booking enquiries for tours and experiences</li>
+        </ul>
+        <ul class="marks check">
+          <li>A complete admin system — every listing, category and city editable</li>
+          <li>135 automated tests, run on every change</li>
+          <li>Independent security review completed and acted on</li>
+          <li>Rwandan data protection law implemented in full</li>
+        </ul>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Offer a live demo here if there is a screen. Show the memorial page
+      and a district outside Kigali — those two make the point better than any
+      slide.</p>
+    </div>
+  </section>
+
+  <!-- 5 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Our approach</p>
+      <h2>Today we are showing you the experience. The rest is built on your go-ahead.</h2>
+      <p class="lede">
+        We chose to build the thing you can actually see and judge first, rather
+        than ask you to fund a description.
+      </p>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>What that means today</h3>
+          <p>A complete, working front end you can click through, on real
+          Rwandan data, with the admin system behind it. Nothing on the next
+          slides is a mock-up.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>What comes with a go-ahead</h3>
+          <p>Verified data, five languages, offline use, payments, and a
+          business portal. The plan is costed, sequenced and ready — it needs a
+          mandate, not a research phase.</p>
+        </div>
+      </div>
+      <p>
+        Throughout this deck: <span class="badge-live">Working now</span>
+        <span class="badge-plan">Planned</span> — so it is always clear which
+        is which.
+      </p>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>This is the framing slide. Say plainly that the front end is real and
+      the operational build follows their decision. Keep the two labels honest
+      all the way through — the moment a planned feature is described as
+      working, everything else on the deck becomes questionable.</p>
+    </div>
+  </section>
+
+  <!-- 5b ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Being straight with you</p>
+      <h2>What today's version cannot do yet.</h2>
+      <div class="cols">
+        <ul class="marks cross">
+          <li><strong>The place data is researched, not officially verified.</strong> Real institutions, but not a checked register. This is the main reason we are here.</li>
+          <li><strong>English only.</strong> Five more languages are designed and scheduled.</li>
+        </ul>
+        <ul class="marks cross">
+          <li><strong>It needs an internet connection.</strong> Offline use is the first thing we build next.</li>
+          <li><strong>Bookings are enquiries, not payments</strong> — and are described that way to users.</li>
+          <li><strong>Not publicly launched.</strong> By choice, until the data is right.</li>
+        </ul>
+      </div>
+      <p style="margin-top:0.5rem;">
+        We would rather show you this slide than have you find it later.
+      </p>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Do not skip or rush this. Institutions have seen many polished pitches
+      that fell apart on contact with reality. Naming the gaps yourself is what
+      separates you — and every one of them is answered by the roadmap later.</p>
+    </div>
+  </section>
+
+  <!-- 6 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">How it is built</p>
+      <h2>Built to standards a public institution can defend choosing.</h2>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>Data protection</h3>
+          <p>Law N&deg; 058/2021 implemented: users can see, download and
+          permanently delete everything held about them. A published privacy
+          policy and a reachable contact.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>Security</h3>
+          <p>Passwords hashed. Sign-in attempts rate limited. Sessions expire
+          and can be revoked. No default passwords anywhere in the system.</p>
+        </div>
+        <div class="panel h-ochre">
+          <h3>Honesty by design</h3>
+          <p>The system never invents data. No fake ratings, no padded
+          categories, and approximate locations are marked as approximate.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">A deliberate decision</p>
+      <h2>Memorial sites are never rated, reviewed, priced or promoted.</h2>
+      <p class="lede">
+        Genocide memorials are in the guide, because visitors need to find
+        them. They are not presented like a restaurant.
+      </p>
+      <div class="cols">
+        <ul class="marks">
+          <li>No star ratings. No reviews. No prices.</li>
+          <li>Never placed in "top rated" or promotional rows.</li>
+          <li>A restrained page design, visibly different from a listing.</li>
+        </ul>
+        <ul class="marks">
+          <li>Visiting guidance instead — dress, quiet, photography.</li>
+          <li>The commemoration period in April is recognised by the system.</li>
+          <li>Enforced in the data itself, so it cannot be undone by a design change.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Worth pausing on. The catalogue originally carried a five-star rating
+      on a memorial site, inherited from its source data. It was found and
+      removed deliberately. Being straightforward about that is stronger than
+      implying it was never there.</p>
+    </div>
+  </section>
+
+  <!-- 8 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">PESTEL — does Tembera fit Rwanda?</p>
+      <h2>Six outside forces, assessed honestly.</h2>
+      <div style="overflow-x:auto;">
+        <table class="verdicts">
+          <thead>
+            <tr><th>Force</th><th>Verdict</th><th>Why</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Political</td><td class="v v-yes">Fits well</td><td>Tourism is national policy; the platform pushes the same direction.</td></tr>
+            <tr><td>Economic</td><td class="v v-part">Fits one model</td><td>Business listings and booking commission — not advertising.</td></tr>
+            <tr><td>Social</td><td class="v v-part">Partly</td><td>Serves visitors and diaspora today; Kinyarwanda opens the domestic market.</td></tr>
+            <tr><td>Technological</td><td class="v v-no">Not yet</td><td>Needs a connection. Offline support is the fix.</td></tr>
+            <tr><td>Environmental</td><td class="v v-yes">Fits</td><td>Conservation-aligned, and the Rwandan calendar is now built in.</td></tr>
+            <tr><td>Legal</td><td class="v v-yes">Fits today</td><td>Data law implemented. Photo licensing is the remaining task.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 ------------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">PESTEL — the conclusion</p>
+      <h2>Yes, it fits — but as one specific thing.</h2>
+      <p class="lede">
+        Tembera works as a <strong>curated, trusted directory operating
+        alongside the national tourism effort</strong> — serving visitors, the
+        diaspora, and Rwandans travelling their own country.
+      </p>
+      <p>
+        It does not work as an advertising-funded mass-market app. Rwanda
+        deliberately attracts fewer visitors who each spend more, so there will
+        never be the volume that advertising requires. Recognising that shapes
+        every decision we make.
+      </p>
+      <p>
+        <strong>One factor decides everything: verified place data.</strong>
+        It is what a global search engine cannot replicate locally, what an AI
+        assistant cannot invent, and what makes the guide worth relying on.
+      </p>
+    </div>
+  </section>
+
+  <!-- 10 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">UN Sustainable Development Goals — direct contribution</p>
+      <h2>Four goals Tembera contributes to directly.</h2>
+      <div class="goals">
+        <div class="goal h-accent">
+          <span class="num">8</span>
+          <span class="body">
+            <span class="name">Decent Work &amp; Economic Growth</span>
+            <span class="why">Target 8.9 asks for policies promoting sustainable tourism that creates jobs and promotes local culture. Making small Rwandan businesses findable is that, directly.</span>
+          </span>
+        </div>
+        <div class="goal h-blue">
+          <span class="num">9</span>
+          <span class="body">
+            <span class="name">Industry, Innovation &amp; Infrastructure</span>
+            <span class="why">Target 9.c concerns access to information technology. This is digital tourism infrastructure, built locally rather than imported.</span>
+          </span>
+        </div>
+        <div class="goal h-ochre">
+          <span class="num">11</span>
+          <span class="body">
+            <span class="name">Sustainable Cities &amp; Communities</span>
+            <span class="why">Target 11.4 asks for protection of cultural and natural heritage. Memorial and heritage sites are documented with care rather than commercialised.</span>
+          </span>
+        </div>
+        <div class="goal h-clay">
+          <span class="num">17</span>
+          <span class="body">
+            <span class="name">Partnerships for the Goals</span>
+            <span class="why">Target 17.17 concerns effective public-private partnership. This proposal is exactly that: public data, private platform.</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">UN SDGs — partial, and not claimed</p>
+      <h2>Where we contribute partly, and where we do not.</h2>
+      <div class="cols">
+        <div class="stack" style="gap:0.75rem;">
+          <h3 style="color:var(--ochre)">Partial contribution</h3>
+          <ul class="marks" style="--dot: var(--ochre)">
+            <li><strong>Goal 10 — Reduced Inequalities.</strong> Coverage of all 30 districts pushes visibility beyond Kigali, where listings are thinnest.</li>
+            <li><strong>Goal 12 — Responsible Consumption.</strong> Practical guidance for visitors, including rules they routinely get wrong.</li>
+            <li><strong>Goal 5 — Gender Equality.</strong> Women-owned businesses could be identified and surfaced. <em>Not built yet — we are not claiming it.</em></li>
+          </ul>
+        </div>
+        <div class="stack" style="gap:0.75rem;">
+          <h3 style="color:var(--muted)">Not applicable</h3>
+          <p>The remaining goals — including health, water, energy, and Goal 14
+          on oceans, for a landlocked country — have no honest connection to a
+          tourism directory.</p>
+          <p><strong>We are not claiming them.</strong> A project that maps
+          itself onto all seventeen goals is telling you something about its
+          marketing, not its impact.</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>This slide will do more for your credibility than the previous one.
+      Everyone claims SDG alignment; almost nobody says which goals do not
+      apply.</p>
+    </div>
+  </section>
+
+  <!-- 12 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Rwanda Vision 2050</p>
+      <h2>Where Tembera sits against the national pillars.</h2>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>Human Development</h3>
+          <p>A guide written for Rwandans as well as visitors, in their own
+          languages, on the devices they actually own.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>Competitiveness &amp; Integration</h3>
+          <p>Better information makes Rwanda easier to visit and easier to
+          spend money in — and supports the conference sector directly.</p>
+        </div>
+        <div class="panel h-ochre">
+          <h3>Urbanisation &amp; Agglomeration</h3>
+          <p>Secondary cities and rural districts are listed on the same
+          footing as Kigali, rather than as an afterthought.</p>
+        </div>
+        <div class="panel h-clay">
+          <h3>Capable State Institutions</h3>
+          <p>A platform that can carry official data accurately, with a public
+          route for corrections and a clear audit trail.</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Before presenting — verify</span>
+      <p>Check these pillar names and wording against the current official
+      Vision 2050 and NST documents, and adjust to match exactly. Getting a
+      pillar name wrong in front of RDB would undercut everything else on the
+      slide.</p>
+    </div>
+  </section>
+
+  <!-- 13 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Vision 2050 — the contribution</p>
+      <h2>Rwanda markets itself extremely well abroad. The gap is what happens after arrival.</h2>
+      <div class="cols">
+        <ul class="marks">
+          <li>A visitor who finds more to do stays longer and spends more.</li>
+          <li>Spending spreads beyond Kigali when the guide covers all 30 districts.</li>
+          <li>Conference delegates are a high-value group nobody currently serves well.</li>
+        </ul>
+        <ul class="marks">
+          <li>Domestic tourism grows when Rwandans have a guide of their own.</li>
+          <li>Local ownership means the data and capability stay in Rwanda.</li>
+          <li>Every improvement compounds — corrections make the next visitor's experience better.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13b ----------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The vision <span class="badge-plan">Planned</span></p>
+      <h2>What Tembera becomes once it is fully built.</h2>
+      <div class="cols">
+        <div class="panel h-blue">
+          <h3>In a visitor's hand</h3>
+          <ul class="marks planned" style="margin-top:0.3rem;">
+            <li>Installed on the phone like an app, working with no signal at all</li>
+            <li>In their own language — French, Kinyarwanda, Swahili, Chinese, German</li>
+            <li>Book and pay for a tour, by card or mobile money</li>
+            <li>Told what is open today, in a country whose calendar it understands</li>
+          </ul>
+        </div>
+        <div class="panel h-accent">
+          <h3>For a Rwandan business</h3>
+          <ul class="marks planned" style="margin-top:0.3rem;">
+            <li>Claim your own listing and keep it correct yourself</li>
+            <li>Add your photos, hours and menu without asking anyone</li>
+            <li>A verified badge when you are on the official register</li>
+            <li>See how many people found you this month</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>This is the slide that shows ambition. Say clearly that none of it
+      exists today — the badge on the eyebrow does that visually, but say it
+      out loud too.</p>
+    </div>
+  </section>
+
+  <!-- 13c ----------------------------------------------------------- -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The vision <span class="badge-plan">Planned</span></p>
+      <h2>And a live picture of visitor demand, for RDB.</h2>
+      <p class="lede">
+        A guide that people search generates something no survey can: a
+        continuous record of what visitors are actually looking for, and where.
+      </p>
+      <div class="cols">
+        <div class="panel h-ochre">
+          <h3>Demand, by district</h3>
+          <p>Which districts are being searched, and how that moves through the
+          year. Interest that arrives before the infrastructure does.</p>
+        </div>
+        <div class="panel h-clay">
+          <h3>Gaps worth filling</h3>
+          <p>Searches that return little or nothing — a direct signal of where
+          investment or licensing attention would pay.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>Corrections flowing back</h3>
+          <p>Every report from a visitor or a business, shared back so the
+          official register improves as the guide is used.</p>
+        </div>
+      </div>
+      <p>
+        Reported in aggregate only. No individual visitor is ever identified,
+        and the privacy policy already commits us to that.
+      </p>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>This is probably the most valuable slide for RDB specifically, because
+      it offers them something they cannot easily buy. Be firm on the privacy
+      line — aggregate only, never individuals.</p>
+    </div>
+  </section>
+
+  <!-- 14 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The ask</p>
+      <h2>A go-ahead, and access to verified place data.</h2>
+      <p class="lede">
+        The platform is built and paid for. What we need now is a decision, and
+        the registers that turn a good guide into an authoritative one.
+      </p>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>What we are asking for</h3>
+          <ul class="marks" style="margin-top:0.3rem;">
+            <li>A go-ahead to proceed to phase two</li>
+            <li>Access to official registers of accommodation, operators and licensed attractions</li>
+            <li>A named contact to keep that data current</li>
+          </ul>
+        </div>
+        <div class="panel h-blue">
+          <h3>What we are not asking for</h3>
+          <ul class="marks" style="--dot: var(--muted); margin-top:0.3rem;">
+            <li>No funding</li>
+            <li>No public endorsement</li>
+            <li>No exclusivity</li>
+          </ul>
+          <p>If a working relationship earns those later, that is a separate
+          conversation — and one we would rather have on evidence.</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Asking for a decision and data, rather than money, is a strong
+      position. Hold it — do not soften it into a funding request in the room.
+      If they ask what it costs you, answer honestly and move on.</p>
+    </div>
+  </section>
+
+  <!-- 15 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The offer</p>
+      <h2>What RDB gets in return.</h2>
+      <div class="cols">
+        <div class="panel h-accent">
+          <h3>A distribution channel</h3>
+          <p>Official information reaching visitors at the moment they are
+          deciding what to do — not buried in a document.</p>
+        </div>
+        <div class="panel h-blue">
+          <h3>Corrections flowing back</h3>
+          <p>Every report from a visitor or business is captured and can be
+          shared back. The register improves as the guide is used.</p>
+        </div>
+        <div class="panel h-ochre">
+          <h3>Coverage where it is thin</h3>
+          <p>Visibility for districts and businesses that global platforms have
+          little commercial reason to cover properly.</p>
+        </div>
+        <div class="panel h-clay">
+          <h3>No cost, no lock-in</h3>
+          <p>Rwandan-built and Rwandan-run. Data supplied stays RDB's, and can
+          be withdrawn.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">The plan</p>
+      <h2>Four phases. Phase one is already done.</h2>
+      <div class="phases">
+        <div class="phase h-accent">
+          <span class="step">Phase 1 · Complete</span>
+          <h3>The platform</h3>
+          <p class="when">Built, at our own cost</p>
+          <ul>
+            <li>495 places, all 30 districts</li>
+            <li>Search, map, accounts, reviews</li>
+            <li>Full admin system</li>
+            <li>Security and data-protection law</li>
+            <li>Rwandan calendar built in</li>
+          </ul>
+        </div>
+        <div class="phase h-blue">
+          <span class="step">Phase 2 · 3 months</span>
+          <h3>Trustworthy and usable</h3>
+          <p class="when">Starts on your go-ahead</p>
+          <ul>
+            <li>Verify listings against official registers</li>
+            <li>Works offline, installs like an app</li>
+            <li>Kinyarwanda and French</li>
+            <li>Photo licensing confirmed</li>
+            <li>Public launch</li>
+          </ul>
+        </div>
+        <div class="phase h-ochre">
+          <span class="step">Phase 3 · 6 months</span>
+          <h3>Businesses join in</h3>
+          <p class="when">Once the data is solid</p>
+          <ul>
+            <li>Businesses claim and manage listings</li>
+            <li>Verified badge for the official register</li>
+            <li>Swahili, Chinese and German</li>
+            <li>Real bookings with mobile money</li>
+          </ul>
+        </div>
+        <div class="phase h-clay">
+          <span class="step">Phase 4 · 12 months</span>
+          <h3>A national asset</h3>
+          <p class="when">Once it is being used</p>
+          <ul>
+            <li>Demand dashboard for RDB</li>
+            <li>Data shared back to partners</li>
+            <li>Seasonal and accessibility information</li>
+            <li>Self-sustaining on business listings</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Emphasise that phase one was funded and delivered before asking them
+      for anything. That is the strongest fact in the deck. Timings are working
+      estimates — say so if pressed rather than defending a date.</p>
+    </div>
+  </section>
+
+  <!-- 17 ------------------------------------------------------------ -->
+  <section class="slide">
+    <div class="stack">
+      <p class="eyebrow">Thank you</p>
+      <h1>Tembera</h1>
+      <p class="lede">
+        Built in Rwanda, at our own cost, before asking you for anything.
+        Honest about what it knows and what it does not.
+      </p>
+      <p style="margin-top:0.5rem;">
+        <strong>The ask:</strong> a go-ahead to build phase two, access to the
+        official registers, and a named person to work with.
+      </p>
+      <p>
+        <strong>What you get:</strong> a Rwandan-built guide carrying Rwandan
+        data, and a live picture of what visitors are looking for.
+      </p>
+    </div>
+    <div class="notes">
+      <span class="tag">Speaker note</span>
+      <p>Close by asking for a specific next step and a named contact. A
+      meeting that ends on "we will be in touch" usually ends there.</p>
+    </div>
+  </section>
+
+</div>
+
+<p class="hint">← → to move · N for notes</p>
+
+<div class="chrome">
+  <span class="counter" id="counter">1 / 20</span>
+  <div class="bar"><span id="bar"></span></div>
+  <div class="nav">
+    <button id="prev" type="button" aria-label="Previous slide">Prev</button>
+    <button id="next" type="button" aria-label="Next slide">Next</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+    var counter = document.getElementById("counter");
+    var bar = document.getElementById("bar");
+    var prev = document.getElementById("prev");
+    var next = document.getElementById("next");
+    var i = 0;
+
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach(function (s, k) { s.classList.toggle("is-active", k === i); });
+      counter.textContent = (i + 1) + " / " + slides.length;
+      bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      prev.disabled = i === 0;
+      next.disabled = i === slides.length - 1;
+      // Long slides can be scrolled; always start a new one at the top.
+      slides[i].scrollTop = 0;
+      if (location.hash !== "#" + (i + 1)) {
+        history.replaceState(null, "", "#" + (i + 1));
+      }
+    }
+
+    prev.addEventListener("click", function () { show(i - 1); });
+    next.addEventListener("click", function () { show(i + 1); });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault(); show(i + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault(); show(i - 1);
+      } else if (e.key === "Home") {
+        e.preventDefault(); show(0);
+      } else if (e.key === "End") {
+        e.preventDefault(); show(slides.length - 1);
+      } else if (e.key === "n" || e.key === "N") {
+        document.body.classList.toggle("show-notes");
+      }
+    });
+
+    // Deep link, so a specific slide can be shared or reopened mid-talk.
+    var start = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(start) ? 0 : start - 1);
+  })();
+</script>

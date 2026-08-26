@@ -14,7 +14,21 @@ fs.readFileSync(".env", "utf8")
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+// Chrome installs to either Program Files or Program Files (x86) depending on
+// the machine, so a single hardcoded path fails on half of them — which is why
+// this harness would not start. Set CHROME_PATH to override.
+const CHROME = [
+  process.env.CHROME_PATH,
+  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+].filter((p) => p && fs.existsSync(p))[0];
+
+if (!CHROME) {
+  console.error("No Chrome or Edge found. Set CHROME_PATH to your browser.");
+  process.exit(1);
+}
 const BASE = "http://localhost:3000";
 const TEST_EMAIL = "e2e-tester@tembera.test";
 

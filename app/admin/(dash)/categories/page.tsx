@@ -66,6 +66,7 @@ export default async function CategoriesPage({
               title: editing.title,
               icon: editing.icon,
               primary: editing.primary,
+              sensitive: editing.sensitive,
               sortOrder: editing.sortOrder,
             }}
           />

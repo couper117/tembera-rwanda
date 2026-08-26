@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
+import CalendarNotice from "@/components/app/CalendarNotice";
 import Icon from "@/components/Icon";
 import NearYou from "@/components/home/NearYou";
 import CategoryTile from "@/components/ui/CategoryTile";
@@ -51,6 +52,10 @@ export default async function HomePage() {
 
       <main className="t-main">
         <div className="t-page">
+          {/* Renders nothing unless the country is about to close — Umuganda,
+              a public holiday, or the commemoration week. */}
+          <CalendarNotice />
+
           {/* ------------------------------------------------ search ---- */}
           <section className="t-section">
             <h1 className="t-display">What are you looking for?</h1>

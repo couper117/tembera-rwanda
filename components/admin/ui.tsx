@@ -67,13 +67,16 @@ type Tone = "good" | "warn" | "bad" | "neutral";
 const TONES: Record<string, Tone> = {
   approved: "good",
   confirmed: "good",
+  resolved: "good",
   verified: "good",
   published: "good",
   pending: "warn",
   unverified: "warn",
+  open: "warn",
   rejected: "bad",
   cancelled: "bad",
   suspended: "bad",
+  dismissed: "bad",
 };
 
 export function StatusBadge({ status }: { status: string }) {

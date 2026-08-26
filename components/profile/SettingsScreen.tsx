@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
+import AccountDataSection from "@/components/profile/AccountDataSection";
 import Spinner from "@/components/ui/Spinner";
 import { useAccount } from "@/lib/client/account";
 import { useLocation } from "@/lib/client/location";
@@ -224,6 +225,65 @@ export default function SettingsScreen() {
                   Clear visit history
                 </button>
               </div>
+            </div>
+          </section>
+
+          {/* Server-side account controls. Only meaningful when signed in —
+              there is nothing on the server to change, export or erase for a
+              guest, and the localStorage clears above already cover them. */}
+          {authed && <AccountDataSection />}
+
+          {/* --------------------------------------------------- legal -- */}
+          <section className="t-section">
+            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
+              About
+            </h2>
+            <div className="t-card">
+              <Link
+                href="/privacy"
+                className="t-fact"
+                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
+              >
+                <span className="t-fact__icon">
+                  <Icon name="info" size={17} />
+                </span>
+                <span className="t-row__name" style={{ flex: 1 }}>
+                  Privacy policy
+                </span>
+                <span className="t-row__chev">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </Link>
+              <Link
+                href="/terms"
+                className="t-fact"
+                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
+              >
+                <span className="t-fact__icon">
+                  <Icon name="info" size={17} />
+                </span>
+                <span className="t-row__name" style={{ flex: 1 }}>
+                  Terms of use
+                </span>
+                <span className="t-row__chev">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </Link>
+              <Link
+                href="/about"
+                className="t-fact"
+                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
+              >
+                <span className="t-fact__icon">
+                  <Icon name="sparkle" size={17} />
+                </span>
+                <span className="t-row__name" style={{ flex: 1 }}>
+                  About Tembera
+                </span>
+                <span className="t-row__chev">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </Link>
             </div>
           </section>
         </div>

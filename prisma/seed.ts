@@ -1,5 +1,6 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 // One-time migration of the original hardcoded app into the database.
 //
@@ -71,6 +72,7 @@ async function seedTaxonomy() {
         title: g.title,
         icon: g.icon,
         primary: g.primary ?? false,
+        sensitive: g.sensitive ?? false,
         sortOrder: i,
         subcategories: {
           create: g.subcategories.map((name, j) => ({ name, sortOrder: j })),
@@ -140,7 +142,16 @@ async function seedPlaces(validCategories: Set<string>) {
 
 async function seedUsers() {
   const adminEmail = "admin@tembera.rw";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "changeme123";
+
+  // No default password. A shared default is a published password: it survives
+  // into production because nothing forces anyone to change it. Generating one
+  // means the operator must read it from this output, and every install differs.
+  const adminPassword =
+    process.env.SEED_ADMIN_PASSWORD ?? crypto.randomBytes(12).toString("base64url");
+  if (process.env.SEED_ADMIN_PASSWORD && process.env.SEED_ADMIN_PASSWORD.length < 12) {
+    throw new Error("SEED_ADMIN_PASSWORD must be at least 12 characters.");
+  }
+
   await prisma.user.create({
     data: {
       email: adminEmail,
@@ -153,19 +164,24 @@ async function seedUsers() {
     },
   });
 
-  await prisma.user.create({
-    data: {
-      email: "demo@tembera.rw",
-      handle: "demo",
-      name: "Demo User",
-      passwordHash: await bcrypt.hash("demo12345", 10),
-      role: "USER",
-      homeCity: "Kigali",
-      bio: "Exploring Rwanda one place at a time.",
-    },
-  });
+  // The demo account has a published password, so it must never exist in
+  // production. Opt in explicitly for local work.
+  const wantDemo = process.env.SEED_DEMO_USER === "true";
+  if (wantDemo) {
+    await prisma.user.create({
+      data: {
+        email: "demo@tembera.rw",
+        handle: "demo",
+        name: "Demo User",
+        passwordHash: await bcrypt.hash("demo12345", 10),
+        role: "USER",
+        homeCity: "Kigali",
+        bio: "Exploring Rwanda one place at a time.",
+      },
+    });
+  }
 
-  return { adminEmail, adminPassword };
+  return { adminEmail, adminPassword, wantDemo };
 }
 
 async function main() {
@@ -174,14 +190,18 @@ async function main() {
   const validCategories = await seedTaxonomy();
   await seedCities();
   const { inserted, skipped } = await seedPlaces(validCategories);
-  const { adminEmail, adminPassword } = await seedUsers();
+  const { adminEmail, adminPassword, wantDemo } = await seedUsers();
 
   console.log(`  categories: ${CATEGORY_GROUPS.length}`);
   console.log(`  cities:     ${Object.keys(DISTRICT_CENTRES).length}`);
   console.log(`  places:     ${inserted} inserted${skipped ? `, ${skipped} skipped` : ""}`);
-  console.log(`  admin:      ${adminEmail} / ${adminPassword}  (change after first login)`);
-  console.log(`  demo user:  demo@tembera.rw / demo12345`);
-  console.log("Done.");
+  if (wantDemo) console.log(`  demo user:  demo@tembera.rw / demo12345`);
+  console.log("Done.\n");
+  console.log("  ─────────────────────────────────────────────────────────");
+  console.log(`  Admin account: ${adminEmail}`);
+  console.log(`  Password:      ${adminPassword}`);
+  console.log("  This is shown once. Save it now, then change it after login.");
+  console.log("  ─────────────────────────────────────────────────────────");
 }
 
 main()

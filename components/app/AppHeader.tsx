@@ -17,7 +17,7 @@ import {
   getCalendarEvents,
   kindStyleVars,
   nowInKigali,
-} from "@/lib/data/calendar";
+} from "@/lib/rwanda/events";
 import CategoryNav from "./CategoryNav";
 import CityPicker from "./CityPicker";
 

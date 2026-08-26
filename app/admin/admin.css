@@ -709,6 +709,31 @@ a.a-stat:hover {
   color: var(--t-ink-3);
 }
 
+/* Server-action feedback. Both sit at the top of a form and are announced,
+   so colour is reinforcement rather than the only signal. */
+
+.a-error,
+.a-success {
+  padding: var(--t-2) var(--t-3);
+  margin-bottom: var(--t-3);
+  border-radius: var(--t-r-md);
+  border: 1px solid;
+  font-size: var(--t-text-small);
+  font-weight: 600;
+}
+
+.a-error {
+  border-color: var(--t-danger);
+  background: var(--t-danger-soft);
+  color: var(--t-danger);
+}
+
+.a-success {
+  border-color: var(--t-accent-ink);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
 .a-checkrow {
   display: flex;
   align-items: center;

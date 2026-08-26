@@ -114,6 +114,7 @@ export const categorySchema = z.object({
   title: z.string().trim().min(1, "Title is required."),
   icon: z.string().trim().min(1, "Icon is required."),
   primary: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
+  sensitive: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
   sortOrder: intWithDefault(0),
 });
 

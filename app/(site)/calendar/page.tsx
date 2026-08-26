@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AppHeader from "@/components/app/AppHeader";
 import CalendarScreen from "@/components/calendar/CalendarScreen";
 import Icon from "@/components/Icon";
-import { getCalendarEvents, nowInKigali } from "@/lib/data/calendar";
+import { getCalendarEvents, nowInKigali } from "@/lib/rwanda/events";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 /**
  * Rwanda's calendar — public holidays, Umuganda, and the country's main
  * civic and cultural fixtures. Entirely static/computed (see
- * lib/data/calendar.ts); nothing here is fetched or editable yet.
+ * lib/rwanda/events.ts); nothing here is fetched or editable yet.
  */
 export default function CalendarPage() {
   const { year } = nowInKigali();

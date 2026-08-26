@@ -14,7 +14,7 @@ import {
   nowInKigali,
   type CalendarEvent,
   type EventKind,
-} from "@/lib/data/calendar";
+} from "@/lib/rwanda/events";
 
 interface Props {
   year: number;
