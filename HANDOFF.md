@@ -1,56 +1,49 @@
 # HANDOFF
 
 ## Current Task
-Third pass on login's hero: the user asked to strip the text overlay
-entirely (prior task), then immediately asked to bring the badge/title/
-description/stats block back — but with login-appropriate copy (adapted via
-`AskUserQuestion` rather than assumed), not the text-free version. The photo
-(Lake Kivu sunset) and the removed theme toggle both stayed as they were —
-only the content block was in question this time.
+Reviews could be posted with a rating but **no text** — the body was
+`optional().default("")` server-side and the textarea was labelled
+"(optional)", so "Post review" with an empty box wrote an empty row. The user
+reported this as a bug and asked for validation.
 
 ## Status
-Solved. Typecheck and lint are clean; verified in a real headless Chrome
-(desktop, mobile, a short 700px-tall desktop) with zero console/page errors
-and no horizontal overflow.
+Solved. Review text is now required (trimmed, 10–1000 chars), enforced in
+**both** the form and the server action from one shared module.
 
-**Real bug caught by screenshot, not inspection:** reintroducing the content
-block on mobile made the two-line title collide with the photo credit,
-because the credit had been absolutely-positioned assuming an empty hero.
-Fixed by making the credit part of the normal flex flow when content exists
-(`.t-auth-hero__credit--inline`) and keeping the old absolute corner
-placement (`--corner`) only for the truly empty case — see Working Notes.
+Verified: `tsc --noEmit` clean, `next lint` clean, and the schema exercised
+across 14 cases (empty / whitespace-only / omitted / null body, the 9-10 and
+1000-1001 char boundaries, padded input, rating 0 / 6 / 3.5 / NaN / "abc",
+missing placeId) — every rejection returns a human-readable message, no raw
+Zod string leaks. A drift check asserts `reviewBodyError()` and `reviewSchema`
+return identical messages for the same input.
 
-**Not yet done:** no automated regression suite; `npm run build` not run
-(same reason as always — a dev server was live on :3001).
+**Not verified end to end in a browser:** the Chrome extension was not
+connected, and reaching the form needs a signed-in session. Confirmed
+indirectly — `/place/[id]` hot-recompiled and returns 200 with the review
+section present, the new copy and message strings are in the emitted client
+chunks, and the old "(optional)" placeholder is gone from `.next` entirely.
+`npx next build` was deliberately **not** run: the dev server is live on 3001
+and they share `.next` (see Local setup).
 
-**One known issue left over from prior work, deliberately:**
-`/c/<unknown>` serves the correct not-found screen with a **200** instead of
-a 404. See the note in `app/(site)/c/[category]/page.tsx` — it is the only
-one of the three dynamic routes that reads `searchParams`, so
-`dynamicParams = false` (which fixed `/place/[id]` and `/city/[city]`) cannot
-apply. Fixing it means moving `?type=` into `PlaceBrowser`, which costs
-server-rendered filtering on linked filtered URLs. Left for a decision.
+**Pre-existing data:** 1 of the 2 rows in `reviews` has an empty body — the
+bug's own footprint. It is left alone and still renders fine (both the place
+page and the admin table already guard on `r.body`). If its author edits it,
+they will now be required to add text.
 
 ## Progress
-- [x] `AuthHero`'s content props (`badge`/`title`/`description`/`stats`) stay
-      optional — omit all four for a clean, unlabelled photo. Login now
-      passes the full set again (adapted "welcome back" copy, not register's
-      "create an account" copy — see Working Notes for why that distinction
-      mattered), register is unchanged.
-- [x] Removed the theme toggle from `AuthHero` entirely (both screens) —
-      only the back button floats over the photo now. This stuck across all
-      three passes on the login hero; never reverted.
-- [x] `rwanda_lake_kivu_sunset.jpg` stays login's photo: a CC BY-SA 4.0 photo
-      by Rwejo, sourced from Wikimedia Commons (searched + verified license
-      via WebSearch/WebFetch, downloaded via `curl`, resized/re-encoded
-      through `sharp` — 2.24MB → 470KB at 1600×2400). Already portrait, so it
-      needed no re-cropping (unlike the forest-road photo before it, deleted
-      — no longer referenced anywhere).
-- [x] `AuthHero`'s `credit` prop — small, low-contrast attribution, now two
-      layout modes (`--inline` vs `--corner`, see Status) instead of one
-      always-absolute placement.
-- [x] Rebuilt `.t-auth-container` as a true 50/50 split (see prior entry in
-      Recently Completed for the full writeup of that redesign).
+- [x] `lib/validation/review.ts` (new) — one source of truth for the rules:
+      `REVIEW_BODY_MIN`/`MAX`, `reviewBodyError()`, `reviewRatingError()`,
+      and `reviewSchema`. A plain module, not `"use server"`, so the client
+      can import it (this is why it does not live next to the action).
+- [x] `submitReviewAction` now parses with the shared `reviewSchema`; the
+      local copy is deleted. Body is trimmed by the schema, so whitespace can
+      never be stored and nothing is stored padded.
+- [x] The form validates body as well as rating before firing the action,
+      the placeholder no longer says "(optional)", the error is
+      `role="alert"` + `aria-describedby`/`aria-invalid`, and it clears as
+      soon as the user fixes the input.
+- [ ] Not done: no automated test suite exists to hold this (the checks above
+      were run as throwaway `tsx` scripts, not committed).
 
 ## Working Notes
 
@@ -300,6 +293,28 @@ Still true and worth keeping:
   resize/re-encode into `public/assets/images/`. CC BY-SA requires
   attribution — that's what `AuthHero`'s `credit` prop is for.
 
+### Reviews
+- **`lib/validation/review.ts` is the single source of truth.** The form and
+  `submitReviewAction` both go through it, so client and server can never
+  disagree about what a valid review is. The schema delegates to the very same
+  `reviewBodyError()` the form calls (via `superRefine`) rather than
+  re-expressing the rules in Zod — that is deliberate, and it is what keeps the
+  two messages identical.
+- It is a plain module on purpose: `lib/actions/user.ts` is `"use server"` and
+  may only export async functions, so a schema cannot live there and still be
+  imported by a client component. `lib/validation/admin.ts` set this pattern.
+- **`REVIEW_BODY_MIN` is a judgement call, not a requirement** — 10 characters,
+  picked to reject "ok" / "." filler while still allowing a short honest
+  review. One constant, safe to change.
+- Client validation is UX only. The action is a public endpoint, so the server
+  re-validates everything; never rely on the form having run.
+- Rating was already required and still is — the gap was only the body.
+- Rejected messages are all written for humans. `int()`/`invalid_type_error`
+  carry the same "Pick a rating first." string so a hand-crafted request can't
+  surface a raw Zod message like "Expected integer, received float".
+- **Empty-body rows predating this fix still exist.** Both render sites guard
+  on `r.body`, so nothing breaks; there is no backfill or migration.
+
 ### Keys — open actions
 - A working `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is in `.env` (gitignored). Two others
   were tried first and failed: Google's public *demo* key from their samples
@@ -390,6 +405,9 @@ Still true and worth keeping:
   `npm install`.
 
 ## Recently Completed
+- Required review text (10-1000 chars, trimmed) in both the form and the
+  server action, from one shared validation module — reviews could previously
+  be posted with a rating and an empty body.
 - Stripped the text overlay off login's hero (register keeps it), removed
   the theme toggle from both auth screens, and replaced login's photo with
   a properly-licensed Wikimedia Commons image (Lake Kivu sunset, CC BY-SA
