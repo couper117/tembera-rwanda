@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import Icon from "@/components/Icon";
 import { submitReviewAction, deleteReviewAction } from "@/lib/actions/user";
 import type { ReviewWithAuthor } from "@/lib/data/user";
+import { reviewBodyError, reviewRatingError } from "@/lib/validation/review";
 
 interface Props {
   placeId: string;
@@ -15,10 +17,24 @@ interface Props {
 function Stars({ n }: { n: number }) {
   return (
     <span className="t-review__stars" aria-label={`${n} out of 5`}>
-      {"★".repeat(n)}
-      {"☆".repeat(5 - n)}
+      {Array.from({ length: 5 }, (_, i) => (
+        <Icon key={i} name="star" size={14} filled={i < n} />
+      ))}
     </span>
   );
+}
+
+/** "Today" / "3 days ago" / "2 weeks ago" — same register as the profile's
+ *  visited-place timestamps, kept local since reviews are the only other
+ *  place a relative date shows up. */
+function formatReviewDate(date: Date): string {
+  const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  if (days < 1) return "Today";
+  if (days < 7) return rtf.format(-days, "day");
+  if (days < 30) return rtf.format(-Math.floor(days / 7), "week");
+  if (days < 365) return rtf.format(-Math.floor(days / 30), "month");
+  return rtf.format(-Math.floor(days / 365), "year");
 }
 
 export default function ReviewSection({ placeId, reviews, currentUserId }: Props) {
@@ -30,8 +46,9 @@ export default function ReviewSection({ placeId, reviews, currentUserId }: Props
   const [pending, startTransition] = useTransition();
 
   function submit() {
-    if (rating < 1) {
-      setError("Pick a rating first.");
+    const invalid = reviewRatingError(rating) ?? reviewBodyError(body);
+    if (invalid) {
+      setError(invalid);
       return;
     }
     setError(null);
@@ -68,7 +85,7 @@ export default function ReviewSection({ placeId, reviews, currentUserId }: Props
                 aria-label={`${n} star${n > 1 ? "s" : ""}`}
                 onClick={() => setRating(n)}
               >
-                ★
+                <Icon name="star" size={22} filled={n <= rating} />
               </button>
             ))}
           </div>
@@ -77,14 +94,23 @@ export default function ReviewSection({ placeId, reviews, currentUserId }: Props
               <textarea
                 className="t-field__input"
                 rows={3}
-                placeholder="Share what this place is like… (optional)"
+                placeholder="Share what this place is like…"
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
+                aria-invalid={error !== null}
+                aria-describedby={error ? "review-error" : undefined}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setBody(next);
+                  // Drop the warning as soon as they have fixed it.
+                  if (error && !reviewRatingError(rating) && !reviewBodyError(next)) {
+                    setError(null);
+                  }
+                }}
               />
             </label>
           </div>
           {error && (
-            <p className="t-small t-danger" style={{ marginTop: 8 }}>
+            <p id="review-error" role="alert" className="t-small t-danger" style={{ marginTop: 8 }}>
               {error}
             </p>
           )}
@@ -117,7 +143,10 @@ export default function ReviewSection({ placeId, reviews, currentUserId }: Props
         reviews.map((r) => (
           <div key={r.id} className="t-review">
             <div className="t-review__head">
-              <span className="t-review__author">{r.authorName}</span>
+              <span>
+                <span className="t-review__author">{r.authorName}</span>
+                <span className="t-review__meta">{formatReviewDate(r.createdAt)}</span>
+              </span>
               <Stars n={r.rating} />
             </div>
             {r.body && <p className="t-review__body">{r.body}</p>}
