@@ -26,6 +26,19 @@ export interface Visit {
   at: number;
 }
 
+const RTF = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+const DAY = 24 * 60 * 60 * 1000;
+
+/** "today" / "yesterday" / "3 days ago" / "2 weeks ago" — from an epoch-ms visit. */
+export function formatVisitedAt(atMs: number): string {
+  const days = Math.floor((Date.now() - atMs) / DAY);
+  if (days < 1) return RTF.format(0, "day");
+  if (days < 7) return RTF.format(-days, "day");
+  if (days < 30) return RTF.format(-Math.round(days / 7), "week");
+  if (days < 365) return RTF.format(-Math.round(days / 30), "month");
+  return RTF.format(-Math.round(days / 365), "year");
+}
+
 /* ------------------------------------------------ guest localStorage */
 
 function readLocal(): Visit[] {

@@ -36,7 +36,11 @@ export default function SettingsScreen() {
       <PageHeader title="Settings" fallbackHref="/profile" />
 
       <main className="t-main">
-        <div className="t-page" style={{ maxWidth: 620 }}>
+        {/* Same rail-offset problem as Profile, smaller correction — Settings
+            is rows and toggles, not cards, so it doesn't need Profile's full
+            960px to avoid looking thin, just enough to close the worst of
+            the gap next to the rail on a real desktop screen. */}
+        <div className="t-page" style={{ maxWidth: 760 }}>
           <div className="t-section">
             <h1 className="t-display">Settings</h1>
           </div>
@@ -50,7 +54,7 @@ export default function SettingsScreen() {
               {authed ? (
                 <>
                   <div className="t-fact" style={{ padding: 0, marginBottom: "var(--t-3)" }}>
-                    <span className="t-fact__icon">
+                    <span className="t-fact__icon t-fact__icon--accent">
                       <Icon name="user" size={17} />
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
@@ -94,34 +98,29 @@ export default function SettingsScreen() {
             <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
               Appearance
             </h2>
-            <div className="t-card" style={{ padding: "var(--t-3) var(--t-4)" }}>
-              <div className="t-inline t-between">
-                <div>
+            <div className="t-card" style={{ padding: "var(--t-1) var(--t-4)" }}>
+              <div className="t-fact" style={{ padding: "var(--t-3) 0" }}>
+                <span className="t-fact__icon t-fact__icon--accent">
+                  <Icon name={theme === "dark" ? "moon" : "sun"} size={17} />
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
                   <span className="t-fact__value" style={{ display: "block" }}>
-                    Theme
+                    Dark mode
                   </span>
-                  <span className="t-small t-muted">
-                    Currently using {theme === "dark" ? "Dark" : "Light"} mode
+                  <span className="t-small t-muted">{theme === "dark" ? "On" : "Off"}</span>
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={theme === "dark"}
+                  aria-label="Dark mode"
+                  className="t-toggle"
+                  onClick={toggleTheme}
+                >
+                  <span className="t-toggle__knob" aria-hidden="true">
+                    <Icon name={theme === "dark" ? "moon" : "sun"} size={13} />
                   </span>
-                </div>
-                <div className="t-inline" style={{ gap: "var(--t-2)" }}>
-                  <button
-                    type="button"
-                    className={`t-btn t-btn--sm ${theme === "light" ? "t-btn--primary" : "t-btn--secondary"}`}
-                    onClick={() => theme !== "light" && toggleTheme()}
-                  >
-                    <Icon name="sun" size={16} />
-                    Light
-                  </button>
-                  <button
-                    type="button"
-                    className={`t-btn t-btn--sm ${theme === "dark" ? "t-btn--primary" : "t-btn--secondary"}`}
-                    onClick={() => theme !== "dark" && toggleTheme()}
-                  >
-                    <Icon name="moon" size={16} />
-                    Dark
-                  </button>
-                </div>
+                </button>
               </div>
             </div>
           </section>
@@ -133,7 +132,7 @@ export default function SettingsScreen() {
             </h2>
             <div className="t-card">
               <div className="t-fact" style={{ padding: "var(--t-3) var(--t-4)" }}>
-                <span className="t-fact__icon">
+                <span className="t-fact__icon t-fact__icon--accent">
                   <Icon name="pin" size={17} />
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>

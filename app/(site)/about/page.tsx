@@ -106,11 +106,48 @@ export default async function AboutPage() {
             </div>
           </section>
 
+          <section className="t-section">
+            <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
+              Photo credits
+            </h2>
+            <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
+              A few landmark photos are sourced from Wikimedia Commons under Creative
+              Commons licenses, which require attribution.
+            </p>
+            <div className="t-card" style={{ padding: "0 var(--t-4)" }}>
+              {PHOTO_CREDITS.map((c) => (
+                <div
+                  key={c.place}
+                  className="t-fact"
+                  style={{ justifyContent: "space-between", gap: "var(--t-3)" }}
+                >
+                  <span className="t-row__name">{c.place}</span>
+                  <span className="t-small t-muted" style={{ textAlign: "right", flex: "none" }}>
+                    {c.photographer} · {c.license}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
         </div>
       </main>
     </>
   );
 }
+
+const PHOTO_CREDITS: { place: string; photographer: string; license: string }[] = [
+  { place: "Volcanoes National Park", photographer: "Nina R", license: "CC BY 2.0" },
+  { place: "Akagera National Park", photographer: "Louis Dewame", license: "CC BY 3.0" },
+  { place: "Nyungwe Forest National Park", photographer: "Dpiskho", license: "CC BY-SA 4.0" },
+  { place: "Lake Kivu", photographer: "Rwejo", license: "CC BY-SA 4.0" },
+  { place: "Twin Lakes (Burera & Ruhondo)", photographer: "Rogerirakoze", license: "CC BY-SA 4.0" },
+  { place: "King's Palace Museum", photographer: "Guswen", license: "CC BY 3.0" },
+  { place: "Ethnographic Museum", photographer: "Amakuru", license: "CC BY-SA 3.0" },
+  { place: "Kandt House Museum", photographer: "Inezac", license: "CC BY-SA 4.0" },
+  { place: "Murambi Genocide Memorial", photographer: "Adam Jones", license: "CC BY-SA 4.0" },
+  { place: "Campaign Against Genocide Museum", photographer: "Emmanuel Kwizera", license: "CC BY-SA 4.0" },
+];
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (

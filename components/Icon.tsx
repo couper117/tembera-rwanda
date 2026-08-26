@@ -68,7 +68,17 @@ export type IconName =
   | "calendar"
   | "broom"
   | "bell"
-  | "mail";
+  | "bellOff"
+  | "mail"
+  // manoeuvres, for turn-by-turn directions
+  | "goStraight"
+  | "turnLeft"
+  | "turnRight"
+  | "slightLeft"
+  | "slightRight"
+  | "uturn"
+  | "roundabout"
+  | "destination";
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: IconName;
@@ -409,10 +419,71 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M9.8 19.5a2.3 2.3 0 0 0 4.4 0" />
     </>
   ),
+  bellOff: (
+    <>
+      <path d="M6 10.2a6 6 0 0 1 12 0c0 4 1.4 5.6 2 6.3H4c.6-.7 2-2.3 2-6.3z" />
+      <path d="M9.8 19.5a2.3 2.3 0 0 0 4.4 0" />
+      <path d="M4 3.6 20 20.4" />
+    </>
+  ),
   mail: (
     <>
       <rect x="3.5" y="5.5" width="17" height="13" rx="2.2" />
       <path d="m4.2 6.7 7.8 6.4 7.8-6.4" />
+    </>
+  ),
+
+  // Manoeuvre arrows. Each reads bottom-to-tip, so the stem is where you are
+  // and the head is where the turn puts you — the convention every navigation
+  // app uses, and the reason they stay legible at 18px in a step list.
+  goStraight: (
+    <>
+      <path d="M12 20V5.5" />
+      <path d="m6.5 11 5.5-5.5 5.5 5.5" />
+    </>
+  ),
+  turnRight: (
+    <>
+      <path d="M6.5 20v-8a3 3 0 0 1 3-3h8" />
+      <path d="m14 5.5 4 3.5-4 3.5" />
+    </>
+  ),
+  turnLeft: (
+    <>
+      <path d="M17.5 20v-8a3 3 0 0 0-3-3h-8" />
+      <path d="m10 5.5-4 3.5 4 3.5" />
+    </>
+  ),
+  slightRight: (
+    <>
+      <path d="M7.5 20v-6.4a3 3 0 0 1 .9-2.1L16 5" />
+      <path d="M11.5 5H16v4.5" />
+    </>
+  ),
+  slightLeft: (
+    <>
+      <path d="M16.5 20v-6.4a3 3 0 0 0-.9-2.1L8 5" />
+      <path d="M12.5 5H8v4.5" />
+    </>
+  ),
+  uturn: (
+    <>
+      <path d="M7.5 20v-9a4.5 4.5 0 0 1 9 0v3.5" />
+      <path d="m13 11 3.5 4 3.5-4" />
+    </>
+  ),
+  roundabout: (
+    <>
+      <circle cx="11" cy="10.5" r="4.5" />
+      <path d="M11 20v-5" />
+      <path d="M15.5 10.5h4.5" />
+      <path d="m17.5 8 2.5 2.5-2.5 2.5" />
+    </>
+  ),
+  destination: (
+    <>
+      <path d="M6.5 21V3.5" />
+      <path d="M6.5 4.5h11l-2.6 3.6 2.6 3.6h-11z" />
     </>
   ),
 };

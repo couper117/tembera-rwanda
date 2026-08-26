@@ -315,38 +315,48 @@
 .t-reviews {
   display: flex;
   flex-direction: column;
-  gap: var(--t-3, 14px);
+  gap: var(--t-3);
 }
 
 .t-review {
-  border: 1px solid var(--t-border, #eee);
-  border-radius: var(--t-r-md, 12px);
-  padding: var(--t-3, 12px) var(--t-4, 14px);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  padding: var(--t-3) var(--t-4);
 }
 
 .t-review__head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: var(--t-2, 8px);
-  margin-bottom: var(--t-1, 4px);
+  align-items: flex-start;
+  gap: var(--t-2);
+  margin-bottom: var(--t-1);
 }
 
 .t-review__author {
-  font-weight: 600;
-  font-size: var(--t-text-small, 14px);
+  font-weight: 700;
+  font-size: var(--t-text-small);
+  display: block;
+}
+
+.t-review__meta {
+  display: block;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
 }
 
 .t-review__stars {
-  color: #e6a417;
-  font-size: 13px;
-  letter-spacing: 1px;
+  display: inline-flex;
+  gap: 1px;
+  color: var(--t-gold);
+  flex: none;
 }
 
 .t-review__body {
-  margin: 0;
-  font-size: var(--t-text-small, 14px);
-  color: var(--t-ink-2, #556);
+  margin: var(--t-2) 0 0;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+  line-height: 1.5;
 }
 
 .t-ratingpick {
@@ -358,23 +368,26 @@
   background: none;
   border: 0;
   cursor: pointer;
-  font-size: 26px;
   line-height: 1;
-  color: var(--t-border-strong, #d3d3d3);
+  color: var(--t-border-strong);
   padding: 0;
-  transition: color var(--t-fast) var(--t-ease);
+  transition: color var(--t-fast) var(--t-ease), transform var(--t-fast) var(--t-ease);
+}
+
+.t-ratingpick button:hover {
+  transform: scale(1.08);
 }
 
 .t-ratingpick button[data-on="true"] {
-  color: #e6a417;
+  color: var(--t-gold);
 }
 
 .t-signin-note {
-  font-size: var(--t-text-small, 14px);
-  color: var(--t-ink-2, #667);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
 }
 
 .t-signin-note a {
-  color: var(--t-accent, #11694a);
+  color: var(--t-accent);
   font-weight: 600;
 }

@@ -43,41 +43,55 @@
   /* Kwibuka's commemoration colour — used only for the memorial calendar tag. */
   --t-violet: #5b4b8a;
   --t-violet-soft: #efeaf7;
+
+  /* Translucent chrome that blurs the page behind it — the bottom nav and the
+     sticky action bar. A token because these were hardcoded white, which stayed
+     white in dark mode and lit up the bottom of the screen. */
+  --t-glass: rgba(255, 255, 255, 0.92);
 }
 
+/* A plain neutral dark theme. The grounds are true greys with no colour cast
+   — the previous palette leaned blue, which read as a borrowed developer-tool
+   look rather than this product. Green stays the accent, as it is in light. */
 [data-theme="dark"] {
-  --t-bg: #0f1216;
-  --t-surface: #171b21;
-  --t-surface-2: #21262d;
-  --t-surface-3: #2d333b;
-  --t-border: #2d333b;
-  --t-border-strong: #444c56;
+  --t-bg: #121212;
+  --t-surface: #1b1b1b;
+  --t-surface-2: #242424;
+  --t-surface-3: #2e2e2e;
+  --t-border: #2c2c2c;
+  --t-border-strong: #434343;
 
-  --t-ink: #f0f3f6;
-  --t-ink-2: #adbac7;
-  --t-ink-3: #768390;
-  --t-ink-inverse: #0f1216;
+  --t-ink: #f2f2f2;
+  --t-ink-2: #b5b5b5;
+  --t-ink-3: #8a8a8a;
+  --t-ink-inverse: #121212;
 
-  --t-accent: #2eab75;
-  --t-accent-hover: #3fb984;
-  --t-accent-soft: #173729;
-  --t-accent-ink: #7ee7b8;
+  /* Lifted so it reads on a dark ground, without tipping into neon. */
+  --t-accent: #3f9e74;
+  --t-accent-hover: #4db083;
+  --t-accent-soft: #1c2c25;
+  --t-accent-ink: #8ad6ad;
 
-  --t-brand-deep: #3fb984;
+  --t-brand-deep: #4db083;
 
-  --t-gold: #e3b341;
-  --t-gold-soft: #372a10;
+  --t-gold: #dcaa4a;
+  --t-gold-soft: #2e2717;
 
-  --t-danger: #f85149;
-  --t-danger-soft: #3c1e1e;
+  --t-danger: #e5695e;
+  --t-danger-soft: #2f2020;
 
-  --t-violet: #b3a1e0;
-  --t-violet-soft: #29233d;
+  --t-violet: #a99ad6;
+  --t-violet-soft: #262231;
 
-  --t-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --t-shadow-raised: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --t-shadow-float: 0 8px 28px rgba(0, 0, 0, 0.6);
-  --t-shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.7);
+  --t-glass: rgba(27, 27, 27, 0.92);
+
+  /* Lighter than before: on a near-black ground a heavy black shadow reads as
+     grime rather than lift, so the raised surface carries the elevation and
+     the shadow only softens the edge. */
+  --t-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.32);
+  --t-shadow-raised: 0 4px 14px rgba(0, 0, 0, 0.38);
+  --t-shadow-float: 0 10px 30px rgba(0, 0, 0, 0.46);
+  --t-shadow-sheet: 0 -10px 34px rgba(0, 0, 0, 0.5);
 }
 
 :root {

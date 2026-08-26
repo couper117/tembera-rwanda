@@ -10,7 +10,8 @@ import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { groupTitle } from "@/lib/data/categories";
-import { getPlace, nearest } from "@/lib/data/places";
+import { getPlace, isSensitivePlace, nearest } from "@/lib/data/places";
+import { getThingsToDo } from "@/lib/places/activities";
 import { getCurrentUser } from "@/lib/auth";
 import { getPlaceReviews } from "@/lib/data/user";
 import type { Place } from "@/lib/places/types";
@@ -65,6 +66,9 @@ export default async function PlaceDetailPage({
     getCurrentUser(),
   ]);
 
+  const sensitive = isSensitivePlace(place);
+  const activities = getThingsToDo(place);
+
   return (
     <>
       <PageHeader title={place.name} fallbackHref="/explore" revealTitleOnScroll />
@@ -104,7 +108,7 @@ export default async function PlaceDetailPage({
                 <h1 className="t-display">{place.name}</h1>
 
                 <div className="t-detail__metarow">
-                  {place.rating !== undefined && (
+                  {!sensitive && place.rating !== undefined && (
                     <>
                       <span className="t-rating">
                         <Icon name="star" size={15} filled />
@@ -165,20 +169,55 @@ export default async function PlaceDetailPage({
                       value={`$${place.priceFrom} per night`}
                     />
                   )}
+
+                  {place.website && (
+                    <Fact
+                      icon="external"
+                      label="Website"
+                      value={
+                        <a href={place.website} target="_blank" rel="noopener noreferrer">
+                          {prettyHost(place.website)}
+                        </a>
+                      }
+                    />
+                  )}
                 </div>
 
-                {/* -------------------------------------- highlights --- */}
-                {place.highlights && place.highlights.length > 0 && (
+                {/* ------------------------------------ things to do --- */}
+                {activities.length > 0 && (
                   <section style={{ marginTop: "var(--t-6)" }}>
                     <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
-                      What to expect
+                      Things to do
                     </h2>
-                    <div className="t-inline t-wrap">
-                      {place.highlights.map((item) => (
-                        <span key={item} className="t-chip" style={{ cursor: "default" }}>
-                          <Icon name="check" size={14} />
-                          {item}
-                        </span>
+                    <div className="t-facts">
+                      {activities.map((a) => (
+                        <div key={a.label} className="t-activity">
+                          <span className="t-activity__icon">
+                            <Icon name={a.icon} size={18} />
+                          </span>
+                          <span className="t-body">{a.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* ---------------------------------------- gallery --- */}
+                {place.images && place.images.length > 0 && (
+                  <section style={{ marginTop: "var(--t-6)" }}>
+                    <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
+                      Photos
+                    </h2>
+                    <div className="t-scroller">
+                      {place.images.map((src, i) => (
+                        <div key={src} className="t-gallery__tile">
+                          <PlaceImage
+                            src={src}
+                            alt={`${place.name} photo ${i + 2}`}
+                            categoryId={place.categoryId}
+                            sizes="260px"
+                          />
+                        </div>
                       ))}
                     </div>
                   </section>
@@ -215,16 +254,28 @@ export default async function PlaceDetailPage({
               <SectionHeader
                 title="Ratings & reviews"
                 subtitle={
-                  reviews.length
-                    ? `${reviews.length} review${reviews.length > 1 ? "s" : ""}`
-                    : "Share your experience"
+                  sensitive
+                    ? undefined
+                    : reviews.length
+                      ? `${reviews.length} review${reviews.length > 1 ? "s" : ""}`
+                      : "Share your experience"
                 }
               />
-              <ReviewSection
-                placeId={place.id}
-                reviews={reviews}
-                currentUserId={currentUser?.id ?? null}
-              />
+              {sensitive ? (
+                <div className="t-notice">
+                  <Icon name="memorial" size={18} className="t-notice__icon" />
+                  <p className="t-notice__body">
+                    Reviews and ratings are turned off for this memorial site out of
+                    respect.
+                  </p>
+                </div>
+              ) : (
+                <ReviewSection
+                  placeId={place.id}
+                  reviews={reviews}
+                  currentUserId={currentUser?.id ?? null}
+                />
+              )}
             </section>
           </div>
         </div>
@@ -240,7 +291,7 @@ function Fact({
   label,
   value,
 }: {
-  icon: "clock" | "phone" | "pin" | "sparkle";
+  icon: "clock" | "phone" | "pin" | "sparkle" | "external";
   label: string;
   value: React.ReactNode;
 }) {
@@ -282,4 +333,13 @@ function locationLine(place: Place): string {
 
   if (!alreadyPlaced) parts.push(place.city);
   return [...new Set(parts)].join(", ");
+}
+
+/** "https://www.bkarena.rw/" -> "bkarena.rw" — readable in a fact row. */
+function prettyHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  }
 }

@@ -35,7 +35,12 @@ export default async function HomePage() {
 
   // Default "near you" list, measured from Kigali. The client swaps this for a
   // real one if the user shares their location.
-  const nearbyDefault = await nearest(KIGALI, { limit: 12 });
+  //
+  // requireImage: demo-only polish — a card with no photo looks unfinished on
+  // the homepage, so places without one are dropped here rather than shown
+  // with a placeholder. Other "nearest" call sites (map, place detail) keep
+  // every place regardless of image, since a pin doesn't need a photo.
+  const nearbyDefault = await nearest(KIGALI, { limit: 12, requireImage: true });
   const rated = await topRated(10);
   const cities = (await citySummaries()).slice(0, 8);
   const destinations = await featured(8);
@@ -119,7 +124,7 @@ export default async function HomePage() {
                     alt=""
                     className="t-city__img"
                     fallbackIcon="pin"
-                    sizes="148px"
+                    sizes="164px"
                   />
                   <span className="t-city__veil" />
                   <span className="t-city__body">
@@ -144,14 +149,14 @@ export default async function HomePage() {
                     key={collection.pageLink}
                     href={`/${collection.pageLink}`}
                     className="t-dest"
-                    style={{ aspectRatio: "4 / 3", width: 260 }}
+                    style={{ aspectRatio: "4 / 3", width: 230 }}
                   >
                     <PlaceImage
                       src={collection.imageUrl}
                       alt={collection.title}
                       className="t-dest__img"
                       fallbackIcon="sparkle"
-                      sizes="260px"
+                      sizes="230px"
                     />
                     <span className="t-dest__veil" />
                     <span className="t-dest__body">
@@ -187,7 +192,7 @@ export default async function HomePage() {
                       alt={place.name}
                       className="t-dest__img"
                       categoryId={place.categoryId}
-                      sizes="260px"
+                      sizes="230px"
                     />
                     <span className="t-dest__veil" />
                     <span className="t-dest__body">

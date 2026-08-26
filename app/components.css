@@ -202,7 +202,7 @@
   grid-auto-columns: 1fr;
   height: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--t-glass);
   backdrop-filter: saturate(160%) blur(16px);
   -webkit-backdrop-filter: saturate(160%) blur(16px);
   border-top: 1px solid var(--t-border);
@@ -450,7 +450,7 @@
   }
 
   .t-railmore:hover {
-    background: #d8e8df;
+    background: var(--t-accent-soft);
     color: var(--t-accent-ink);
   }
 
@@ -1099,6 +1099,24 @@
   color: var(--t-ink-inverse);
 }
 
+/* A place you've actually been, not a filter you can toggle — tinted rather
+   than the plain bordered default so the district strip on Profile reads as
+   a record, not another set of pressable pills. */
+.t-chip--visited {
+  background: var(--t-accent-soft);
+  border-color: transparent;
+  color: var(--t-accent-ink);
+}
+
+.t-chip--visited:hover {
+  border-color: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.t-chip--visited .t-chip__count {
+  opacity: 0.75;
+}
+
 /* ==================================================== section header === */
 
 .t-section {
@@ -1182,23 +1200,28 @@
 
 /* -- Place card: portrait, used in rails and grids ---------------------- */
 
+/* No card surface — no background, border or shadow. Just the photo, rounded,
+   with its caption below; the whole thing lifts on hover. */
 .t-place {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 220px;
-  border-radius: var(--t-r-lg);
-  transition: transform var(--t-base) var(--t-ease);
+  width: 240px;
+  transition: transform 180ms var(--t-ease);
+}
+
+.t-place:hover {
+  transform: translateY(-6px);
 }
 
 .t-place:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .t-place__media {
   position: relative;
   aspect-ratio: 4 / 3;
-  border-radius: var(--t-r-lg);
+  border-radius: var(--t-r-md);
   overflow: hidden;
   background: var(--t-surface-3);
 }
@@ -1214,21 +1237,16 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--t-slow) var(--t-ease);
-}
-
-.t-place:hover .t-place__img {
-  transform: scale(1.04);
 }
 
 .t-place__body {
-  padding: var(--t-3) 2px 0;
+  padding: var(--t-2) var(--t-1) 2px;
 }
 
 .t-place__name {
   font-size: var(--t-text-body);
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1.3;
 }
 
@@ -1236,9 +1254,10 @@
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: var(--t-text-small);
-  color: var(--t-ink-3);
+  color: var(--t-ink-2);
+  font-weight: 600;
   min-width: 0;
 }
 
@@ -1305,6 +1324,10 @@
   font-size: var(--t-text-body);
   font-weight: 650;
   letter-spacing: -0.015em;
+}
+
+.t-row__note {
+  margin-top: 3px;
 }
 
 .t-row__chev {
@@ -1416,6 +1439,9 @@
   background: var(--t-surface);
   border: 1px solid var(--t-border);
   border-radius: var(--t-r-xl);
+  /* Matches .t-card/.t-place/.t-cattile's resting shadow — without it this
+     was the one card type in the app with no lift off the page background. */
+  box-shadow: var(--t-shadow-card);
   transition: border-color var(--t-fast) var(--t-ease),
     box-shadow var(--t-base) var(--t-ease), transform var(--t-base) var(--t-ease);
 }
@@ -1440,9 +1466,9 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--t-r-md);
   background: var(--cat-bg, var(--t-surface-2));
   color: var(--cat-fg, var(--t-ink-2));
   transition: transform var(--t-base) var(--t-ease);
@@ -1499,29 +1525,28 @@
   padding: 0 var(--t-4) var(--t-4);
 }
 
-/* Outlined rather than filled: sixteen cards of solid grey pills buried the
-   category names underneath them. Colour arrives on hover instead. */
+/* Soft-filled, no border: sixteen cards of outlined pills stacked their own
+   borders on top of the card's border — a wall of boxes inside boxes. A quiet
+   fill still groups each chip as a tappable unit without that noise; colour
+   arrives on hover the same as before. */
 .t-subchip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 28px;
+  height: 26px;
   padding: 0 10px;
-  border: 1px solid var(--t-border);
   border-radius: var(--t-r-pill);
-  background: transparent;
+  background: var(--t-surface-2);
   color: var(--t-ink-2);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.005em;
   white-space: nowrap;
-  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease),
-    border-color var(--t-fast) var(--t-ease);
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease);
 }
 
 .t-subchip:hover {
   background: var(--cat-bg, var(--t-surface-2));
-  border-color: transparent;
   color: var(--cat-fg, var(--t-ink));
 }
 
@@ -1537,33 +1562,27 @@
   opacity: 0.7;
 }
 
-/* Subcategory with nothing behind it yet — present, but plainly inert. */
-.t-subchip--empty {
-  border-style: dashed;
-  color: var(--t-ink-3);
-  cursor: default;
-}
-
-.t-subchip--empty:hover {
-  background: transparent;
-  border-color: var(--t-border);
-  color: var(--t-ink-3);
-}
-
 /* -- Destination card (photo-led, used sparingly) ----------------------- */
 
 .t-dest {
   position: relative;
-  width: 260px;
+  width: 230px;
   aspect-ratio: 3 / 4;
   border-radius: var(--t-r-lg);
   overflow: hidden;
   background: var(--t-surface-3);
-  transition: transform var(--t-base) var(--t-ease);
+  transition: transform 180ms var(--t-ease);
+}
+
+/* The card lifts off the page — translateY alone, no shadow — instead of
+   the photo zooming inside its frame. Elevation reads as a native tile
+   interaction; a hover-zoomed photo is the web-only tell. */
+.t-dest:hover {
+  transform: translateY(-6px);
 }
 
 .t-dest:active {
-  transform: scale(0.985);
+  transform: scale(0.97);
 }
 
 .t-dest__img {
@@ -1572,11 +1591,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--t-slow) var(--t-ease);
-}
-
-.t-dest:hover .t-dest__img {
-  transform: scale(1.05);
 }
 
 .t-dest__veil {
@@ -1615,11 +1629,23 @@
 
 .t-city {
   position: relative;
-  width: 148px;
+  width: 164px;
   aspect-ratio: 1 / 1;
   border-radius: var(--t-r-md);
   overflow: hidden;
   background: var(--t-surface-3);
+  transition: transform 180ms var(--t-ease);
+}
+
+/* The card lifts off the page — translateY alone, no shadow — instead of
+   the photo zooming inside its frame. Elevation reads as a native tile
+   interaction; a hover-zoomed photo is the web-only tell. */
+.t-city:hover {
+  transform: translateY(-5px);
+}
+
+.t-city:active {
+  transform: scale(0.97);
 }
 
 .t-city__img {
@@ -1628,11 +1654,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--t-slow) var(--t-ease);
-}
-
-.t-city:hover .t-city__img {
-  transform: scale(1.06);
 }
 
 .t-city__veil {
@@ -1879,7 +1900,7 @@
 
 .t-skel--media {
   aspect-ratio: 4 / 3;
-  border-radius: var(--t-r-lg);
+  border-radius: var(--t-r-md);
 }
 
 .t-skel--line {
@@ -1962,7 +1983,7 @@
 
 .t-notice--danger {
   background: var(--t-danger-soft);
-  border-color: #f0d5d2;
+  border-color: color-mix(in srgb, var(--t-danger) 34%, transparent);
 }
 
 .t-notice--danger .t-notice__icon {
@@ -2057,6 +2078,30 @@ a.t-notice:hover {
 
   .t-sheet__grab {
     display: none;
+  }
+}
+
+/* ========================================================== popover == */
+
+.t-popover {
+  position: fixed;
+  /* Above .t-sheet (101): CityPicker's own popover can open while nested
+     inside the mobile "Browse categories" sheet and must render on top of it. */
+  z-index: 110;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  box-shadow: var(--t-shadow-float);
+  padding: var(--t-3);
+  animation: t-popover-in var(--t-fast) var(--t-ease);
+}
+
+@keyframes t-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
   }
 }
 
@@ -2187,13 +2232,20 @@ a.t-notice:hover {
 
 .t-fact__icon {
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  border-radius: var(--t-r-sm);
+  border-radius: var(--t-r-md);
   background: var(--t-surface-2);
   color: var(--t-ink-2);
+}
+
+/* Tinted rather than neutral — the Account/Settings menus, where every row
+   is a real destination, not a place-detail fact sitting next to a photo. */
+.t-fact__icon--accent {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
 }
 
 .t-fact__label {
@@ -2210,6 +2262,90 @@ a.t-notice:hover {
   overflow-wrap: anywhere;
 }
 
+/* "Things to do" — mirrors .t-fact's row/icon-chip sizing so it reads as a
+   sibling of the facts list, just accent-tinted instead of neutral. */
+.t-activity {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) 0;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-activity:last-child {
+  border-bottom: none;
+}
+
+.t-activity__icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+/* Detail-page photo gallery — extra shots beyond the hero, in a .t-scroller. */
+.t-gallery__tile {
+  flex: none;
+  width: 260px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--t-r-lg);
+  overflow: hidden;
+  background: var(--t-surface-3);
+}
+
+.t-gallery__tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A real switch — track plus a sliding knob — for a row that's plainly a
+   boolean (dark mode on/off), instead of a pair of buttons standing in for
+   one. `role="switch"` + `aria-checked` on the trigger element. */
+.t-toggle {
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 27px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-3);
+  border: 1px solid var(--t-border);
+  transition: background var(--t-fast) var(--t-ease), border-color var(--t-fast) var(--t-ease);
+}
+
+/* A real element, not a pseudo-element — so a glyph (sun/moon) can sit
+   inside the knob and travel with it, instead of just an empty dot. */
+.t-toggle__knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  /* Always white, not a token — the knob sits on the track, not the page, and
+     has to read against both the grey (off) and green (on) fill either theme. */
+  background: #fff;
+  color: var(--t-ink-3);
+  box-shadow: var(--t-shadow-card);
+  transition: transform var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease);
+}
+
+.t-toggle[aria-checked="true"] {
+  background: var(--t-accent);
+  border-color: var(--t-accent);
+}
+
+.t-toggle[aria-checked="true"] .t-toggle__knob {
+  transform: translateX(19px);
+  color: var(--t-accent);
+}
+
 /* Sticky action bar on mobile detail pages. */
 .t-actionbar {
   position: fixed;
@@ -2220,7 +2356,7 @@ a.t-notice:hover {
   display: flex;
   gap: var(--t-2);
   padding: var(--t-3) var(--t-gutter);
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--t-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--t-border);
@@ -2262,13 +2398,13 @@ a.t-notice:hover {
   min-height: 0;
 }
 
+/* Full-bleed map at every width — the same overlay UI as mobile, rather than
+   a docked results panel eating a third of a desktop screen. */
 @media (min-width: 1024px) {
   .t-map {
     height: calc(100dvh - var(--t-header-h));
-    display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
-    /* The rail is fixed, so the map has to step around it exactly as .t-main
-       does — otherwise its side panel hides underneath the sidebar. */
+    /* The app's left navigation rail is fixed, so the map steps around it
+       exactly as .t-main does — otherwise it renders underneath. */
     padding-left: var(--t-rail-w);
     transition: padding-left var(--t-rail-anim);
   }
@@ -2278,14 +2414,6 @@ a.t-notice:hover {
   position: absolute;
   inset: 0;
   background: var(--t-surface-2);
-}
-
-@media (min-width: 1024px) {
-  .t-map__canvas {
-    position: relative;
-    inset: auto;
-    height: 100%;
-  }
 }
 
 .t-map__overlay {
@@ -2300,76 +2428,36 @@ a.t-notice:hover {
   pointer-events: auto;
 }
 
+/* The chip row sits on live map tiles, so it fades back to the page colour
+   for legibility. Token-driven: the old hardcoded cream was the light
+   background baked in, and washed out to a pale smear over a dark map. */
+.t-map__filters {
+  background: linear-gradient(to bottom, var(--t-bg) 45%, transparent);
+  padding-bottom: var(--t-2);
+}
+
+/* Sits directly above whatever occupies the bottom — the card rail, or the
+   selected-place sheet. `margin-top: auto` is what pushes it (and everything
+   after it) down, so the offset stays correct at any height instead of the
+   hardcoded bottom inset this used to carry. */
 .t-map__controls {
-  position: absolute;
-  right: var(--t-3);
-  bottom: 210px;
+  margin-top: auto;
+  align-self: flex-end;
+  margin-right: var(--t-3);
+  margin-bottom: var(--t-3);
   display: flex;
   flex-direction: column;
   gap: var(--t-2);
 }
 
-/* Desktop map gets a real side panel instead of a sheet. */
-.t-map__panel {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .t-map__panel {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    border-right: 1px solid var(--t-border);
-    background: var(--t-surface);
-  }
-
-  .t-map__controls {
-    bottom: 42px;
-  }
-}
-
-/* Search and filters stay put; only the results scroll. The chip row brings
-   its own gutter, so the head pads vertically and lets each child inset. */
-.t-map__panelhead {
-  flex: none;
-  padding-top: var(--t-4);
-  border-bottom: 1px solid var(--t-border);
-}
-
-.t-map__panelhead .t-searchlink {
-  margin: 0 var(--t-gutter);
-}
-
-.t-map__panelbody {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--t-3) var(--t-3) var(--t-6);
-}
-
-/* Panel rows act on the map, so they are buttons, not links. */
-.t-maprow {
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-}
-
-.t-maprow[aria-current] {
-  background: var(--t-accent-soft);
-}
-
-/* Peeking card rail over the map on mobile. */
+/* Peeking card rail over the map — same at every width now, no separate
+   desktop side panel. */
 .t-map__rail {
-  margin-top: auto;
   padding-bottom: var(--t-3);
 }
 
-@media (min-width: 1024px) {
-  .t-map__rail {
-    display: none;
-  }
-}
-
+/* The rail's resting shadow is functional, not decoration — these float over
+   live map tiles and need to separate from whatever is underneath them. */
 .t-mapcard {
   display: flex;
   gap: var(--t-3);
@@ -2378,6 +2466,18 @@ a.t-notice:hover {
   background: var(--t-surface);
   border-radius: var(--t-r-md);
   box-shadow: var(--t-shadow-float);
+  cursor: pointer;
+  transition: transform 180ms var(--t-ease);
+}
+
+/* Now that the rail shows on desktop too there is a pointer to answer. Lift
+   only — the matching pin lighting up on the map is the real feedback. */
+.t-mapcard:hover {
+  transform: translateY(-3px);
+}
+
+.t-mapcard:active {
+  transform: scale(0.97);
 }
 
 .t-mapcard__media {
@@ -2395,62 +2495,392 @@ a.t-notice:hover {
   object-fit: cover;
 }
 
-/* Bottom sheet over the map: selected place, or the active route. */
+/* Bottom sheet over the map: selected place, or the active route. The
+   controls above own the `margin-top: auto` that pushes this to the bottom.
+   Padding lives on the body, so the place card's photo can run to the edges. */
 .t-map__sheet {
-  margin: auto var(--t-gutter) var(--t-3);
-  padding: var(--t-3);
+  margin: 0 var(--t-gutter) var(--t-3);
   border-radius: var(--t-r-lg);
   background: var(--t-surface);
   box-shadow: var(--t-shadow-float);
+  overflow: hidden;
 }
 
+.t-mapsheet__body {
+  padding: var(--t-4);
+}
+
+/* Photo-led header. The place you tapped is a place — leading with a real
+   photograph is what separates this from a tooltip with buttons. */
+.t-mapsheet__hero {
+  position: relative;
+  height: 132px;
+  background: var(--t-surface-3);
+}
+
+.t-mapsheet__hero img,
+.t-mapsheet__hero > .t-imgfallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Save keeps its own corner; close takes the one it would otherwise sit in. */
+.t-mapsheet__hero .t-save {
+  right: auto;
+  left: var(--t-2);
+}
+
+.t-mapsheet__close {
+  position: absolute;
+  top: var(--t-2);
+  right: var(--t-2);
+  width: 34px;
+  height: 34px;
+}
+
+.t-mapsheet__topline {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-bottom: var(--t-2);
+}
+
+/* Tinted from the same palette as the pin on the map, so the card visibly
+   belongs to the marker that opened it. */
+.t-mapsheet__cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 var(--t-2);
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.t-mapsheet__topline .t-rating {
+  margin-left: auto;
+  flex: none;
+}
+
+.t-mapsheet__title {
+  font-size: var(--t-text-title);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.t-mapsheet__sub {
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+  font-weight: 600;
+}
+
+/* The way out when in-app routing fails — the trip still happens, just in
+   Google Maps. */
+.t-mapsheet__falllink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--t-2);
+  font-weight: 700;
+  color: var(--t-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.t-mapsheet__actions {
+  display: flex;
+  gap: var(--t-2);
+  margin-top: var(--t-4);
+}
+
+.t-mapsheet__actions > * {
+  flex: 1;
+}
+
+/* Bottom-right on a wide screen: it sits under the map controls in the same
+   corner, leaving the map itself — and the card rail along the bottom —
+   unobstructed. Full width on mobile, where there is no spare corner. */
 @media (min-width: 1024px) {
   .t-map__sheet {
-    max-width: 380px;
+    width: 400px;
     margin-left: auto;
     margin-right: var(--t-4);
     margin-bottom: var(--t-4);
   }
 }
 
-/* Turn-by-turn list, rendered in the app rather than handing off to Maps. */
-.t-route {
-  margin-top: var(--t-3);
-  max-height: 200px;
-  overflow-y: auto;
+/* ========================================================= navigation == */
+
+/* Map above, guidance below on a phone; side by side once there is width for
+   the map to stay useful while you read. */
+.t-nav {
   display: flex;
   flex-direction: column;
-  gap: var(--t-2);
+  height: 100dvh;
 }
 
-.t-route__step {
-  display: flex;
+.t-nav__map {
+  position: relative;
+  flex: none;
+  height: 38vh;
+  background: var(--t-surface-2);
+}
+
+.t-nav__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.t-nav__nomap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
   gap: var(--t-2);
+  padding: var(--t-4);
+  text-align: center;
+  color: var(--t-ink-3);
+}
+
+.t-nav__panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--t-4) var(--t-gutter) var(--t-8);
+  background: var(--t-bg);
+}
+
+@media (min-width: 1024px) {
+  .t-nav {
+    flex-direction: row;
+  }
+
+  .t-nav__map {
+    flex: 1;
+    height: auto;
+  }
+
+  .t-nav__panel {
+    flex: none;
+    width: 420px;
+    border-left: 1px solid var(--t-border);
+  }
+}
+
+.t-nav__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-bottom: var(--t-4);
+}
+
+.t-nav__dest {
+  display: block;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.t-nav__trip {
+  display: block;
   font-size: var(--t-text-small);
   color: var(--t-ink-2);
-  line-height: 1.4;
+  font-weight: 600;
 }
 
-.t-route__n {
+/* The instruction you are on. Deliberately the largest thing on the screen —
+   it is read at a glance, often at speed. */
+.t-nav__now {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  padding: var(--t-4);
+  border-radius: var(--t-r-lg);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-nav__nowicon {
   flex: none;
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+}
+
+.t-nav__nowtext {
+  display: block;
+  font-size: var(--t-text-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.t-nav__nowdist {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.t-nav__then {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-top: var(--t-2);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+  font-weight: 600;
+}
+
+.t-nav__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-top: var(--t-4);
+}
+
+.t-nav__controls > .t-btn {
+  flex: 1;
+}
+
+.t-nav__count {
+  flex: none;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-nav__loading {
+  display: grid;
+  place-items: center;
+  gap: var(--t-3);
+  padding: var(--t-8) 0;
+}
+
+/* The whole route, with the step you are on picked out. */
+.t-nav__all {
+  max-height: none;
+  margin-top: var(--t-5);
+}
+
+.t-nav__all .t-route__step[aria-current] .t-route__text {
+  color: var(--t-accent-ink);
+  font-weight: 800;
+}
+
+.t-nav__all .t-route__step[aria-current] .t-route__icon {
+  background: var(--t-accent);
+  color: #fff;
+}
+
+/* Turn-by-turn list, rendered in the app rather than handing off to Maps. */
+/* Trip header. Time is the headline — it is the number anyone deciding
+   whether to go actually reads — with distance and arrival under it. */
+.t-route__eta {
+  display: block;
+  font-size: var(--t-text-title);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t-accent-ink);
+  line-height: 1.1;
+}
+
+.t-route__summary {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  color: var(--t-ink-2);
+}
+
+.t-route__dest {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-route {
+  margin-top: var(--t-3);
+  max-height: 210px;
+  overflow-y: auto;
+  border-top: 1px solid var(--t-border);
+}
+
+/* A row per manoeuvre: arrow, instruction, then how far you hold it. The
+   hairline between rows is what makes a list of turns scannable. */
+.t-route__step {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) 0;
+  border-bottom: 1px solid var(--t-border);
+  font-size: var(--t-text-small);
+  line-height: 1.35;
+}
+
+.t-route__step:last-child {
+  border-bottom: none;
+}
+
+.t-route__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--t-accent-soft);
   color: var(--t-accent-ink);
-  font-size: 11px;
+}
+
+.t-route__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--t-ink);
+  font-weight: 600;
+}
+
+.t-route__dist {
+  flex: none;
+  font-size: var(--t-text-micro);
   font-weight: 700;
+  color: var(--t-ink-3);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ============================================================ profile == */
 
 .t-profile {
+  position: relative;
+  overflow: hidden;
   padding: var(--t-5);
 }
 
+/* A quiet presence, not decoration — fades out well above the bio/meta text
+   so it never fights with body copy. Existing tokens only. */
+.t-profile::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 132px;
+  background: linear-gradient(180deg, var(--t-accent-soft), transparent);
+  pointer-events: none;
+}
+
 .t-profile__top {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--t-4);
@@ -2465,12 +2895,13 @@ a.t-notice:hover {
   flex: none;
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
-  background: var(--t-accent-soft);
+  background: linear-gradient(155deg, var(--t-accent-soft), var(--t-surface));
+  box-shadow: inset 0 0 0 1px var(--t-border), var(--t-shadow-card);
   color: var(--t-accent-ink);
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -2513,6 +2944,23 @@ a.t-notice:hover {
   align-items: center;
   gap: 2px;
   text-align: center;
+  /* Also usable as a <button> — reset so it reads identically to the plain
+     div version until the tap feedback below kicks in. */
+  background: none;
+  border: none;
+  padding: var(--t-1) 0;
+  border-radius: var(--t-r-sm);
+  font: inherit;
+  color: inherit;
+}
+
+button.t-profile__stat {
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--t-ease);
+}
+
+button.t-profile__stat:active {
+  transform: scale(0.96);
 }
 
 .t-profile__statvalue {
@@ -2520,6 +2968,16 @@ a.t-notice:hover {
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+}
+
+.t-profile__statlabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.t-profile__statlabel svg {
+  color: var(--t-accent-ink);
 }
 
 .t-profile__actions {

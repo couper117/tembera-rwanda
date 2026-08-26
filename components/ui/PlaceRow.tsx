@@ -19,6 +19,8 @@ interface Props {
    * *that place*, not from wherever the reader happens to be.
    */
   measureFrom?: Coords;
+  /** Extra line under the rating/distance row — e.g. "Visited 3 days ago". */
+  note?: string;
 }
 
 /** Compact list row — used in search results, saved, and the map panel. */
@@ -27,6 +29,7 @@ export default function PlaceRow({
   trailing,
   showDistance = true,
   measureFrom,
+  note,
 }: Props) {
   const { origin } = useLocation();
   const from = measureFrom ?? origin;
@@ -69,6 +72,7 @@ export default function PlaceRow({
           )}
           {distance && <span>{distance} away</span>}
         </div>
+        {note && <div className="t-row__note t-small t-muted">{note}</div>}
       </div>
 
       {trailing ?? (

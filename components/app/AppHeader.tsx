@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/Icon";
 import BottomSheet from "@/components/ui/BottomSheet";
+import Popover from "@/components/ui/Popover";
 import { useAccount } from "@/lib/client/account";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
@@ -31,7 +32,9 @@ export default function AppHeader() {
   const scrolled = useScrolled();
   const pathname = usePathname();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const catButtonRef = useRef<HTMLButtonElement>(null);
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { authed, isAdmin } = useAccount();
@@ -50,6 +53,7 @@ export default function AppHeader() {
   // it — the link looked dead on mobile.
   useEffect(() => {
     setCategoriesOpen(false);
+    setCatPopoverOpen(false);
     setNotificationsOpen(false);
   }, [pathname]);
 
@@ -88,9 +92,28 @@ export default function AppHeader() {
             <Icon name="search" size={20} />
           </Link>
 
+          {/* Desktop: the rail already covers navigation, so this is a quick
+              dropdown onto the full category tree (with subcategories) that
+              the rail trims for space. Anchored under the button — location
+              already has its own chip right next to it. */}
+          <button
+            ref={catButtonRef}
+            type="button"
+            className="t-iconbtn t-show-desktop"
+            aria-label="Browse categories"
+            aria-haspopup="dialog"
+            aria-expanded={catPopoverOpen}
+            onClick={() => setCatPopoverOpen((v) => !v)}
+            title="Categories"
+          >
+            <Icon name="grid" size={20} />
+          </button>
+
+          {/* Mobile/tablet: no rail, so this is the only way in — bundles
+              location and the full category tree into one sheet. */}
           <button
             type="button"
-            className="t-iconbtn"
+            className="t-iconbtn t-hide-desktop"
             aria-label="Browse categories and location"
             aria-haspopup="dialog"
             onClick={() => setCategoriesOpen(true)}
@@ -148,6 +171,13 @@ export default function AppHeader() {
           )}
         </div>
       </header>
+
+      <Popover open={catPopoverOpen} anchorRef={catButtonRef} onClose={() => setCatPopoverOpen(false)} width={340}>
+        <p className="t-label" style={{ marginBottom: "var(--t-3)" }}>
+          Categories
+        </p>
+        <CategoryNav summaries={summaries} />
+      </Popover>
 
       {/* The rail is desktop-only, so this sheet is how phones reach the
           full category tree. */}
