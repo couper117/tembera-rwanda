@@ -4,15 +4,18 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Icon from "@/components/Icon";
-import { resolveIconName } from "@/components/ui/categoryIcon";
+import Icon, { type IconName } from "@/components/Icon";
+import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
 import EmptyState from "@/components/ui/EmptyState";
 import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceRow from "@/components/ui/PlaceRow";
+import SaveButton from "@/components/ui/SaveButton";
 import Spinner from "@/components/ui/Spinner";
 import { useCategories } from "@/lib/client/categories";
 import { useLocation } from "@/lib/client/location";
+import { isSensitivePlace } from "@/lib/places/engine";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
+import { externalRoute, fetchRoute, type Route } from "@/lib/places/routing";
 import type { Place } from "@/lib/places/types";
 import { MAP_STYLE, MIN_ZOOM, PLACE_ZOOM, RWANDA_BOUNDS, pinIcon } from "./rwandaMap";
 
@@ -38,17 +41,14 @@ type MapStatus =
   | "keyrejected"
   /** Script never loaded — network, blocker, offline. */
   | "failed";
-type TravelMode = "DRIVING" | "WALKING";
 
-interface RouteSummary {
-  distance: string;
-  duration: string;
-  steps: string[];
-  destination: string;
-}
-
-/** Markers rendered at once. Beyond this the map turns into a pin cushion. */
-const MAX_MARKERS = 80;
+/**
+ * Places the map opens framed on. Every place is plotted, but fitting all of
+ * them means opening on the whole country — and with most listings in Kigali
+ * that is a wall of pins in one corner. Framing the nearest handful opens
+ * somewhere useful; "show all results" and the category filter both refit.
+ */
+const INITIAL_FIT = 40;
 
 export default function MapScreen({ places, apiKey }: Props) {
   const { origin, coords, requestLocation, originLabel } = useLocation();
@@ -58,18 +58,21 @@ export default function MapScreen({ places, apiKey }: Props) {
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
-  const dirServiceRef = useRef<any>(null);
-  const dirRendererRef = useRef<any>(null);
+  /** The drawn route. Ours to draw now that OSRM only returns the geometry. */
+  const routeLineRef = useRef<any>(null);
+  /** Which pin is currently drawn in its active state, if any. */
+  const litRef = useRef<string | null>(null);
 
   const [status, setStatus] = useState<MapStatus>(apiKey ? "loading" : "nokey");
   const [category, setCategory] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [route, setRoute] = useState<RouteSummary | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [route, setRoute] = useState<Route | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
   const [routing, setRouting] = useState(false);
-  const [travelMode, setTravelMode] = useState<TravelMode>("DRIVING");
 
-  /** Nearest first, so the cap keeps the most relevant pins. */
+  /** Every matching place, nearest first — the rail and the initial framing
+   *  both read off the top of this, so the order carries the relevance. */
   const visible = useMemo(() => {
     return places
       .filter(
@@ -80,9 +83,24 @@ export default function MapScreen({ places, apiKey }: Props) {
       )
       .map((p) => ({ place: p, km: distanceKm(origin, { lat: p.lat!, lng: p.lng! }) }))
       .sort((a, b) => a.km - b.km)
-      .slice(0, MAX_MARKERS)
       .map((x) => x.place);
   }, [places, category, origin]);
+
+  /** Colour and glyph per category, straight off the live taxonomy so an admin
+   *  swapping a category's icon moves its pins with it. The pale `bg` tints the
+   *  chip on the place card, so the card echoes the pin you just tapped. */
+  const pinStyle = useMemo(() => {
+    const styles = new Map<string, { icon: IconName; fg: string; bg: string }>();
+    for (const group of categories) {
+      const color = categoryColor(group.id);
+      styles.set(group.id, {
+        icon: resolveIconName(group.icon),
+        fg: color.fg,
+        bg: color.bg,
+      });
+    }
+    return styles;
+  }, [categories]);
 
   const selected = visible.find((p) => p.id === selectedId) ?? null;
 
@@ -95,13 +113,15 @@ export default function MapScreen({ places, apiKey }: Props) {
    * useless — nearly every listing is in Kigali, so it renders as one pin in an
    * empty map. Fitting the pins is what a map beside a list is for.
    */
-  const fitPlaces = useCallback(() => {
+  const fitPlaces = useCallback((limit?: number) => {
     const google = window.google;
     const map = mapRef.current;
     if (!map || !google?.maps) return;
 
+    // `visible` is nearest-first, so a limit frames the closest results.
+    const list = limit ? visibleRef.current.slice(0, limit) : visibleRef.current;
     const bounds = new google.maps.LatLngBounds();
-    for (const place of visibleRef.current) bounds.extend({ lat: place.lat!, lng: place.lng! });
+    for (const place of list) bounds.extend({ lat: place.lat!, lng: place.lng! });
 
     if (bounds.isEmpty()) {
       bounds.extend({ lat: RWANDA_BOUNDS.south, lng: RWANDA_BOUNDS.west });
@@ -136,8 +156,10 @@ export default function MapScreen({ places, apiKey }: Props) {
         minZoom: MIN_ZOOM,
         disableDefaultUI: true,
         // Pinch handles zoom on a phone; on a desktop people expect buttons.
+        // Centre-right keeps them clear of both the filter row along the top
+        // and our own recentre/fit cluster above the card rail.
         zoomControl: wide,
-        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
         clickableIcons: false,
         gestureHandling: "greedy",
       });
@@ -146,7 +168,7 @@ export default function MapScreen({ places, apiKey }: Props) {
       // This waits for the first idle: called any earlier the map hasn't
       // measured its container yet and fits against a default size, landing on
       // the same zoom on a phone as on a desktop.
-      google.maps.event.addListenerOnce(mapRef.current, "idle", () => fitPlaces());
+      google.maps.event.addListenerOnce(mapRef.current, "idle", () => fitPlaces(INITIAL_FIT));
 
       setStatus("ready");
     };
@@ -176,6 +198,10 @@ export default function MapScreen({ places, apiKey }: Props) {
 
   /* --------------------------------------------------------- place pins */
 
+  // Pins are rebuilt only when the result set itself changes. Selecting or
+  // pointing at a place repaints the existing pins in the effect below
+  // instead — tearing down and recreating every marker on the map for each
+  // click would stutter badly now that the whole catalogue is plotted.
   useEffect(() => {
     if (status !== "ready" || !mapRef.current || !window.google?.maps) return;
     const google = window.google;
@@ -183,17 +209,51 @@ export default function MapScreen({ places, apiKey }: Props) {
 
     for (const marker of markersRef.current) marker.setMap(null);
     markersRef.current = visible.map((place) => {
+      const style = pinStyle.get(place.categoryId);
       const marker = new google.maps.Marker({
         position: { lat: place.lat!, lng: place.lng! },
         map,
         title: place.name,
-        icon: pinIcon(google, place.id === selectedId),
-        zIndex: place.id === selectedId ? 10 : 5,
+        icon: pinIcon(google, { icon: style?.icon, color: style?.fg }),
+        zIndex: 5,
       });
       marker.addListener("click", () => setSelectedId(place.id));
       return marker;
     });
-  }, [visible, status, selectedId]);
+    // Fresh pins are all drawn unlit; the effect below re-lights the current
+    // one rather than this pass having to know about selection.
+    litRef.current = null;
+  }, [visible, status, pinStyle]);
+
+  /**
+   * Light the pin for whichever place is selected, or the card currently under
+   * the pointer — hovering a card and watching its pin answer is what ties the
+   * rail to the map. Only the two pins whose state actually changed are
+   * repainted: sweeping all ~500 on every pointer move visibly stutters.
+   */
+  useEffect(() => {
+    const google = window.google;
+    if (status !== "ready" || !google?.maps) return;
+
+    // Selection wins over hover. The rail is the only thing that sets a hover
+    // id and it unmounts once a place is selected, so that id can go stale.
+    const lit = selectedId ?? hoveredId;
+    if (lit === litRef.current) return;
+
+    const paint = (id: string | null, active: boolean) => {
+      if (!id) return;
+      const i = visible.findIndex((p) => p.id === id);
+      const marker = markersRef.current[i];
+      if (!marker) return;
+      const style = pinStyle.get(visible[i].categoryId);
+      marker.setIcon(pinIcon(google, { icon: style?.icon, color: style?.fg, active }));
+      marker.setZIndex(active ? 10 : 5);
+    };
+
+    paint(litRef.current, false);
+    paint(lit, true);
+    litRef.current = lit;
+  }, [visible, status, selectedId, hoveredId, pinStyle]);
 
   /**
    * Changing the filter changes the answer, so the map reframes onto it — a
@@ -251,59 +311,45 @@ export default function MapScreen({ places, apiKey }: Props) {
   }, [coords, requestLocation]);
 
   const clearRoute = useCallback(() => {
-    dirRendererRef.current?.setMap(null);
-    dirRendererRef.current = null;
+    routeLineRef.current?.setMap(null);
+    routeLineRef.current = null;
     setRoute(null);
     setRouteError(null);
   }, []);
 
   /** Draws the route on our own map — no hand-off to an external app. */
   const showDirections = useCallback(
-    (place: Place, mode: TravelMode) => {
+    async (place: Place) => {
       const google = window.google;
       const map = mapRef.current;
       if (!google?.maps || !map || place.lat === undefined || place.lng === undefined) return;
 
       setRouting(true);
       setRouteError(null);
-      setTravelMode(mode);
 
-      dirServiceRef.current ??= new google.maps.DirectionsService();
-      dirRendererRef.current ??= new google.maps.DirectionsRenderer({
+      const result = await fetchRoute(origin, place);
+      setRouting(false);
+
+      if (!result.ok) {
+        setRouteError(result.error);
+        return;
+      }
+
+      routeLineRef.current?.setMap(null);
+      routeLineRef.current = new google.maps.Polyline({
         map,
-        suppressMarkers: true,
-        polylineOptions: { strokeColor: "#11694a", strokeWeight: 5, strokeOpacity: 0.9 },
+        path: result.route.path,
+        strokeColor: "#11694a",
+        strokeWeight: 5,
+        strokeOpacity: 0.9,
       });
 
-      dirServiceRef.current.route(
-        {
-          origin,
-          destination: { lat: place.lat, lng: place.lng },
-          travelMode: google.maps.TravelMode[mode],
-        },
-        (result: any, requestStatus: string) => {
-          setRouting(false);
-          if (requestStatus !== "OK" || !result?.routes?.length) {
-            setRouteError(
-              requestStatus === "ZERO_RESULTS"
-                ? "No route found between those two points."
-                : "Directions aren't available right now.",
-            );
-            return;
-          }
-          dirRendererRef.current.setDirections(result);
-          const leg = result.routes[0].legs[0];
-          setRoute({
-            destination: place.name,
-            distance: leg.distance?.text ?? "",
-            duration: leg.duration?.text ?? "",
-            // Instructions arrive as HTML; render them as plain text.
-            steps: leg.steps.map((s: any) =>
-              String(s.instructions ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
-            ),
-          });
-        },
-      );
+      // Frame the whole trip, not just its end points.
+      const bounds = new google.maps.LatLngBounds();
+      for (const point of result.route.path) bounds.extend(point);
+      if (!bounds.isEmpty()) map.fitBounds(bounds, 64);
+
+      setRoute(result.route);
     },
     [origin],
   );
@@ -383,38 +429,6 @@ export default function MapScreen({ places, apiKey }: Props) {
 
   return (
     <div className="t-map">
-      {/* --------------------------------------------- desktop panel -- */}
-      <aside className="t-map__panel">
-        <div className="t-map__panelhead">
-          <Link href="/search" className="t-searchlink" style={{ height: 42 }}>
-            <Icon name="search" size={18} />
-            <span>Search places…</span>
-          </Link>
-          {filters}
-        </div>
-
-        <div className="t-map__panelbody">
-          <p className="t-small t-muted" style={{ padding: "0 var(--t-2) var(--t-2)" }}>
-            {visible.length} {visible.length === 1 ? "place" : "places"} on the map · nearest to{" "}
-            {originLabel}
-          </p>
-          <div className="t-list">
-            {visible.map((place) => (
-              <PanelRow
-                key={place.id}
-                place={place}
-                active={place.id === selectedId}
-                distance={formatDistanceFor(
-                  distanceKm(origin, { lat: place.lat!, lng: place.lng! }),
-                  place.coordsPrecision,
-                )}
-                onSelect={() => focus(place)}
-              />
-            ))}
-          </div>
-        </div>
-      </aside>
-
       {/* ---------------------------------------------------- canvas -- */}
       <div className="t-map__stage">
         <div className="t-map__canvas" ref={canvasRef} />
@@ -426,12 +440,7 @@ export default function MapScreen({ places, apiKey }: Props) {
         )}
 
         <div className="t-map__overlay">
-          <div
-            className="t-hide-desktop"
-            style={{ background: "linear-gradient(rgba(250,249,247,.96), rgba(250,249,247,0))" }}
-          >
-            {filters}
-          </div>
+          <div className="t-map__filters">{filters}</div>
 
           {status === "ready" && (
             <div className="t-map__controls">
@@ -446,7 +455,7 @@ export default function MapScreen({ places, apiKey }: Props) {
               <button
                 type="button"
                 className="t-iconbtn t-iconbtn--solid"
-                onClick={fitPlaces}
+                onClick={() => fitPlaces()}
                 aria-label="Show all results on the map"
               >
                 <Icon name="map" size={19} />
@@ -457,33 +466,17 @@ export default function MapScreen({ places, apiKey }: Props) {
           {/* Selected place card + in-app directions. */}
           {status === "ready" && selected && !route && (
             <div className="t-map__sheet">
-              <div className="t-inline">
-                <span className="t-mapcard__media">
-                  <PlaceImage
-                    src={selected.image}
-                    alt=""
-                    categoryId={selected.categoryId}
-                    sizes="60px"
-                  />
-                </span>
-                <span style={{ minWidth: 0, flex: 1 }}>
-                  <span className="t-row__name t-truncate" style={{ display: "block" }}>
-                    {selected.name}
-                  </span>
-                  <span className="t-place__meta">
-                    <span className="t-truncate">{selected.subcategory}</span>
-                    <span className="t-place__sep" aria-hidden="true" />
-                    <span>
-                      {formatDistanceFor(
-                        distanceKm(origin, { lat: selected.lat!, lng: selected.lng! }),
-                        selected.coordsPrecision,
-                      )}
-                    </span>
-                  </span>
-                </span>
+              <div className="t-mapsheet__hero">
+                <PlaceImage
+                  src={selected.image}
+                  alt=""
+                  categoryId={selected.categoryId}
+                  sizes="(min-width: 1024px) 420px, 100vw"
+                />
+                <SaveButton placeId={selected.id} placeName={selected.name} />
                 <button
                   type="button"
-                  className="t-iconbtn"
+                  className="t-iconbtn t-iconbtn--solid t-mapsheet__close"
                   aria-label="Close"
                   onClick={() => setSelectedId(null)}
                 >
@@ -491,96 +484,168 @@ export default function MapScreen({ places, apiKey }: Props) {
                 </button>
               </div>
 
-              <div className="t-inline" style={{ marginTop: "var(--t-3)" }}>
-                <button
-                  type="button"
-                  className="t-btn t-btn--primary t-btn--sm"
-                  style={{ flex: 1 }}
-                  onClick={() => showDirections(selected, "DRIVING")}
-                  disabled={routing}
-                >
-                  {routing ? (
-                    <Spinner size={16} tone="current" label="Finding a route" />
-                  ) : (
-                    <Icon name="navigate" size={16} />
-                  )}
-                  Directions
-                </button>
-                <Link
-                  href={`/place/${selected.id}`}
-                  className="t-btn t-btn--secondary t-btn--sm"
-                  style={{ flex: 1 }}
-                >
-                  Details
-                </Link>
-              </div>
+              <div className="t-mapsheet__body">
+                <div className="t-mapsheet__topline">
+                  {(() => {
+                    const style = pinStyle.get(selected.categoryId);
+                    return (
+                      <span
+                        className="t-mapsheet__cat"
+                        style={
+                          style ? { background: style.bg, color: style.fg } : undefined
+                        }
+                      >
+                        {style && <Icon name={style.icon} size={13} />}
+                        {selected.subcategory}
+                      </span>
+                    );
+                  })()}
 
-              {routeError && (
-                <div className="t-notice t-notice--danger" style={{ marginTop: "var(--t-2)" }}>
-                  <span className="t-notice__icon">
-                    <Icon name="alert" size={16} />
-                  </span>
-                  <div className="t-notice__body">{routeError}</div>
+                  {/* Memorials and anything flagged sensitive carry no rating. */}
+                  {!isSensitivePlace(selected) && selected.rating !== undefined && (
+                    <span className="t-rating">
+                      <Icon name="star" size={14} filled />
+                      {selected.rating.toFixed(1)}
+                    </span>
+                  )}
                 </div>
-              )}
+
+                <h2 className="t-mapsheet__title t-truncate">{selected.name}</h2>
+
+                <p className="t-mapsheet__sub t-truncate">
+                  {selected.area ?? selected.city}
+                  {(() => {
+                    const away = formatDistanceFor(
+                      distanceKm(origin, { lat: selected.lat!, lng: selected.lng! }),
+                      selected.coordsPrecision,
+                    );
+                    return away ? ` · ${away} away` : "";
+                  })()}
+                </p>
+
+                <div className="t-mapsheet__actions">
+                  <button
+                    type="button"
+                    className="t-btn t-btn--primary"
+                    onClick={() => showDirections(selected)}
+                    disabled={routing}
+                  >
+                    {routing ? (
+                      <Spinner size={16} tone="current" label="Finding a route" />
+                    ) : (
+                      <Icon name="navigate" size={16} />
+                    )}
+                    Directions
+                  </button>
+                  <Link href={`/place/${selected.id}`} className="t-btn t-btn--secondary">
+                    Details
+                    <Icon name="chevronRight" size={16} />
+                  </Link>
+                </div>
+
+                {routeError && (
+                  <div className="t-notice t-notice--danger" style={{ marginTop: "var(--t-3)" }}>
+                    <span className="t-notice__icon">
+                      <Icon name="alert" size={16} />
+                    </span>
+                    <div className="t-notice__body">
+                      {routeError}
+                      {(() => {
+                        const href = externalRoute(origin, selected);
+                        return href ? (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="t-mapsheet__falllink"
+                          >
+                            Open the route in Google Maps
+                            <Icon name="external" size={14} />
+                          </a>
+                        ) : null;
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Route summary, rendered on our own map. */}
           {status === "ready" && route && (
             <div className="t-map__sheet">
-              <div className="t-inline">
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="t-row__name t-truncate" style={{ display: "block" }}>
-                    To {route.destination}
+              <div className="t-mapsheet__body">
+                <div className="t-inline" style={{ alignItems: "flex-start" }}>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span className="t-route__eta">{route.duration}</span>
+                    <span className="t-route__summary">
+                      {route.distance} · arrive {route.arriveAt}
+                    </span>
+                    <span className="t-route__dest t-truncate">to {route.destination}</span>
                   </span>
-                  <span className="t-small t-muted">
-                    {route.duration} · {route.distance}
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  className="t-iconbtn"
-                  aria-label="Clear route"
-                  onClick={clearRoute}
-                >
-                  <Icon name="close" size={18} />
-                </button>
-              </div>
-
-              <div
-                className="t-inline"
-                style={{ marginTop: "var(--t-2)" }}
-                role="group"
-                aria-label="Travel mode"
-              >
-                {(["DRIVING", "WALKING"] as TravelMode[]).map((mode) => (
                   <button
-                    key={mode}
                     type="button"
-                    className="t-chip t-chip--sm"
-                    aria-pressed={travelMode === mode}
-                    onClick={() => selected && showDirections(selected, mode)}
+                    className="t-iconbtn"
+                    aria-label="Clear route"
+                    onClick={clearRoute}
                   >
-                    {mode === "DRIVING" ? "Drive" : "Walk"}
+                    <Icon name="close" size={18} />
                   </button>
-                ))}
-              </div>
+                </div>
 
-              <ol className="t-route">
-                {route.steps.slice(0, 12).map((step, i) => (
-                  <li key={i} className="t-route__step">
-                    <span className="t-route__n">{i + 1}</span>
-                    {step}
-                  </li>
-                ))}
-              </ol>
+                {selected && (
+                  <Link
+                    href={`/navigate/${selected.id}`}
+                    className="t-btn t-btn--primary t-btn--block"
+                    style={{ marginTop: "var(--t-3)" }}
+                  >
+                    <Icon name="navigate" size={16} />
+                    Start journey
+                  </Link>
+                )}
+
+                {/* A preview, not the whole route — the full guided list lives
+                    on the navigation screen, where there is room to read it. */}
+                <ol className="t-route">
+                  {route.steps.slice(0, 3).map((step, i) => (
+                    <li key={i} className="t-route__step">
+                      <span className="t-route__icon">
+                        <Icon name={step.icon} size={17} />
+                      </span>
+                      <span className="t-route__text">{step.text}</span>
+                      {step.distance && (
+                        <span className="t-route__dist">{step.distance}</span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+
+                {route.steps.length > 3 && (
+                  <p className="t-small t-muted" style={{ marginTop: "var(--t-2)" }}>
+                    and {route.steps.length - 3} more steps
+                  </p>
+                )}
+
+                {/* OpenStreetMap's licence asks for the credit, and it is also
+                    the honest label for whose roads these directions describe. */}
+                <p className="t-small t-muted" style={{ marginTop: "var(--t-3)" }}>
+                  Driving route via OSRM · ©{" "}
+                  <a
+                    href="https://www.openstreetmap.org/copyright"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    OpenStreetMap
+                  </a>{" "}
+                  contributors
+                </p>
+              </div>
             </div>
           )}
 
           {/* Peeking card rail on mobile when nothing is selected. */}
           {status === "ready" && !selected && !route && (
-            <div className="t-map__rail t-hide-desktop">
+            <div className="t-map__rail">
               <div
                 className="t-scroller"
                 style={{ marginInline: 0, paddingInline: "var(--t-gutter)" }}
@@ -591,6 +656,10 @@ export default function MapScreen({ places, apiKey }: Props) {
                     type="button"
                     className="t-mapcard"
                     onClick={() => focus(place)}
+                    onMouseEnter={() => setHoveredId(place.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    onFocus={() => setHoveredId(place.id)}
+                    onBlur={() => setHoveredId(null)}
                   >
                     <span className="t-mapcard__media">
                       <PlaceImage
@@ -616,56 +685,5 @@ export default function MapScreen({ places, apiKey }: Props) {
         </div>
       </div>
     </div>
-  );
-}
-
-/**
- * A panel row drives the map rather than navigating away — clicking pans to the
- * pin and opens its card, which is what a list beside a map is for. The place
- * page is one tap further, from that card.
- */
-function PanelRow({
-  place,
-  active,
-  distance,
-  onSelect,
-}: {
-  place: Place;
-  active: boolean;
-  distance?: string;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="t-row t-maprow"
-      aria-current={active || undefined}
-      onClick={onSelect}
-    >
-      <span className="t-row__media">
-        <PlaceImage
-          src={place.image}
-          alt=""
-          className="t-row__img"
-          categoryId={place.categoryId}
-          sizes="68px"
-        />
-      </span>
-      <span className="t-row__body">
-        <span className="t-row__name t-truncate" style={{ display: "block" }}>
-          {place.name}
-        </span>
-        <span className="t-place__meta">
-          <span className="t-truncate">{place.subcategory}</span>
-          <span className="t-place__sep" aria-hidden="true" />
-          <span>{place.area ?? place.city}</span>
-        </span>
-        {distance && (
-          <span className="t-place__meta">
-            <span>{distance} away</span>
-          </span>
-        )}
-      </span>
-    </button>
   );
 }
