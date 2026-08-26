@@ -19,7 +19,7 @@ export const MAP_ROWS: MapRow[] = [
     lng: 30.0577,
     type: "History",
     rating: 4.9,
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Kigali_Genocide_Memorial_Centre.jpg/200px-Kigali_Genocide_Memorial_Centre.jpg",
+    img: "https://i.assetzen.net/i/j6wGs3oQ8F9T/w:1165/h:480/q:70.jpg",
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ export const MAP_ROWS: MapRow[] = [
     lng: 30.0606,
     type: "Hotel",
     rating: 4.5,
-    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200",
+    img: "https://images.unsplash.com/photo-1746549859840-808544238d42?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 3,

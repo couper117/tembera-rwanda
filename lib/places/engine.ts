@@ -19,6 +19,16 @@ export function cityGroup(place: Place): string {
 }
 
 /**
+ * Whether reviews/ratings should be hidden for this place: every place in the
+ * memorials category by default, plus anything an admin has individually
+ * flagged as sensitive (e.g. genocide-related places seeded under a
+ * different category, like the Campaign Against Genocide museum).
+ */
+export function isSensitivePlace(place: Pick<Place, "categoryId" | "sensitive">): boolean {
+  return place.sensitive === true || place.categoryId === "memorials";
+}
+
+/**
  * A few legacy image URLs are known-dead. Skip them when *choosing* a hero
  * image; cards still attempt them and fall back visually if they 404.
  */
@@ -90,6 +100,56 @@ export interface CitySummary {
   image?: string;
 }
 
+/**
+ * A city card should show the city, not whichever listing happened to have
+ * a photo first — that picked up bulk-seeded ADEPR church images (one wrong
+ * video thumbnail, several copies of the exact same stock photo) for most
+ * districts. Hand-picked real photos for every district shown on "Browse by
+ * city" and the /explore "Cities & districts" grid; anything not yet covered
+ * here still falls back to a listing's own image below.
+ */
+const CITY_IMAGES: Record<string, string> = {
+  Kigali: "https://images.unsplash.com/photo-1687986261123-b17f08f2796c?auto=format&fit=crop&w=800&q=80",
+  Musanze: "/assets/images/wonder_volcanoes_national_park.jpg",
+  Huye: "/assets/images/historic_ethnographic_museum.jpg",
+  Rubavu: "https://images.unsplash.com/photo-1589715718565-223fdf9b7cd4?auto=format&fit=crop&w=800&q=80",
+  Karongi: "/assets/images/rwanda_lake_kivu_sunset.jpg",
+  Burera: "/assets/images/wonder_twin_lakes_burera_ruhondo.jpg",
+  Nyamagabe: "/assets/images/wonder_nyungwe_forest_national_park.jpg",
+  Bugesera: "https://images.unsplash.com/photo-1772734446447-3c850b026f4f?auto=format&fit=crop&w=800&q=80",
+  // The historic royal capital — Rwanda's kings were crowned and buried here.
+  Nyanza: "/assets/images/historic_kings_palace_museum.jpg",
+  // Akagera National Park's main entrance sits in Kayonza.
+  Kayonza: "/assets/images/wonder_akagera_national_park.jpg",
+  // Cyangugu, Rusizi's capital, on the southern tip of Lake Kivu.
+  Rusizi: "https://live.staticflickr.com/7310/9008089727_e7418eb5d5_b.jpg",
+  Nyagatare: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Vache_dans_la_rue_principale_de_Nyagatare.JPG/960px-Vache_dans_la_rue_principale_de_Nyagatare.JPG",
+  Rutsiro: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Kivu_lake_view_from_Rutsiro_tea_plantations.jpg/960px-Kivu_lake_view_from_Rutsiro_tea_plantations.jpg",
+  // Rusumo hydropower station, on the Tanzania border in Kirehe.
+  Kirehe: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Rusumo_hydropower.jpg/960px-Rusumo_hydropower.jpg",
+  Gakenke: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Farmers_to_the_market%2CGakenke%2C_Rwanda.jpg/1280px-Farmers_to_the_market%2CGakenke%2C_Rwanda.jpg",
+  // Sorwathe, a real tea estate in Gicumbi's Kinihira sector.
+  Gicumbi: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Sorwathe_Tea_Plantation%2C_Rwanda.jpg/1280px-Sorwathe_Tea_Plantation%2C_Rwanda.jpg",
+  // Muhanga was known as Gitarama before Rwanda's 2006 district reform.
+  Muhanga: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Rwanda_Gitarama_landscape.JPG/1280px-Rwanda_Gitarama_landscape.JPG",
+  Nyamasheke: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Where_tea_meets_primary_rainforest_in_Nyungwe.jpg/1280px-Where_tea_meets_primary_rainforest_in_Nyungwe.jpg",
+  Rwamagana: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Canoe_on_Lake_Muhazi%2C_Rwanda%2C_Africa.jpg/960px-Canoe_on_Lake_Muhazi%2C_Rwanda%2C_Africa.jpg",
+  // 2nd-prize Wiki Loves Africa 2024 entry, shot in Nyabihu District.
+  Nyabihu: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Gusarura_Icyayi.jpg/960px-Gusarura_Icyayi.jpg",
+  Ngoma: "https://images.pexels.com/photos/30066938/pexels-photo-30066938.jpeg?auto=compress&cs=tinysrgb&w=800",
+  Gatsibo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Banana_plantation_in_Gatsibo.jpg/960px-Banana_plantation_in_Gatsibo.jpg",
+  // No Gisagara-specific shot found — a generic but honestly-captioned
+  // Rwanda hill-country photo rather than a mislabeled stand-in.
+  Gisagara: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Rwanda_landscape_Image.jpg/960px-Rwanda_landscape_Image.jpg",
+  Kamonyi: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Ruyenzi_mountains.jpg/960px-Ruyenzi_mountains.jpg",
+  Ngororero: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Gishwati_Farmland%2C_Western_Rwanda.jpg/960px-Gishwati_Farmland%2C_Western_Rwanda.jpg",
+  Nyaruguru: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Rwanda_Tea_Plantations.jpg/1280px-Rwanda_Tea_Plantations.jpg",
+  // The Agaseke basket — Rwanda's peace-and-reconciliation symbol — has a
+  // monument in Ruhango town; no clean landscape shot of the district exists.
+  Ruhango: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Agaseke_monument_in_Ruhango_Town_Rwanda.jpg/960px-Agaseke_monument_in_Ruhango_Town_Rwanda.jpg",
+  Rulindo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Rulindo%27s_Beautiful_Landscapes.jpg/1280px-Rulindo%27s_Beautiful_Landscapes.jpg",
+};
+
 export function citySummaries(places: Place[]): CitySummary[] {
   const map = new Map<string, CitySummary>();
   for (const place of places) {
@@ -98,6 +158,9 @@ export function citySummaries(places: Place[]): CitySummary[] {
     entry.count += 1;
     if (!entry.image && isRenderableImage(place.image)) entry.image = place.image;
     map.set(name, entry);
+  }
+  for (const entry of map.values()) {
+    if (CITY_IMAGES[entry.name]) entry.image = CITY_IMAGES[entry.name];
   }
   return [...map.values()].sort((a, b) => b.count - a.count);
 }
@@ -111,14 +174,15 @@ export function citySummaries(places: Place[]): CitySummary[] {
 export function nearest(
   places: Place[],
   origin: Coords,
-  options: { limit?: number; categoryId?: string; maxKm?: number } = {},
+  options: { limit?: number; categoryId?: string; maxKm?: number; requireImage?: boolean } = {},
 ): PlaceWithDistance[] {
-  const { limit = 12, categoryId, maxKm } = options;
+  const { limit = 12, categoryId, maxKm, requireImage } = options;
   const out: PlaceWithDistance[] = [];
 
   for (const place of places) {
     if (categoryId && place.categoryId !== categoryId) continue;
     if (place.lat === undefined || place.lng === undefined) continue;
+    if (requireImage && !isRenderableImage(place.image)) continue;
     const km = distanceKm(origin, { lat: place.lat, lng: place.lng });
     if (maxKm !== undefined && km > maxKm) continue;
     out.push({ ...place, distanceKm: km });
@@ -202,5 +266,9 @@ export function buildSearchIndex(places: Place[]): Place[] {
     rating: place.rating,
     image: place.image,
     keywords: place.keywords,
+    // One boolean, but without it every screen fed by this index would have to
+    // fall back to the category check alone and would show a rating on a
+    // memorial that an admin flagged sensitive from outside that category.
+    sensitive: place.sensitive,
   }));
 }

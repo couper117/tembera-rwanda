@@ -20,5 +20,5 @@ export const RESTAURANT_ROWS: RestaurantRow[] = [
   { name: "Repub Lounge", rate: "4.8", quote: "Authentic flavors with a view of the city lights.", img: "https://images.unsplash.com/photo-1552566626-52f8b828add9", lat: -1.9501, lng: 30.0622 },
   { name: "Poivre Noir", rate: "4.6", quote: "French-Belgian fusion with a cozy, artistic vibe.", img: "https://images.unsplash.com/photo-1559339352-11d035aa65de", lat: -1.9460, lng: 30.0600 },
   { name: "Meze Fresh", rate: "4.5", quote: "The best Mexican burritos in Kigali. Fast and fresh.", img: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47", lat: -1.9490, lng: 30.0630 },
-  { name: "Camellia Tea", rate: "4.4", quote: "A bustling local favorite for tea and quick bites.", img: "https://images.unsplash.com/photo-1576489022157-76984da21907", lat: -1.9440, lng: 30.0620 },
+  { name: "Camellia Tea", rate: "4.4", quote: "A bustling local favorite for tea and quick bites.", img: "https://images.unsplash.com/photo-1601923157894-eb2f7fffd7d7", lat: -1.9440, lng: 30.0620 },
 ];
