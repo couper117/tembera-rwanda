@@ -2,10 +2,29 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import Icon from "@/components/Icon";
 import { login, type LoginState } from "../actions";
-import styles from "../admin.module.css";
 
 const initialState: LoginState = {};
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="a-login">
+      <div className="a-login__card">
+        <div className="a-brand" style={{ marginBottom: "var(--t-5)" }}>
+          <span className="a-brand__mark">
+            <Icon name="pin" size={18} />
+          </span>
+          <span className="a-brand__text">
+            Tembera
+            <span className="a-brand__sub">Admin</span>
+          </span>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 /**
  * @param signedInEmail  The email of a NON-admin who is already signed in, or
@@ -21,91 +40,83 @@ export default function AdminLoginForm({
 
   if (signedInEmail) {
     return (
-      <div className={styles.loginWrap}>
-        <div className={styles.loginCard}>
-          <h1 className={styles.loginBrand}>Tembera</h1>
-          <p className={styles.loginSub}>Admin access</p>
-
-          <p className={styles.error}>
-            You&apos;re signed in as <strong>{signedInEmail}</strong>, but this
-            account doesn&apos;t have admin access.
-          </p>
-
-          <Link
-            href="/"
-            className={`${styles.btn} ${styles.btnPrimary}`}
-            style={{ justifyContent: "center", textDecoration: "none" }}
-          >
-            Back to Tembera
-          </Link>
-
-          <form action="/logout" method="post">
-            <input type="hidden" name="redirectTo" value="/admin/login" />
-            <button
-              type="submit"
-              className={styles.btn}
-              style={{ justifyContent: "center", width: "100%", marginTop: 8 }}
-            >
-              Sign out and use an admin account
-            </button>
-          </form>
+      <Shell>
+        <div className="t-notice t-notice--danger" style={{ marginBottom: "var(--t-4)" }}>
+          <span className="t-notice__icon">
+            <Icon name="lock" size={16} />
+          </span>
+          <div className="t-notice__body">
+            You&apos;re signed in as <strong>{signedInEmail}</strong>, but this account
+            doesn&apos;t have admin access.
+          </div>
         </div>
-      </div>
+
+        <Link href="/" className="t-btn t-btn--primary t-btn--block">
+          Back to Tembera
+        </Link>
+
+        <form action="/logout" method="post" style={{ marginTop: "var(--t-2)" }}>
+          <input type="hidden" name="redirectTo" value="/admin/login" />
+          <button type="submit" className="t-btn t-btn--secondary t-btn--block">
+            Sign out and use an admin account
+          </button>
+        </form>
+      </Shell>
     );
   }
 
   return (
-    <div className={styles.loginWrap}>
-      <div className={styles.loginCard}>
-        <h1 className={styles.loginBrand}>Tembera</h1>
-        <p className={styles.loginSub}>Admin sign in</p>
+    <Shell>
+      <form action={formAction} className="a-form">
+        <div className="a-field">
+          <label className="a-label" htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            className="a-input"
+            autoComplete="username"
+            required
+          />
+        </div>
 
-        <form action={formAction} className={styles.form}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              className={styles.input}
-              autoComplete="username"
-              required
-            />
+        <div className="a-field">
+          <label className="a-label" htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            className="a-input"
+            autoComplete="current-password"
+            required
+          />
+        </div>
+
+        {state?.error && (
+          <div className="t-notice t-notice--danger">
+            <span className="t-notice__icon">
+              <Icon name="alert" size={16} />
+            </span>
+            <div className="t-notice__body">{state.error}</div>
           </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              className={styles.input}
-              autoComplete="current-password"
-              required
-            />
-          </div>
+        )}
 
-          {state?.error && <p className={styles.error}>{state.error}</p>}
+        <button
+          type="submit"
+          className="t-btn t-btn--primary t-btn--block"
+          disabled={pending}
+        >
+          {pending ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
 
-          <button
-            type="submit"
-            className={`${styles.btn} ${styles.btnPrimary}`}
-            disabled={pending}
-            style={{ justifyContent: "center" }}
-          >
-            {pending ? "Signing in…" : "Sign In"}
-          </button>
-        </form>
-
-        <p className={styles.loginSub} style={{ marginTop: 16 }}>
-          <Link href="/" style={{ color: "inherit" }}>
-            ← Back to Tembera
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="t-small t-muted" style={{ marginTop: "var(--t-4)", textAlign: "center" }}>
+        <Link href="/">← Back to Tembera</Link>
+      </p>
+    </Shell>
   );
 }

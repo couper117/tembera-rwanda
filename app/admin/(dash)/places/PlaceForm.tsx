@@ -7,7 +7,6 @@ import {
   updatePlace,
   type PlaceFormState,
 } from "./actions";
-import styles from "../admin.module.css";
 
 export interface PlaceFormValues {
   id?: string;
@@ -22,13 +21,16 @@ export interface PlaceFormValues {
   coordsPrecision: "exact" | "district" | "unknown";
   rating: string;
   image: string;
+  images: string;
   description: string;
   hours: string;
   phone: string;
   mapLink: string;
+  website: string;
   highlights: string;
   priceFrom: string;
   keywords: string;
+  sensitive: boolean;
 }
 
 export interface CategoryOption {
@@ -56,33 +58,33 @@ export default function PlaceForm({
     categories.find((c) => c.id === categoryId)?.subcategories ?? [];
 
   return (
-    <form action={formAction} className={styles.form}>
+    <form action={formAction} className="a-form">
       {mode === "edit" && <input type="hidden" name="id" defaultValue={values.id} />}
 
-      {state?.error && <p className={styles.error}>{state.error}</p>}
+      {state?.error && <p className="a-error">{state.error}</p>}
 
-      <div className={styles.grid2}>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="name">
+      <div className="a-grid2">
+        <div className="a-field">
+          <label className="a-label" htmlFor="name">
             Name *
           </label>
           <input
             id="name"
             name="name"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.name}
             required
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="categoryId">
+        <div className="a-field">
+          <label className="a-label" htmlFor="categoryId">
             Category *
           </label>
           <select
             id="categoryId"
             name="categoryId"
-            className={styles.select}
+            className="a-select"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             required
@@ -96,14 +98,14 @@ export default function PlaceForm({
           </select>
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="subcategory">
+        <div className="a-field">
+          <label className="a-label" htmlFor="subcategory">
             Subcategory *
           </label>
           <input
             id="subcategory"
             name="subcategory"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.subcategory}
             list="subcategory-options"
             required
@@ -113,50 +115,50 @@ export default function PlaceForm({
               <option key={s} value={s} />
             ))}
           </datalist>
-          <span className={styles.hint}>
+          <span className="a-hint">
             Should match one of the category&apos;s subcategories.
           </span>
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="subtype">
+        <div className="a-field">
+          <label className="a-label" htmlFor="subtype">
             Subtype
           </label>
           <input
             id="subtype"
             name="subtype"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.subtype}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="city">
+        <div className="a-field">
+          <label className="a-label" htmlFor="city">
             City *
           </label>
           <input
             id="city"
             name="city"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.city}
             required
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="area">
+        <div className="a-field">
+          <label className="a-label" htmlFor="area">
             Area
           </label>
           <input
             id="area"
             name="area"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.area}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="lat">
+        <div className="a-field">
+          <label className="a-label" htmlFor="lat">
             Latitude
           </label>
           <input
@@ -164,13 +166,13 @@ export default function PlaceForm({
             name="lat"
             type="number"
             step="any"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.lat}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="lng">
+        <div className="a-field">
+          <label className="a-label" htmlFor="lng">
             Longitude
           </label>
           <input
@@ -178,19 +180,19 @@ export default function PlaceForm({
             name="lng"
             type="number"
             step="any"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.lng}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="coordsPrecision">
+        <div className="a-field">
+          <label className="a-label" htmlFor="coordsPrecision">
             Coords precision
           </label>
           <select
             id="coordsPrecision"
             name="coordsPrecision"
-            className={styles.select}
+            className="a-select"
             defaultValue={values.coordsPrecision}
           >
             <option value="exact">exact</option>
@@ -199,8 +201,8 @@ export default function PlaceForm({
           </select>
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="rating">
+        <div className="a-field">
+          <label className="a-label" htmlFor="rating">
             Rating
           </label>
           <input
@@ -210,13 +212,13 @@ export default function PlaceForm({
             step="any"
             min="0"
             max="5"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.rating}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="priceFrom">
+        <div className="a-field">
+          <label className="a-label" htmlFor="priceFrom">
             Price from
           </label>
           <input
@@ -224,107 +226,144 @@ export default function PlaceForm({
             name="priceFrom"
             type="number"
             step="1"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.priceFrom}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="phone">
+        <div className="a-field">
+          <label className="a-label" htmlFor="phone">
             Phone
           </label>
           <input
             id="phone"
             name="phone"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.phone}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="hours">
+        <div className="a-field">
+          <label className="a-label" htmlFor="hours">
             Hours
           </label>
           <input
             id="hours"
             name="hours"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.hours}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="image">
+        <div className="a-field">
+          <label className="a-label" htmlFor="image">
             Image URL
           </label>
           <input
             id="image"
             name="image"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.image}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="mapLink">
+        <div className="a-field">
+          <label className="a-label" htmlFor="mapLink">
             Map link
           </label>
           <input
             id="mapLink"
             name="mapLink"
-            className={styles.input}
+            className="a-input"
             defaultValue={values.mapLink}
           />
         </div>
+
+        <div className="a-field">
+          <label className="a-label" htmlFor="website">
+            Website
+          </label>
+          <input
+            id="website"
+            name="website"
+            className="a-input"
+            placeholder="https://…"
+            defaultValue={values.website}
+          />
+        </div>
+
+        <div className="a-field">
+          <label className="a-label">Sensitive</label>
+          <div className="a-checkrow">
+            <input type="checkbox" name="sensitive" defaultChecked={values.sensitive} />
+            <span className="a-hint">
+              Hides ratings &amp; reviews out of respect. The memorials category is
+              sensitive by default — check this only for places outside it.
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="description">
+      <div className="a-field">
+        <label className="a-label" htmlFor="description">
           Description
         </label>
         <textarea
           id="description"
           name="description"
-          className={styles.textarea}
+          className="a-textarea"
           defaultValue={values.description}
         />
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="highlights">
+      <div className="a-field">
+        <label className="a-label" htmlFor="highlights">
           Highlights
         </label>
         <input
           id="highlights"
           name="highlights"
-          className={styles.input}
+          className="a-input"
           defaultValue={values.highlights}
         />
-        <span className={styles.hint}>Comma-separated.</span>
+        <span className="a-hint">Comma-separated.</span>
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="keywords">
+      <div className="a-field">
+        <label className="a-label" htmlFor="images">
+          Gallery photos
+        </label>
+        <input
+          id="images"
+          name="images"
+          className="a-input"
+          defaultValue={values.images}
+        />
+        <span className="a-hint">Comma-separated image URLs, shown below the hero photo.</span>
+      </div>
+
+      <div className="a-field">
+        <label className="a-label" htmlFor="keywords">
           Keywords
         </label>
         <input
           id="keywords"
           name="keywords"
-          className={styles.input}
+          className="a-input"
           defaultValue={values.keywords}
         />
-        <span className={styles.hint}>Comma-separated.</span>
+        <span className="a-hint">Comma-separated.</span>
       </div>
 
-      <div className={styles.btnRow}>
+      <div className="t-inline t-wrap">
         <button
           type="submit"
-          className={`${styles.btn} ${styles.btnPrimary}`}
+          className="t-btn t-btn--primary"
           disabled={pending}
         >
           {pending ? "Saving…" : mode === "edit" ? "Update place" : "Create place"}
         </button>
-        <Link href="/admin/places" className={`${styles.btn} ${styles.btnSecondary}`}>
+        <Link href="/admin/places" className="t-btn t-btn--secondary">
           Cancel
         </Link>
       </div>

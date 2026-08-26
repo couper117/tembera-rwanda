@@ -41,16 +41,23 @@ export interface Place {
   /** Only present when the source actually carried one. Never invented. */
   rating?: number;
   image?: string;
+  /** Extra photos for the detail page's gallery, beyond `image`. */
+  images?: string[];
   description?: string;
   hours?: string;
   phone?: string;
   /** External maps link supplied by the source, if any. */
   mapLink?: string;
+  /** The place's own site, distinct from `mapLink`. */
+  website?: string;
   highlights?: string[];
   /** Nightly rate for stays. */
   priceFrom?: number;
   /** Extra keywords folded into search (cuisine, craft, "atm"…). */
   keywords?: string[];
+  /** Admin override to hide ratings/reviews. Use isSensitivePlace(), which
+   *  also treats every "memorials" category place as sensitive by default. */
+  sensitive?: boolean;
 }
 
 /** A place plus the distance from wherever the user currently is. */

@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { PageHead, Panel } from "@/components/admin/ui";
 import { prisma } from "@/lib/prisma";
-import AdminShell from "../../AdminShell";
 import PlaceForm, { type CategoryOption, type PlaceFormValues } from "../PlaceForm";
-import styles from "../../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +10,6 @@ export default async function EditPlacePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const admin = await requireAdmin();
   const { id } = await params;
 
   const [place, cats] = await Promise.all([
@@ -44,28 +41,24 @@ export default async function EditPlacePage({
     coordsPrecision: place.coordsPrecision,
     rating: place.rating?.toString() ?? "",
     image: place.image ?? "",
+    images: place.images.join(", "),
     description: place.description ?? "",
     hours: place.hours ?? "",
     phone: place.phone ?? "",
     mapLink: place.mapLink ?? "",
+    website: place.website ?? "",
     highlights: place.highlights.join(", "),
     priceFrom: place.priceFrom?.toString() ?? "",
     keywords: place.keywords.join(", "),
+    sensitive: place.sensitive,
   };
 
   return (
-    <AdminShell email={admin.email}>
-      <div className={styles.pageHead}>
-        <div>
-          <h1 className={styles.pageTitle}>Edit place</h1>
-          <p className={styles.pageSub}>
-            id: <code>{place.id}</code> (immutable)
-          </p>
-        </div>
-      </div>
-      <div className={styles.panel}>
+    <>
+      <PageHead title={place.name} sub={`id: ${place.id} — immutable`} />
+      <Panel title="Details">
         <PlaceForm mode="edit" values={values} categories={categories} />
-      </div>
-    </AdminShell>
+      </Panel>
+    </>
   );
 }

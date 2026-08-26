@@ -39,13 +39,16 @@ function parse(formData: FormData) {
     coordsPrecision: formData.get("coordsPrecision"),
     rating: formData.get("rating"),
     image: formData.get("image"),
+    images: formData.get("images"),
     description: formData.get("description"),
     hours: formData.get("hours"),
     phone: formData.get("phone"),
     mapLink: formData.get("mapLink"),
+    website: formData.get("website"),
     highlights: formData.get("highlights"),
     priceFrom: formData.get("priceFrom"),
     keywords: formData.get("keywords"),
+    sensitive: formData.get("sensitive"),
   });
 }
 
@@ -82,13 +85,16 @@ export async function createPlace(
       coordsPrecision: d.coordsPrecision,
       rating: d.rating,
       image: d.image,
+      images: d.images,
       description: d.description,
       hours: d.hours,
       phone: d.phone,
       mapLink: d.mapLink,
+      website: d.website,
       highlights: d.highlights,
       priceFrom: d.priceFrom,
       keywords: d.keywords,
+      sensitive: d.sensitive,
     },
   });
 
@@ -130,13 +136,16 @@ export async function updatePlace(
       coordsPrecision: d.coordsPrecision,
       rating: d.rating,
       image: d.image,
+      images: d.images,
       description: d.description,
       hours: d.hours,
       phone: d.phone,
       mapLink: d.mapLink,
+      website: d.website,
       highlights: d.highlights,
       priceFrom: d.priceFrom,
       keywords: d.keywords,
+      sensitive: d.sensitive,
     },
   });
 

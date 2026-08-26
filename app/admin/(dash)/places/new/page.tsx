@@ -1,8 +1,6 @@
-import { requireAdmin } from "@/lib/auth";
+import { PageHead, Panel } from "@/components/admin/ui";
 import { prisma } from "@/lib/prisma";
-import AdminShell from "../../AdminShell";
 import PlaceForm, { type CategoryOption, type PlaceFormValues } from "../PlaceForm";
-import styles from "../../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -18,17 +16,19 @@ const EMPTY: PlaceFormValues = {
   coordsPrecision: "unknown",
   rating: "",
   image: "",
+  images: "",
   description: "",
   hours: "",
   phone: "",
   mapLink: "",
+  website: "",
   highlights: "",
   priceFrom: "",
   keywords: "",
+  sensitive: false,
 };
 
 export default async function NewPlacePage() {
-  const admin = await requireAdmin();
 
   const cats = await prisma.category.findMany({
     orderBy: { sortOrder: "asc" },
@@ -41,16 +41,14 @@ export default async function NewPlacePage() {
   }));
 
   return (
-    <AdminShell email={admin.email}>
-      <div className={styles.pageHead}>
-        <div>
-          <h1 className={styles.pageTitle}>New place</h1>
-          <p className={styles.pageSub}>The id is generated from the category and name.</p>
-        </div>
-      </div>
-      <div className={styles.panel}>
+    <>
+      <PageHead
+        title="New place"
+        sub="The id is generated from the category and the name."
+      />
+      <Panel title="Details">
         <PlaceForm mode="create" values={EMPTY} categories={categories} />
-      </div>
-    </AdminShell>
+      </Panel>
+    </>
   );
 }

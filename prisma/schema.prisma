@@ -121,13 +121,19 @@ model Place {
   /// Original inline data: URI, lifted out of `image` and served by
   /// /api/place-image/[id]. Null for the vast majority of places.
   imageData       String?         @map("image_data")
+  /// Extra photos shown in the detail page's gallery, beyond the hero `image`.
+  images          String[]        @default([])
   description     String?
   hours           String?
   phone           String?
+  website         String?
   mapLink         String?         @map("map_link")
   highlights      String[]        @default([])
   priceFrom       Int?            @map("price_from")
   keywords        String[]        @default([])
+  /// Admin override to hide ratings/reviews out of respect. OR'd at render
+  /// time with `categoryId === "memorials"` — see isSensitivePlace().
+  sensitive       Boolean         @default(false)
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 

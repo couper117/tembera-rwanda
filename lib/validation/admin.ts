@@ -88,13 +88,16 @@ export const placeSchema = z.object({
   coordsPrecision: coordsPrecisionSchema.default("unknown"),
   rating: optionalNumber,
   image: optionalString,
+  images: commaList,
   description: optionalString,
   hours: optionalString,
   phone: optionalString,
   mapLink: optionalString,
+  website: optionalString,
   highlights: commaList,
   priceFrom: optionalInt,
   keywords: commaList,
+  sensitive: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
 });
 
 export type PlaceInput = z.infer<typeof placeSchema>;
