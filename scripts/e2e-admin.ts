@@ -192,6 +192,65 @@ async function run(browser: Browser) {
     check("the listing is left as it was found", restoredCopy === original);
   }
 
+  /* ----------------------------------------------------- the editor ------ */
+  {
+    await page.goto(`${BASE}/admin/places/dining-inzora-rooftop`, {
+      waitUntil: "networkidle",
+    });
+
+    const body = (await page.textContent("body")) ?? "";
+    const sections = ["Identity", "Location", "Contact", "Opening hours", "Content", "Photos", "Publishing"];
+    check(
+      "the editor is grouped into sections",
+      sections.every((s) => body.includes(s)),
+      sections.filter((s) => !body.includes(s)).join(", ") || "all present",
+    );
+
+    // Leaflet is imported dynamically after hydration, so wait for it to be
+    // attached rather than for networkidle, which resolves first and makes
+    // this look flaky.
+    await page.waitForSelector(".leaflet-container", {
+      state: "attached",
+      timeout: 30000,
+    });
+    const mapBox = await page.locator(".a-map").boundingBox();
+    check(
+      "the map picker renders at a usable size",
+      Boolean(mapBox && mapBox.height > 200),
+      mapBox ? `${Math.round(mapBox.width)}x${Math.round(mapBox.height)}` : "no box",
+    );
+
+    check(
+      "there is a preview link to the public page",
+      (await page.locator('a:has-text("Preview as public")').count()) > 0,
+    );
+
+    // Set opening hours for Monday and save.
+    await page.selectOption('select[aria-label="Monday status"]', "open");
+    await page.fill('input[aria-label="Monday opening time"]', "08:30");
+    await page.fill('input[aria-label="Monday closing time"]', "17:45");
+    const summary = (await page.textContent(".a-hours")) ?? "";
+    check("the hours editor previews the week", summary.includes("Visitors will see"));
+
+    await page.click('form.a-form button[type="submit"]');
+    await page.waitForTimeout(2000);
+    await page.reload({ waitUntil: "networkidle" });
+
+    const monOpen = await page.inputValue('input[aria-label="Monday opening time"]');
+    check("opening hours persist", monOpen === "08:30", monOpen);
+
+    // A coordinate outside Rwanda must be refused, not stored.
+    await page.fill('input[name="lat"]', "48.85");
+    await page.fill('input[name="lng"]', "2.35");
+    await page.click('form.a-form button[type="submit"]');
+    await page.waitForTimeout(2000);
+    const rejected = (await page.textContent("body")) ?? "";
+    check(
+      "a coordinate outside Rwanda is refused",
+      rejected.includes("Latitude should be between"),
+    );
+  }
+
   /* ----------------------------------------------------- audit trail ----- */
   {
     await page.goto(`${BASE}/admin/activity`, { waitUntil: "networkidle" });

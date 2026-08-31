@@ -76,6 +76,10 @@ export interface Place {
   /** Where the listing is in its life. Only the staff reads care: the public
    *  ones return published rows and nothing else. */
   status?: PlaceStatus;
+  /** Structured opening hours. `hours` above stays the free-text fallback for
+   *  the imported listings and for the ones that genuinely do not fit a grid.
+   *  Shaped by lib/places/hours.ts; unknown here because the column is JSON. */
+  hoursJson?: unknown;
 }
 
 /** A place plus the distance from wherever the user currently is. */

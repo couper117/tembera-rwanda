@@ -2,11 +2,12 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import {
-  createPlace,
-  updatePlace,
-  type PlaceFormState,
-} from "./actions";
+import { Field, FormSection } from "@/components/admin/Field";
+import HoursEditor from "@/components/admin/HoursEditor";
+import MapPicker from "@/components/admin/MapPicker";
+import Icon from "@/components/Icon";
+import type { WeekHours } from "@/lib/places/hours";
+import { createPlace, updatePlace, type PlaceFormState } from "./actions";
 
 export interface PlaceFormValues {
   id?: string;
@@ -24,6 +25,7 @@ export interface PlaceFormValues {
   images: string;
   description: string;
   hours: string;
+  hoursJson: WeekHours;
   phone: string;
   mapLink: string;
   website: string;
@@ -31,6 +33,7 @@ export interface PlaceFormValues {
   priceFrom: string;
   keywords: string;
   sensitive: boolean;
+  status: "draft" | "published" | "archived";
 }
 
 export interface CategoryOption {
@@ -45,29 +48,55 @@ export default function PlaceForm({
   mode,
   values,
   categories,
+  cities,
 }: {
   mode: "create" | "edit";
   values: PlaceFormValues;
   categories: CategoryOption[];
+  cities: string[];
 }) {
   const action = mode === "edit" ? updatePlace : createPlace;
   const [state, formAction, pending] = useActionState(action, initialState);
 
   const [categoryId, setCategoryId] = useState(values.categoryId);
-  const subs =
-    categories.find((c) => c.id === categoryId)?.subcategories ?? [];
+  const [lat, setLat] = useState(values.lat);
+  const [lng, setLng] = useState(values.lng);
+  const [precision, setPrecision] = useState(values.coordsPrecision);
+
+  const subs = categories.find((c) => c.id === categoryId)?.subcategories ?? [];
+  const err = (field: string) => state?.fields?.[field];
+
+  /**
+   * A point placed by hand is not a district guess. Leaving the precision
+   * behind would keep the public page calling the distance approximate for a
+   * location somebody just corrected.
+   */
+  function setPoint(nextLat: string, nextLng: string) {
+    setLat(nextLat);
+    setLng(nextLng);
+    setPrecision("exact");
+  }
 
   return (
     <form action={formAction} className="a-form">
       {mode === "edit" && <input type="hidden" name="id" defaultValue={values.id} />}
 
-      {state?.error && <p className="a-error" role="alert">{state.error}</p>}
+      {state?.error && (
+        <p className="a-error" role="alert">
+          {state.error}
+        </p>
+      )}
+      {state?.ok && (
+        <p className="a-success" role="status">
+          Saved.
+        </p>
+      )}
 
-      <div className="a-grid2">
-        <div className="a-field">
-          <label className="a-label" htmlFor="name">
-            Name *
-          </label>
+      <FormSection
+        title="Identity"
+        description="What this place is called, and where it sits in the catalogue."
+      >
+        <Field name="name" label="Name" required error={err("name")}>
           <input
             id="name"
             name="name"
@@ -75,296 +104,364 @@ export default function PlaceForm({
             defaultValue={values.name}
             required
           />
-        </div>
+        </Field>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="categoryId">
-            Category *
-          </label>
-          <select
-            id="categoryId"
-            name="categoryId"
-            className="a-select"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            required
-          >
-            <option value="">— select —</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label} ({c.id})
-              </option>
-            ))}
-          </select>
-        </div>
+        <div className="a-grid2">
+          <Field name="categoryId" label="Category" required error={err("categoryId")}>
+            <select
+              id="categoryId"
+              name="categoryId"
+              className="a-select"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              required
+            >
+              <option value="">Choose…</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </Field>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="subcategory">
-            Subcategory *
-          </label>
-          <input
-            id="subcategory"
+          <Field
             name="subcategory"
-            className="a-input"
-            defaultValue={values.subcategory}
-            list="subcategory-options"
+            label="Subcategory"
             required
-          />
-          <datalist id="subcategory-options">
-            {subs.map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
-          <span className="a-hint">
-            Should match one of the category&apos;s subcategories.
-          </span>
+            error={err("subcategory")}
+            hint="Must be one of the category's own subcategories."
+          >
+            <input
+              id="subcategory"
+              name="subcategory"
+              className="a-input"
+              list="subcategory-options"
+              defaultValue={values.subcategory}
+              required
+            />
+            <datalist id="subcategory-options">
+              {subs.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          </Field>
         </div>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="subtype">
-            Subtype
-          </label>
+        <Field
+          name="subtype"
+          label="Subtype"
+          error={err("subtype")}
+          hint="Optional, freeform — a denomination, a cuisine, a speciality."
+        >
           <input
             id="subtype"
             name="subtype"
             className="a-input"
             defaultValue={values.subtype}
           />
-        </div>
+        </Field>
+      </FormSection>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="city">
-            City *
-          </label>
-          <input
-            id="city"
-            name="city"
-            className="a-input"
-            defaultValue={values.city}
-            required
-          />
-        </div>
+      <FormSection
+        title="Location"
+        description="Click the map to place it exactly. Most listings still carry only their district's centre."
+      >
+        <div className="a-grid2">
+          <Field name="city" label="District" required error={err("city")}>
+            <input
+              id="city"
+              name="city"
+              className="a-input"
+              list="city-options"
+              defaultValue={values.city}
+              required
+            />
+            <datalist id="city-options">
+              {cities.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </Field>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="area">
-            Area
-          </label>
-          <input
-            id="area"
+          <Field
             name="area"
-            className="a-input"
-            defaultValue={values.area}
-          />
+            label="Area"
+            error={err("area")}
+            hint="The neighbourhood, if it has one."
+          >
+            <input id="area" name="area" className="a-input" defaultValue={values.area} />
+          </Field>
         </div>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="lat">
-            Latitude
-          </label>
-          <input
-            id="lat"
-            name="lat"
-            type="number"
-            step="any"
-            className="a-input"
-            defaultValue={values.lat}
-          />
+        <MapPicker lat={lat} lng={lng} onChange={setPoint} />
+
+        <div className="a-grid2">
+          <Field name="lat" label="Latitude" error={err("lat")}>
+            <input
+              id="lat"
+              name="lat"
+              className="a-input"
+              value={lat}
+              onChange={(e) => setLat(e.target.value)}
+              inputMode="decimal"
+            />
+          </Field>
+          <Field name="lng" label="Longitude" error={err("lng")}>
+            <input
+              id="lng"
+              name="lng"
+              className="a-input"
+              value={lng}
+              onChange={(e) => setLng(e.target.value)}
+              inputMode="decimal"
+            />
+          </Field>
         </div>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="lng">
-            Longitude
-          </label>
-          <input
-            id="lng"
-            name="lng"
-            type="number"
-            step="any"
-            className="a-input"
-            defaultValue={values.lng}
-          />
-        </div>
-
-        <div className="a-field">
-          <label className="a-label" htmlFor="coordsPrecision">
-            Coords precision
-          </label>
+        <Field
+          name="coordsPrecision"
+          label="How well do we know this?"
+          error={err("coordsPrecision")}
+          hint="Anything but 'exact' makes the public site show distances as approximate."
+        >
           <select
             id="coordsPrecision"
             name="coordsPrecision"
             className="a-select"
-            defaultValue={values.coordsPrecision}
+            value={precision}
+            onChange={(e) =>
+              setPrecision(e.target.value as PlaceFormValues["coordsPrecision"])
+            }
           >
-            <option value="exact">exact</option>
-            <option value="district">district</option>
-            <option value="unknown">unknown</option>
+            <option value="exact">Exact — a real coordinate</option>
+            <option value="district">District centre only</option>
+            <option value="unknown">Unknown</option>
           </select>
-        </div>
+        </Field>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="rating">
-            Rating
-          </label>
-          <input
-            id="rating"
-            name="rating"
-            type="number"
-            step="any"
-            min="0"
-            max="5"
-            className="a-input"
-            defaultValue={values.rating}
-          />
-        </div>
-
-        <div className="a-field">
-          <label className="a-label" htmlFor="priceFrom">
-            Price from
-          </label>
-          <input
-            id="priceFrom"
-            name="priceFrom"
-            type="number"
-            step="1"
-            className="a-input"
-            defaultValue={values.priceFrom}
-          />
-        </div>
-
-        <div className="a-field">
-          <label className="a-label" htmlFor="phone">
-            Phone
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            className="a-input"
-            defaultValue={values.phone}
-          />
-        </div>
-
-        <div className="a-field">
-          <label className="a-label" htmlFor="hours">
-            Hours
-          </label>
-          <input
-            id="hours"
-            name="hours"
-            className="a-input"
-            defaultValue={values.hours}
-          />
-        </div>
-
-        <div className="a-field">
-          <label className="a-label" htmlFor="image">
-            Image URL
-          </label>
-          <input
-            id="image"
-            name="image"
-            className="a-input"
-            defaultValue={values.image}
-          />
-        </div>
-
-        <div className="a-field">
-          <label className="a-label" htmlFor="mapLink">
-            Map link
-          </label>
+        <Field
+          name="mapLink"
+          label="External map link"
+          error={err("mapLink")}
+          hint="A Google Maps or OpenStreetMap URL, if the source had one."
+        >
           <input
             id="mapLink"
             name="mapLink"
             className="a-input"
             defaultValue={values.mapLink}
           />
-        </div>
+        </Field>
+      </FormSection>
 
-        <div className="a-field">
-          <label className="a-label" htmlFor="website">
-            Website
-          </label>
-          <input
-            id="website"
+      <FormSection title="Contact" description="How a visitor reaches this place.">
+        <div className="a-grid2">
+          <Field
+            name="phone"
+            label="Phone"
+            error={err("phone")}
+            hint="+250 788 123 456, or however it is written locally."
+          >
+            <input
+              id="phone"
+              name="phone"
+              className="a-input"
+              defaultValue={values.phone}
+            />
+          </Field>
+          <Field
             name="website"
-            className="a-input"
-            placeholder="https://…"
-            defaultValue={values.website}
-          />
+            label="Website"
+            error={err("website")}
+            hint="A bare domain is fine — https:// is added for you."
+          >
+            <input
+              id="website"
+              name="website"
+              className="a-input"
+              defaultValue={values.website}
+            />
+          </Field>
         </div>
+      </FormSection>
 
-        <div className="a-field">
-          <label className="a-label">Sensitive</label>
-          <div className="a-checkrow">
-            <input type="checkbox" name="sensitive" defaultChecked={values.sensitive} />
-            <span className="a-hint">
-              Hides ratings &amp; reviews out of respect. The memorials category is
-              sensitive by default — check this only for places outside it.
-            </span>
-          </div>
-        </div>
-      </div>
+      <FormSection
+        title="Opening hours"
+        description="Set the week and the site can say whether a place is open right now."
+      >
+        <HoursEditor name="hoursJson" initial={values.hoursJson} />
 
-      <div className="a-field">
-        <label className="a-label" htmlFor="description">
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          className="a-textarea"
-          defaultValue={values.description}
-        />
-      </div>
-
-      <div className="a-field">
-        <label className="a-label" htmlFor="highlights">
-          Highlights
-        </label>
-        <input
-          id="highlights"
-          name="highlights"
-          className="a-input"
-          defaultValue={values.highlights}
-        />
-        <span className="a-hint">Comma-separated.</span>
-      </div>
-
-      <div className="a-field">
-        <label className="a-label" htmlFor="images">
-          Gallery photos
-        </label>
-        <input
-          id="images"
-          name="images"
-          className="a-input"
-          defaultValue={values.images}
-        />
-        <span className="a-hint">Comma-separated image URLs, shown below the hero photo.</span>
-      </div>
-
-      <div className="a-field">
-        <label className="a-label" htmlFor="keywords">
-          Keywords
-        </label>
-        <input
-          id="keywords"
-          name="keywords"
-          className="a-input"
-          defaultValue={values.keywords}
-        />
-        <span className="a-hint">Comma-separated.</span>
-      </div>
-
-      <div className="t-inline t-wrap">
-        <button
-          type="submit"
-          className="t-btn t-btn--primary"
-          disabled={pending}
+        <Field
+          name="hours"
+          label="Free-text hours"
+          error={err("hours")}
+          hint="The fallback shown when the week above is not filled in — and the right home for 'dawn to dusk'."
         >
-          {pending ? "Saving…" : mode === "edit" ? "Update place" : "Create place"}
+          <input
+            id="hours"
+            name="hours"
+            className="a-input"
+            defaultValue={values.hours}
+          />
+        </Field>
+      </FormSection>
+
+      <FormSection title="Content" description="What a visitor reads on the page.">
+        <Field name="description" label="Description" error={err("description")}>
+          <textarea
+            id="description"
+            name="description"
+            className="a-textarea"
+            rows={4}
+            defaultValue={values.description}
+          />
+        </Field>
+
+        <Field
+          name="highlights"
+          label="Highlights"
+          error={err("highlights")}
+          hint="Comma separated. These become the 'what to expect' chips."
+        >
+          <input
+            id="highlights"
+            name="highlights"
+            className="a-input"
+            defaultValue={values.highlights}
+          />
+        </Field>
+
+        <Field
+          name="keywords"
+          label="Search keywords"
+          error={err("keywords")}
+          hint="Comma separated. Words people might search that are not in the name."
+        >
+          <input
+            id="keywords"
+            name="keywords"
+            className="a-input"
+            defaultValue={values.keywords}
+          />
+        </Field>
+      </FormSection>
+
+      <FormSection
+        title="Photos"
+        description="Paste image addresses for now. Upload arrives with the media work."
+      >
+        <Field
+          name="image"
+          label="Main photo"
+          error={err("image")}
+          hint="The one shown on cards and at the top of the page."
+        >
+          <input
+            id="image"
+            name="image"
+            className="a-input"
+            defaultValue={values.image}
+          />
+        </Field>
+
+        <Field
+          name="images"
+          label="More photos"
+          error={err("images")}
+          hint="Comma separated addresses, shown in the gallery."
+        >
+          <input
+            id="images"
+            name="images"
+            className="a-input"
+            defaultValue={values.images}
+          />
+        </Field>
+      </FormSection>
+
+      <FormSection
+        title="Publishing"
+        description="Whether this listing is public, and how it may be presented."
+      >
+        <div className="a-grid2">
+          <Field name="status" label="Status" error={err("status")}>
+            <select
+              id="status"
+              name="status"
+              className="a-select"
+              defaultValue={values.status}
+            >
+              <option value="published">Published — live on the site</option>
+              <option value="draft">Draft — not public yet</option>
+              <option value="archived">Archived — retired, URL still works</option>
+            </select>
+          </Field>
+
+          <Field
+            name="rating"
+            label="Editorial rating"
+            error={err("rating")}
+            hint="0–5. Overwritten by the average once visitors review it."
+          >
+            <input
+              id="rating"
+              name="rating"
+              className="a-input"
+              defaultValue={values.rating}
+              inputMode="decimal"
+            />
+          </Field>
+        </div>
+
+        <Field
+          name="priceFrom"
+          label="Price from"
+          error={err("priceFrom")}
+          hint="Whole numbers only. Used for stays."
+        >
+          <input
+            id="priceFrom"
+            name="priceFrom"
+            className="a-input"
+            defaultValue={values.priceFrom}
+            inputMode="numeric"
+          />
+        </Field>
+
+        <label className="a-check">
+          <input
+            type="checkbox"
+            name="sensitive"
+            defaultChecked={values.sensitive}
+          />
+          <span>
+            <strong>Place of remembrance.</strong> Suppresses ratings, reviews,
+            prices and promotion everywhere. Every memorial-category listing is
+            already treated this way; tick it for one filed elsewhere.
+          </span>
+        </label>
+      </FormSection>
+
+      <div className="t-inline t-wrap a-formactions">
+        <button type="submit" className="t-btn t-btn--primary" disabled={pending}>
+          {pending ? "Saving…" : mode === "edit" ? "Save changes" : "Create place"}
         </button>
-        <Link href="/admin/places" className="t-btn t-btn--secondary">
-          Cancel
+
+        {mode === "edit" && values.id && (
+          <Link
+            href={`/place/${values.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="t-btn t-btn--secondary"
+          >
+            <Icon name="external" size={15} />
+            Preview as public
+          </Link>
+        )}
+
+        <Link href="/admin/places" className="t-btn t-btn--ghost">
+          Back to places
         </Link>
       </div>
     </form>

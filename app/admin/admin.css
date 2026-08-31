@@ -894,3 +894,128 @@ a.a-stat:hover {
   white-space: nowrap;
   border: 0;
 }
+
+/* --- form sections ---
+   Twenty-one fields in one column is a wall. Grouped by the job being done,
+   it is five short ones. */
+.a-formsection {
+  border-top: 1px solid var(--t-border);
+  padding-top: var(--t-4);
+  margin-top: var(--t-4);
+}
+
+.a-formsection:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.a-formsection__head {
+  margin-bottom: var(--t-3);
+}
+
+.a-formsection__title {
+  font-size: 0.95rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.a-formsection__sub {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--t-ink-3);
+}
+
+.a-formsection__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+/* A field whose value was rejected. The border carries the state so it is
+   visible without reading, and the message says what to do about it. */
+.a-field--invalid .a-input,
+.a-field--invalid .a-select,
+.a-field--invalid .a-textarea {
+  border-color: var(--t-danger);
+}
+
+.a-fielderror {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--t-danger);
+}
+
+/* --- map picker ---
+   Sized so the whole of Rwanda is legible on open but the control does not
+   dominate the form it sits in. */
+.a-mapwrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+}
+
+.a-map {
+  height: 340px;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  overflow: hidden;
+  background: var(--t-surface-2);
+}
+
+/* Leaflet's own controls, tinted to sit inside the admin rather than on top
+   of it. */
+.a-map .leaflet-control-attribution {
+  font-size: 0.68rem;
+  background: color-mix(in srgb, var(--t-surface) 88%, transparent);
+  color: var(--t-ink-3);
+}
+
+/* The default marker is an image loaded by relative URL, which does not
+   survive bundling — this is drawn instead. */
+.a-mappin__dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--t-danger);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.4);
+}
+
+/* --- hours editor --- */
+.a-hours__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.a-hours__table th,
+.a-hours__table td {
+  padding: 6px 8px 6px 0;
+  text-align: left;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.a-hours__table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--t-ink-3);
+  font-weight: 600;
+}
+
+.a-hours__table tbody th {
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.a-hours__table .a-input,
+.a-hours__table .a-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.a-hours__table .a-input:disabled {
+  opacity: 0.45;
+}

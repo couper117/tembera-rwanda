@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseWeekHours } from "@/lib/places/hours";
 
 /**
  * Zod schemas + helpers for the admin dashboard forms.
@@ -167,6 +168,28 @@ export const placeSchema = z.object({
   keywords: commaList,
   sensitive: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
   status: placeStatusSchema.default("published"),
+  /**
+   * The whole week, submitted as one JSON field.
+   *
+   * Run through parseWeekHours on the way in, which drops anything malformed
+   * rather than trusting it — the browser sends this as a string and a server
+   * action is a public endpoint, so it is exactly as trustworthy as any other
+   * form value. An empty week is stored as null, so "nothing set" is a real
+   * absence rather than an empty object the reader has to interpret.
+   */
+  hoursJson: z.preprocess((v) => {
+    if (v === undefined || v === null || v === "") return null;
+    let raw: unknown = v;
+    if (typeof v === "string") {
+      try {
+        raw = JSON.parse(v);
+      } catch {
+        return null;
+      }
+    }
+    const week = parseWeekHours(raw);
+    return Object.keys(week).length > 0 ? week : null;
+  }, z.record(z.string(), z.object({ open: z.string().nullable(), close: z.string().nullable() })).nullable()),
 });
 
 export type PlaceInput = z.infer<typeof placeSchema>;

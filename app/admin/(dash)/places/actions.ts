@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { requireStaff } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
 import { PLACES_TAG } from "@/lib/data/places";
@@ -13,6 +13,7 @@ import {
   kebab,
   placeSchema,
   type FieldErrors,
+  type PlaceInput,
 } from "@/lib/validation/admin";
 
 export interface PlaceFormState {
@@ -20,6 +21,8 @@ export interface PlaceFormState {
   error?: string;
   /** Per-field messages, keyed by input name, shown beside each input. */
   fields?: FieldErrors;
+  /** Set after a successful save, so the form can confirm rather than guess. */
+  ok?: boolean;
 }
 
 /**
@@ -66,11 +69,21 @@ function parse(formData: FormData) {
     keywords: formData.get("keywords"),
     sensitive: formData.get("sensitive"),
     status: formData.get("status") ?? undefined,
+    hoursJson: formData.get("hoursJson"),
   });
 }
 
 function invalid(error: Parameters<typeof fieldErrors>[0]): PlaceFormState {
   return { error: firstError(error), fields: fieldErrors(error) };
+}
+
+/**
+ * Prisma distinguishes "JSON null" from "no value" for a nullable Json column,
+ * so a plain `null` is rejected. Prisma.DbNull is the one that clears it.
+ */
+function toPrismaData(d: PlaceInput) {
+  const { hoursJson, ...rest } = d;
+  return { ...rest, hoursJson: hoursJson ?? Prisma.DbNull };
 }
 
 /**
@@ -115,7 +128,7 @@ export async function createPlace(
   if (badCategory) return badCategory;
 
   const id = await uniquePlaceId(d.categoryId, d.name);
-  await prisma.place.create({ data: { id, ...d } });
+  await prisma.place.create({ data: { id, ...toPrismaData(d) } });
 
   await recordAudit({
     actorId: staff.id,
@@ -150,7 +163,7 @@ export async function updatePlace(
 
   // The id is immutable: it is the public URL and a foreign key from saves,
   // visits, reviews and reports. Renaming a place does not renumber it.
-  await prisma.place.update({ where: { id }, data: d });
+  await prisma.place.update({ where: { id }, data: toPrismaData(d) });
 
   // Record only what actually changed, so the trail reads as a history rather
   // than a series of identical full snapshots.
@@ -179,7 +192,7 @@ export async function updatePlace(
 
   revalidateTag(PLACES_TAG);
   revalidatePath(`/place/${id}`);
-  return { error: undefined };
+  return { ok: true };
 }
 
 /**

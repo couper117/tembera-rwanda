@@ -39,6 +39,7 @@ function toDomain(row: DbPlace): Place {
     keywords: row.keywords.length ? row.keywords : undefined,
     sensitive: row.sensitive,
     status: row.status,
+    hoursJson: row.hoursJson,
   };
 }
 
