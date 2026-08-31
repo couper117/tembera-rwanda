@@ -57,3 +57,58 @@ export function categoryColor(categoryId: string | undefined): CategoryColor {
 export function categoryTint(categoryId: string | undefined): string {
   return categoryColor(categoryId).bg;
 }
+
+/* ------------------------------------------------- placeholder gradients */
+
+/**
+ * FNV-1a. Small, and — the part that matters — identical on the server and in
+ * the browser, so a placeholder picked during SSR is the same one React finds
+ * at hydration. Math.random() here would be a hydration mismatch on every
+ * card without a photo, which is most of them.
+ */
+function hash(seed: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/** Blend two #rrggbb colours; t = 0 is all of `a`, t = 1 all of `b`. */
+function mix(a: string, b: string, t: number): string {
+  const channel = (hex: string, at: number) => parseInt(hex.slice(at, at + 2), 16);
+  const out = [1, 3, 5]
+    .map((at) => Math.round(channel(a, at) * (1 - t) + channel(b, at) * t))
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("");
+  return `#${out}`;
+}
+
+/** The glyph colour is a token on the neutral category; gradients need a hex. */
+const NEUTRAL_HUE = "#55606e";
+
+/**
+ * A placeholder for a listing with no photograph.
+ *
+ * Only 53 of the 495 listings carry an image, so this is not an edge case —
+ * it is what most of the grid looks like. A flat grey box with an icon read as
+ * a broken image; this is a dark gradient in the category's own hue, angled
+ * and shaded from a hash of the listing id so that neighbouring cards differ
+ * from each other without anything being random. It stays dark in both themes
+ * because the caption and badges sit on top of it in white.
+ */
+export function placeholderGradient(
+  categoryId: string | undefined,
+  seed: string,
+): string {
+  const { fg } = categoryColor(categoryId);
+  const hue = fg.startsWith("#") ? fg : NEUTRAL_HUE;
+  const h = hash(seed);
+
+  const angle = 115 + (h % 6) * 25;
+  const top = mix(hue, "#161b22", 0.46 + ((h >>> 4) % 4) * 0.05);
+  const bottom = mix(hue, "#06090d", 0.84);
+
+  return `linear-gradient(${angle}deg, ${top} 0%, ${bottom} 100%)`;
+}

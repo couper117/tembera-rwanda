@@ -1251,6 +1251,126 @@
   width: 100%;
 }
 
+/* -- Place tile: the landing page's photo card -------------------------
+   Everything the old card put in a text block under the thumbnail now sits on
+   the photograph, which buys the photograph roughly double the area in the
+   same row height. Badges and caption are siblings of the media box, not
+   children of it, so scaling the photo can never clip them. */
+
+.t-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 19px;
+  overflow: hidden;
+  background: var(--t-surface-3);
+  /* Keeps the scrim and the badges in one stacking context, so a card can
+     never paint over the card beside it. */
+  isolation: isolate;
+  transition: transform var(--t-base) var(--t-ease);
+}
+
+.t-tile__media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.t-tile__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark at the foot for the caption, dark again at the head for the badges,
+   and out of the way across the middle third where the picture is. */
+.t-tile__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 9, 13, 0.42) 0%,
+    rgba(6, 9, 13, 0) 34%,
+    rgba(6, 9, 13, 0.3) 58%,
+    rgba(6, 9, 13, 0.86) 100%
+  );
+}
+
+.t-tile__caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: block;
+  padding: var(--t-3) var(--t-3) 13px;
+  color: #fff;
+}
+
+.t-tile__name {
+  display: block;
+  font-size: var(--t-text-body);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.t-tile__meta {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  /* Not a token: these sit on the photograph, not on a surface. */
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Rating and bookmark share one treatment — a blurred dark pill — so the two
+   top corners read as a pair rather than two unrelated controls. */
+.t-tile__rating,
+.t-tile .t-save {
+  position: absolute;
+  top: 10px;
+  height: 28px;
+  border-radius: var(--t-r-pill);
+  background: rgba(9, 13, 18, 0.55);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.t-tile__rating {
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px 0 8px;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fixed, not --t-gold: the pill is dark in both themes, and the light theme's
+   gold is too dark to read on it. */
+.t-tile__rating svg {
+  color: #edc253;
+}
+
+.t-tile .t-save {
+  right: 10px;
+  width: 28px;
+}
+
+/* .t-save:hover sets ink-on-light and is declared further down the file at the
+   same specificity, so it needs beating explicitly rather than by order. */
+.t-tile .t-save:hover {
+  color: #fff;
+}
+
+.t-tile .t-save[aria-pressed="true"] {
+  color: var(--t-accent-ink);
+}
+
 /* -- Place row: landscape, used in lists and search results ------------- */
 
 .t-row {
@@ -1688,13 +1808,16 @@
 
 /* Several legacy image URLs are dead. Rather than a broken-image glyph, the
    card shows a calm branded placeholder with the category icon. */
+/* The gradient itself is set inline, per listing — see placeholderGradient in
+   components/ui/categoryIcon.ts. It is always dark, so the glyph is a faint
+   white watermark rather than a grey icon asking to be looked at. */
 .t-imgfallback {
   width: 100%;
   height: 100%;
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, var(--t-surface-2), var(--t-surface-3));
-  color: var(--t-ink-3);
+  color: rgba(255, 255, 255, 0.22);
 }
 
 /* ============================================================ spinner == */

@@ -41,12 +41,15 @@ export function SkeletonRail({ count = 4 }: { count?: number }) {
   );
 }
 
-/** Placeholders for the landing page's photo tiles. */
+/**
+ * Placeholders for the landing page's photo tiles. Same radius, same 16:10
+ * box, same grid — so nothing moves when the real cards replace them.
+ */
 export function SkeletonTiles({ count = 5 }: { count?: number }) {
   return (
     <div className="t-tilegrid" aria-busy="true" aria-label="Loading places">
       {Array.from({ length: count }, (_, i) => (
-        <SkeletonPlaceCard key={i} variant="grid" />
+        <div key={i} className="t-tile t-skel" aria-hidden="true" />
       ))}
     </div>
   );
