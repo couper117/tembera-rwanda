@@ -46,6 +46,7 @@ export default function PlaceHero({
           alt={place.name}
           categoryId={place.categoryId}
           sizes="100vw"
+          eager
         />
         <div className="t-hero__scrim" aria-hidden="true" />
 
@@ -99,11 +100,14 @@ export default function PlaceHero({
 
         {!isSensitive && (
           <div className="t-hero__actions">
+            {/* Hidden on a phone: the sticky action bar carries Directions
+                there, and two of the same button on one screen pushed Call
+                and Website onto a second row for nothing. */}
             <a
               href={directions}
               target="_blank"
               rel="noopener noreferrer"
-              className="t-btn t-btn--primary"
+              className="t-btn t-btn--primary t-hero__act--dup"
             >
               <Icon name="navigate" size={16} />
               Directions

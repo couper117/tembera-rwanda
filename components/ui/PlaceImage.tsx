@@ -19,6 +19,12 @@ interface Props {
    * stable and per-listing (the id); it falls back to the alt text.
    */
   seed?: string;
+  /**
+   * Load immediately instead of lazily. For the one image that is above the
+   * fold on arrival — a page hero is the LCP element, and deferring it leaves
+   * the reader watching a grey box while the browser decides it is needed.
+   */
+  eager?: boolean;
 }
 
 /**
@@ -34,6 +40,7 @@ export default function PlaceImage({
   fallbackIcon,
   sizes,
   seed,
+  eager = false,
 }: Props) {
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -72,7 +79,8 @@ export default function PlaceImage({
       src={src}
       alt={alt}
       className={className}
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
+      fetchPriority={eager ? "high" : undefined}
       decoding="async"
       sizes={sizes}
       onError={() => setFailed(true)}

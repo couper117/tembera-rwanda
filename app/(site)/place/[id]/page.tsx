@@ -104,7 +104,15 @@ export default async function PlaceDetailPage({
 
   return (
     <>
-      <PageHeader title={place.name} fallbackHref="/explore" revealTitleOnScroll />
+      {/* The bar floats over the hero photograph rather than sitting on a
+          band above it, and only takes a background once the reader has
+          scrolled past the image the white text was legible against. */}
+      <PageHeader
+        title={place.name}
+        fallbackHref="/explore"
+        revealTitleOnScroll
+        overlay
+      />
       <VisitRecorder id={place.id} />
 
       <main className="t-main t-main--hasactionbar">

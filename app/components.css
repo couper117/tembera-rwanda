@@ -59,6 +59,47 @@
   border-bottom-color: var(--t-border);
 }
 
+/* A bar that floats over the page rather than sitting above it, for screens
+   that open on a full-bleed photograph. The negative margin is what makes it
+   float: the header still participates in the sticky layout, but the content
+   below slides up underneath it. It stays constant whether or not the reader
+   has scrolled, so taking a background on scroll cannot shift the page. */
+.t-header--overlay {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  margin-bottom: calc(var(--t-header-h) * -1);
+}
+
+/* The back arrow sits on an unknown photograph, so it carries its own ground
+   instead of trusting the image to be dark where the icon lands. */
+.t-header--overlay .t-iconbtn {
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.t-header--overlay .t-iconbtn:hover {
+  background: rgba(0, 0, 0, 0.58);
+  color: #fff;
+}
+
+/* Scrolled past the photo, it becomes an ordinary bar — the title has to be
+   readable against the page, not against an image that is no longer there. */
+.t-header--overlay.t-header--bordered {
+  background: var(--t-bg);
+  backdrop-filter: saturate(150%) blur(12px);
+  -webkit-backdrop-filter: saturate(150%) blur(12px);
+}
+
+.t-header--overlay.t-header--bordered .t-iconbtn {
+  background: none;
+  color: var(--t-ink-2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .t-header__brand {
   display: flex;
   align-items: center;
@@ -3885,11 +3926,13 @@ button.t-profile__stat:active {
   background: var(--t-surface-2);
 }
 
-/* Leaflet paints its own controls with a hard z-index; keep it under the
-   sticky header and the mobile action bar. */
-.t-placemap .leaflet-pane,
-.t-placemap .leaflet-control {
-  z-index: 1;
+/* Leaflet gives its panes and controls hard z-indexes in the 400-1000 range,
+   which put the zoom buttons over the sticky header and straight through the
+   action bar. `isolation` makes the map its own stacking context so none of
+   that can escape the box. */
+.t-placemap {
+  isolation: isolate;
+  z-index: 0;
 }
 
 /* Leaflet's divIcon ships with a white box and a border unless overridden. */
@@ -3960,4 +4003,46 @@ button.t-profile__stat:active {
    row can force the whole column wider than the viewport. */
 .t-detail__main {
   min-width: 0;
+}
+
+/* =============================================== place page, on a phone == */
+
+@media (max-width: 767px) {
+  /* Sections read as a flat, undifferentiated scroll when they are only
+     separated by whitespace. Giving each its own card is what makes the page
+     feel like a screen in an app rather than a document. */
+  .t-detail__main > .t-section {
+    margin-top: var(--t-4);
+    padding: var(--t-4);
+    border: 1px solid var(--t-border);
+    border-radius: var(--t-r-lg);
+    background: var(--t-surface);
+  }
+
+  /* A horizontal strip of photos should still run to the edge of its card. */
+  .t-detail__main > .t-section > .t-scroller {
+    margin-inline: calc(var(--t-4) * -1);
+    padding-inline: var(--t-4);
+  }
+
+  .t-hero__act--dup {
+    display: none;
+  }
+
+  /* With Directions gone there may be nothing left to show; an empty row
+     would still take its margin. */
+  .t-hero__actions:not(:has(.t-btn:not(.t-hero__act--dup))) {
+    display: none;
+  }
+
+  .t-hero__actions .t-btn {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* .t-detail__body rides 20px up over the hero to get its rounded top edge,
+     which clipped the last line of the title block. Clear it. */
+  .t-hero__body {
+    padding-bottom: calc(var(--t-gutter) + 24px);
+  }
 }

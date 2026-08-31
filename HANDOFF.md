@@ -61,6 +61,18 @@ Photos → Opening hours → Where it is → Reviews → Nearby → Report.
   Returns `open: null` when the day was never recorded so the UI can say
   nothing instead of guessing.
 
+The header on this page is an overlay: `PageHeader` gained an `overlay` prop
+that floats the bar over the hero with no background of its own until the
+reader scrolls, at which point it becomes an ordinary bordered bar so the
+title stays readable. **The theme switch was removed from `PageHeader`
+entirely** — it is a setting, not a page action, and it still lives in
+`AppHeader` (the main tabs) and in Settings.
+
+On a phone each `.t-detail__main > .t-section` is a card, so the page reads as
+a screen rather than one long document; the hero's Directions button is hidden
+there because the sticky action bar already carries it, which stops Call and
+Website wrapping to a second row.
+
 Gotchas found while building it:
 - `place.images` includes the hero shot on most rows, so the gallery showed the
   same photograph twice and claimed "2 photos" for one. It is filtered now.
@@ -71,6 +83,12 @@ Gotchas found while building it:
   — superseded by `.t-hero*`.
 - Many source photos are blown-out interiors, so the scrim carries the text
   contrast on its own; its bottom stop is 0.9 black for that reason.
+- **`PlaceImage` is `loading="lazy"` by default, which is wrong for a hero** —
+  it is the LCP element, and the browser sometimes had not decoded it four
+  seconds in. It now takes an `eager` prop, set on the hero only.
+- **Leaflet gives its panes and controls z-indexes in the 400-1000 range**, so
+  the zoom buttons painted straight over the sticky header and through the
+  action bar. `.t-placemap { isolation: isolate }` boxes them in.
 
 **Verified:** typecheck, lint and 132 tests pass; production build serves;
 no horizontal overflow at 390px or 1280px; the memorial page renders zero
