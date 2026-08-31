@@ -28,7 +28,7 @@ const SECONDARY: { href: string; label: string; icon: IconName }[] = [
 /**
  * How many category rows are rendered. CSS height queries trim this further on
  * shorter viewports — the rail never scrolls, and whatever doesn't fit stays
- * reachable through "More categories".
+ * reachable through "More".
  */
 const MAX_ROWS = 12;
 
