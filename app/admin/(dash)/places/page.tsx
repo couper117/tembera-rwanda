@@ -1,9 +1,9 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
 import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { PageHead, Panel } from "@/components/admin/ui";
-import { prisma } from "@/lib/prisma";
+import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
+import { getCategories } from "@/lib/data/categories";
+import { getPlaces } from "@/lib/data/places";
 import { deletePlace } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -21,31 +21,28 @@ export default async function PlacesPage({
   const categoryFilter = (category ?? "").trim();
   const pageNum = Math.max(1, Number(page) || 1);
 
-  const where: Prisma.PlaceWhereInput = {};
-  if (search) {
-    where.OR = [
-      { name: { contains: search, mode: "insensitive" } },
-      { subcategory: { contains: search, mode: "insensitive" } },
-      { city: { contains: search, mode: "insensitive" } },
-    ];
-  }
-  if (categoryFilter) where.categoryId = categoryFilter;
+  // Filtering and paging happen in memory: the catalog is a static array of a
+  // few thousand rows, so a query planner would be doing less work than the
+  // round trip it replaces.
+  const needle = search.toLowerCase();
+  const matches = (await getPlaces()).filter((p) => {
+    if (categoryFilter && p.categoryId !== categoryFilter) return false;
+    if (!needle) return true;
+    return (
+      p.name.toLowerCase().includes(needle) ||
+      p.subcategory.toLowerCase().includes(needle) ||
+      p.city.toLowerCase().includes(needle)
+    );
+  });
 
-  const [total, places, categories] = await Promise.all([
-    prisma.place.count({ where }),
-    prisma.place.findMany({
-      where,
-      orderBy: { name: "asc" },
-      skip: (pageNum - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-      select: { id: true, label: true },
-    }),
-  ]);
-
+  const total = matches.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const places = matches
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice((pageNum - 1) * PAGE_SIZE, pageNum * PAGE_SIZE);
+
+  const categories = await getCategories();
   // The list showed the raw slug where the reader expects the label.
   const labels = new Map(categories.map((c) => [c.id, c.label]));
 
@@ -60,6 +57,8 @@ export default async function PlacesPage({
 
   return (
     <>
+      <SampleNotice what="Editing places" />
+
       <PageHead
         title="Places"
         sub={`${total.toLocaleString()} listing${total === 1 ? "" : "s"} in the catalogue.`}

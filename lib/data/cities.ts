@@ -1,8 +1,4 @@
-import "server-only";
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
-
-export const CITIES_TAG = "cities";
+import { citySummaries } from "@/lib/places/catalog";
 
 export interface CityRecord {
   id: number;
@@ -15,11 +11,24 @@ export interface CityRecord {
   sortOrder: number;
 }
 
-/** The admin-managed city/district directory. */
-export const getCities = unstable_cache(
-  async (): Promise<CityRecord[]> => {
-    return prisma.city.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
-  },
-  ["cities-list"],
-  { tags: [CITIES_TAG] },
-);
+/**
+ * The city/district directory, derived from the places catalog.
+ *
+ * There is no city table any more, so a city exists exactly as long as
+ * something in the catalog sits in it. `id` and `sortOrder` are positional:
+ * they keep the admin table's shape without pretending to be stable keys.
+ * Province is unknown from the catalog alone and is left null rather than
+ * guessed.
+ */
+export async function getCities(): Promise<CityRecord[]> {
+  return citySummaries().map((city, index) => ({
+    id: index + 1,
+    name: city.name,
+    group: null,
+    province: null,
+    lat: null,
+    lng: null,
+    image: city.image ?? null,
+    sortOrder: index,
+  }));
+}

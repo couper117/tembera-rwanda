@@ -1,187 +1,155 @@
 # Tembera — Visit Rwanda
 
-A production tourism directory for Rwanda: a searchable, map-aware catalog of
-places (dining, stays, health, worship, nature, transport and more) with real
-user accounts, saved/visited history, reviews, trip bookings, and a full admin
-CMS. Built on **Next.js 15 (App Router) + TypeScript + Prisma + PostgreSQL**.
+A tourism directory for Rwanda: a searchable, map-aware catalog of places
+(dining, stays, health, worship, nature, transport and more), with saved and
+visited history, a trip-booking screen, and a full admin dashboard. Built on
+**Next.js 15 (App Router) + TypeScript**.
+
+> **This build has no backend.** There is no database, no accounts and no
+> sessions. Everything the public site shows comes from a static dataset
+> committed to the repo, so it deploys to Vercel with no environment variables
+> and nothing to provision. The account and admin screens are kept as finished
+> UI — see [What is and isn't wired](#what-is-and-isnt-wired).
 
 ## Stack
 
-- **Next.js 15** — App Router, React 19, server components + server actions
+- **Next.js 15** — App Router, React 19, server components
 - **TypeScript** (strict)
-- **Prisma ORM** → **PostgreSQL**
-- **bcryptjs** for password hashing; signed, httpOnly session cookies (HMAC-SHA256)
-- **zod** for input validation
+- **zod** for form validation
 - Bootstrap 5 grid/utilities + the app's own CSS
 
 ## Architecture
 
-Nothing the UI renders is hardcoded — every listing, category, city and account
-is a database row. The catalog domain logic (search, geo, ranking) is pure and
-data-agnostic; the data comes from Postgres.
+The catalog is a static dataset. `lib/places/sources/*` holds the raw data,
+`lib/places/catalog.ts` assembles it into one `Place[]`, and `lib/data/*` is
+the async read layer every screen calls. That layer is deliberately still
+`async` and still shaped like a repository, so a real backend can be dropped in
+behind it without touching a single screen.
+
+The domain logic — search, ranking, geo grouping — is pure and data-agnostic:
+it takes places as an argument and returns places, which is why it is unit
+tested without a database or a server.
 
 ```
 app/
   (site)/            Public app shell (nav, providers) + screens
-    page.tsx         Home — DB-driven categories, near-you, top-rated, featured
+    page.tsx         Home — categories, near-you, top-rated, featured
     c/[category]/    Category browser (filter by subcategory)
     city/[city]/     City browser
-    place/[id]/      Place detail + ratings & reviews
+    place/[id]/      Place detail
     search/ map/ explore/ saved/ profile/ settings/
-    login/ register/ Public auth
-    booking/         Trip booking (price computed server-side)
-  admin/             Role-guarded CMS: places, categories, cities, bookings, users
+    login/ register/ Account screens — UI only, see below
+    booking/         Trip booking screen — UI only, see below
+  admin/             Admin dashboard: read-only in this build
   api/
     nearby/          Distance-ranked places for a coordinate
-    place-image/[id] Serves inline (data-URI) images from the DB
+    place-image/[id] Serves the catalog's inline (data-URI) images
 components/          UI + app shell + screens (client)
 lib/
-  auth.ts            Sessions, password hashing, requireUser/requireAdmin
-  prisma.ts          PrismaClient singleton
-  data/              Server-only cached repositories (places, categories,
-                     cities, user) — tag-revalidated on admin edits
-  actions/           Server actions (auth, per-user state, reviews)
+  auth.ts            Stub: always "signed out". No sessions exist.
+  data/              The async read layer over the static catalog
+  actions/           Server actions — validate, then decline to write
+  admin/
+    placeholder.ts   Sample rows for the admin screens
+    readonly.ts      The one message every admin write returns
   client/            Client context providers (categories, saved, visited,
-                     account, location) — DB-backed when signed in
+                     account, location) — localStorage-backed
   places/
     types.ts         The single Place shape every screen renders
     engine.ts        Pure logic: search index, ranking, summaries, geo grouping
     geo.ts search.ts District centres + query parsing/search
-    catalog.ts       Legacy source assembly — used ONLY by the seed
-    sources/         Original datasets — used ONLY by the seed
-prisma/
-  schema.prisma      users, categories, subcategories, cities, places,
-                     saved_places, visited_places, reviews, bookings
-  seed.ts            One-time migration of the original catalog into the DB
+    catalog.ts       Assembles the catalog from sources/
+    sources/         The datasets themselves
+  rwanda/            Umuganda + public holidays, derived not stored
 ```
 
 ## Getting started
 
-1. **Install dependencies**
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
 
-   ```bash
-   npm install
-   ```
+That is the whole setup. No database, no `.env` required, no seed step.
 
-2. **Start a database.** Any Postgres works. For local dev with Docker:
+The admin dashboard is at `/admin` and needs no sign-in — there is nothing to
+sign in with, and nothing behind it to protect.
 
-   ```bash
-   docker run -d --name tembera-db -e POSTGRES_PASSWORD=postgres \
-     -e POSTGRES_USER=postgres -e POSTGRES_DB=tourism_db \
-     -p 5432:5432 postgres:16
-   ```
+### Optional environment variables
 
-3. **Configure environment** — copy the example and fill it in:
+Both are optional; the app runs correctly without either.
 
-   ```bash
-   cp .env.example .env
-   ```
+| Variable                      | Effect when unset                             |
+| ----------------------------- | --------------------------------------------- |
+| `NEXT_PUBLIC_GOOGLE_MAPS_KEY` | `/map` falls back to the static map            |
+| `PRIVACY_CONTACT_EMAIL`       | The privacy page says no address is configured |
 
-   - `DATABASE_URL` — Postgres connection string
-   - `ADMIN_SESSION_SECRET` — long random string
-     (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
-   - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` — optional, enables the live map
+`NEXT_PUBLIC_GOOGLE_MAPS_KEY` ships to the browser by design. **Restrict it by
+HTTP referrer in the Google Cloud console** — that is its only real protection.
 
-4. **Create the schema and seed the catalog**
+## What is and isn't wired
 
-   ```bash
-   npm run db:push
-   npm run db:seed
-   ```
+**Fully working**, with no backend needed:
 
-   The seed migrates the full catalog (~500 places, 16 categories, 30
-   districts) into Postgres and creates the admin account:
+- The whole public catalog: browse, search, filter, map, place detail, nearby
+- **Saved and visited places** — these live in `localStorage`, per browser
+- The Rwandan calendar and closure warnings, which are *calculated*, not stored
 
-   - **Admin:** `admin@tembera.rw`. The password is **generated and printed
-     once** by the seed — save it then. Set `SEED_ADMIN_PASSWORD` (12+
-     characters) beforehand to choose your own. There is deliberately no
-     default password.
-   - **Demo user:** only created when `SEED_DEMO_USER=true`
-     (`demo@tembera.rw` / `demo12345`). Its password is published in this
-     README, so it must never exist in production.
+**UI only.** These screens are finished and render exactly as designed, but
+every write validates its input and then stops, telling the user plainly that
+nothing was saved:
 
-   To change a password later:
+- Sign in, register, profile, settings, and posting a review
+- Booking a trip
+- Every admin create/edit/delete
+- Admin sign-in — `/admin` is simply open
 
-   ```bash
-   npm run set-password -- admin@tembera.rw          # generates one
-   npm run set-password -- admin@tembera.rw "chosen" # or set your own
-   ```
+**Sample data.** Admin screens with no static source (users, bookings,
+reports, reviews, submissions, businesses, activity) render hardcoded rows from
+`lib/admin/placeholder.ts`. Each one shows a `<SampleNotice>` so the figures are
+never mistaken for live ones.
 
-   Signed-in users can also change their own password in Settings.
+### Putting a backend back
 
-5. **Run**
+The seams are deliberate and small:
 
-   ```bash
-   npm run dev        # http://localhost:3000
-   ```
-
-   The admin dashboard is at `/admin` (sign in with the admin account).
+1. `lib/data/*` — replace the function bodies. Signatures already return
+   promises, so no screen changes.
+2. `lib/auth.ts` — return a real user from `getCurrentUser()`. The `User`
+   interface is already the shape the app shell consumes.
+3. `lib/actions/*` and `app/**/actions.ts` — replace the bodies that currently
+   return `READ_ONLY_MESSAGE`. The forms, validation schemas, error styling and
+   pending states are all already wired.
+4. **Put the admin guard back in `app/admin/(dash)/layout.tsx`** — one place
+   covers the whole dashboard. Until then `/admin` is public.
 
 ## Scripts
 
-| Script                  | Purpose                                   |
-| ----------------------- | ----------------------------------------- |
-| `npm run dev`           | Dev server                                |
-| `npm run build`         | Production build (runs `prisma generate`)  |
-| `npm run start`         | Serve the production build                |
-| `npm run lint`          | ESLint                                    |
-| `npm run typecheck`     | `tsc --noEmit`                            |
-| `npm test`              | Unit tests (`node:test`, no extra deps)   |
-| `npm run db:push`       | Push schema to the database               |
-| `npm run db:migrate`    | Create/apply a dev migration              |
-| `npm run db:seed`       | Migrate the catalog + seed the admin      |
-| `npm run db:studio`     | Prisma Studio                             |
-| `npm run set-password`  | Reset any account's password from the CLI |
+| Script              | Purpose                                 |
+| ------------------- | --------------------------------------- |
+| `npm run dev`       | Dev server                              |
+| `npm run build`     | Production build                        |
+| `npm run start`     | Serve the production build              |
+| `npm run lint`      | ESLint                                  |
+| `npm run typecheck` | `tsc --noEmit`                          |
+| `npm test`          | Unit tests (`node:test`, no extra deps) |
 
 ## Testing
 
 ```bash
-npm test               # unit tests — pure logic, no database, ~1s
-npm run test:auth      # auth behaviour in a real browser; needs the dev server
-node scripts/e2e.cjs   # full browser pass; needs the dev server and a DB
+npm test    # 112 unit tests — pure logic, no database, no server, ~1s
 ```
 
-`tests/` covers the pure layers — `lib/places/engine.ts`, `search.ts`,
-`geo.ts`, the rate limiter's counting (`rate-limit-core.ts`) and the session
-token's format and cryptography (`session-token.ts`). These take their data as
-arguments, so they need neither a database nor a server.
+`tests/` covers `lib/places/engine.ts`, `search.ts`, `geo.ts` and the Rwandan
+calendar. These take their data as arguments, so they need no fixtures.
 
-`npm run test:auth` covers what genuinely needs a request and a cookie jar:
-that repeated bad logins get blocked, and that changing a password revokes
-sessions on other devices while keeping the current one. It restores the demo
-account afterwards, so it needs a seed with `SEED_DEMO_USER=true`.
-
-CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, a seeded
-build against a real Postgres, an `npm audit`, and a scan for committed API
-keys — on every push and PR, plus weekly so dependency rot surfaces on its own.
-
-## Security notes
-
-- **Sessions** are signed with HMAC-SHA256 and verified with
-  `timingSafeEqual`. Expiry is enforced **server-side** from the timestamp in
-  the cookie payload, not by trusting the browser to honour `maxAge`.
-- **Sessions are revocable** despite being stateless. The cookie carries the
-  user's `tokenVersion`; bumping that column invalidates every cookie already
-  issued. Changing a password bumps it — so a stolen session dies with the
-  password it outlived — and Settings has a "sign out on all devices" control.
-- **Sign-in is rate limited** per address and per account: 5 attempts per
-  account per 15 minutes on both the public and admin login. The counters are
-  in process memory — see the note in `lib/rate-limit-core.ts` before running
-  more than one instance.
-- **No default passwords.** The seed generates one and prints it once.
-- `ADMIN_SESSION_SECRET` is required at runtime; the app throws without it.
-- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` ships to the browser by design. **Restrict it
-  by HTTP referrer in the Google Cloud console** — that is its only real
-  protection.
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, a build, an
+`npm audit`, and a scan for committed API keys — on every push and PR, plus
+weekly so dependency rot surfaces on its own.
 
 ## Notes
 
-- **Everything is editable at `/admin`** — places, the category taxonomy,
-  cities/districts, bookings (status), and users (roles). Edits revalidate the
-  cached data layer, so the public site reflects them on the next request.
-- **User state is real** — saved places, visit history and reviews are per
-  account and sync across devices. Signed-out visitors get a localStorage
-  fallback so browsing still works before sign-up.
 - The `legacy/` folder holds the original PHP app for reference only.
-- `lib/places/catalog.ts` and `lib/places/sources/*` exist solely so the seed
-  can import the original data once; they are not used at runtime.
+- `/admin` is unauthenticated in this build. It exposes only sample data and
+  the public catalog, and can change nothing — but it must be closed before any
+  real deployment.

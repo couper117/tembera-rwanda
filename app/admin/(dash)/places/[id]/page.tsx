@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PageHead, Panel } from "@/components/admin/ui";
-import { prisma } from "@/lib/prisma";
+import { getCategories } from "@/lib/data/categories";
+import { getPlace } from "@/lib/data/places";
 import PlaceForm, { type CategoryOption, type PlaceFormValues } from "../PlaceForm";
 
 export const dynamic = "force-dynamic";
@@ -12,20 +13,13 @@ export default async function EditPlacePage({
 }) {
   const { id } = await params;
 
-  const [place, cats] = await Promise.all([
-    prisma.place.findUnique({ where: { id } }),
-    prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: { subcategories: { orderBy: [{ sortOrder: "asc" }, { name: "asc" }] } },
-    }),
-  ]);
-
+  const place = await getPlace(id);
   if (!place) notFound();
 
-  const categories: CategoryOption[] = cats.map((c) => ({
+  const categories: CategoryOption[] = (await getCategories()).map((c) => ({
     id: c.id,
     label: c.label,
-    subcategories: c.subcategories.map((s) => s.name),
+    subcategories: c.subcategories,
   }));
 
   const values: PlaceFormValues = {
@@ -41,16 +35,16 @@ export default async function EditPlacePage({
     coordsPrecision: place.coordsPrecision,
     rating: place.rating?.toString() ?? "",
     image: place.image ?? "",
-    images: place.images.join(", "),
+    images: place.images?.join(", ") ?? "",
     description: place.description ?? "",
     hours: place.hours ?? "",
     phone: place.phone ?? "",
     mapLink: place.mapLink ?? "",
     website: place.website ?? "",
-    highlights: place.highlights.join(", "),
+    highlights: place.highlights?.join(", ") ?? "",
     priceFrom: place.priceFrom?.toString() ?? "",
-    keywords: place.keywords.join(", "),
-    sensitive: place.sensitive,
+    keywords: place.keywords?.join(", ") ?? "",
+    sensitive: place.sensitive ?? false,
   };
 
   return (

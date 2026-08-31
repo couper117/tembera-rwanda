@@ -1,25 +1,17 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, Stat } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
-import { prisma } from "@/lib/prisma";
+import { PageHead, Panel, SampleNotice, Stat } from "@/components/admin/ui";
+import { REVIEWS, adminDate } from "@/lib/admin/placeholder";
 
 export const dynamic = "force-dynamic";
 
-/** Reviews are real rows — only the moderation verbs are still to come. */
+/** Sample rows: there is no review table in this build, and no way to post one. */
 export default async function AdminReviewsPage() {
-  const [total, reviews, average] = await Promise.all([
-    prisma.review.count(),
-    prisma.review.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      include: {
-        user: { select: { name: true, handle: true } },
-        place: { select: { name: true, id: true } },
-      },
-    }),
-    prisma.review.aggregate({ _avg: { rating: true } }),
-  ]);
+  const reviews = REVIEWS;
+  const total = reviews.length;
+  const average = reviews.length
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : null;
 
   const lowRated = reviews.filter((r) => r.rating <= 2).length;
 
@@ -30,20 +22,13 @@ export default async function AdminReviewsPage() {
         sub="What visitors are saying, newest first."
       />
 
-      <p className="a-sample">
-        <Icon name="info" size={16} />
-        <span>
-          <strong>Reviews are live;</strong> moderation is not. Hiding or flagging a
-          review needs a status field on the Review model, which does not exist yet — so
-          those actions are shown but disabled.
-        </span>
-      </p>
+      <SampleNotice what="Reviews" />
 
       <div className="a-stats">
         <Stat label="Reviews" value={total} icon="star" />
         <Stat
           label="Average"
-          value={average._avg.rating ? average._avg.rating.toFixed(2) : "—"}
+          value={average ? average.toFixed(2) : "—"}
           icon="sparkle"
           note="across all places"
         />

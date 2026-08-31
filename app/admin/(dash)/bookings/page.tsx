@@ -1,16 +1,17 @@
-import { PageHead, Panel, StatusBadge } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
-import { prisma } from "@/lib/prisma";
+import { PageHead, Panel, SampleNotice, StatusBadge } from "@/components/admin/ui";
+import { BOOKINGS, adminDate } from "@/lib/admin/placeholder";
 import { updateBookingStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookingsPage() {
-  const bookings = await prisma.booking.findMany({ orderBy: { createdAt: "desc" } });
+  const bookings = BOOKINGS;
   const pending = bookings.filter((b) => b.status === "pending").length;
 
   return (
     <>
+      <SampleNotice what="Bookings" />
+
       <PageHead
         title="Bookings"
         sub={`${bookings.length} request${bookings.length === 1 ? "" : "s"}, ${pending} still pending.`}

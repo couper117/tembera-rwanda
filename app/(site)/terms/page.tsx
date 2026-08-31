@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "What Tembera promises, what it doesn't, and how to get something corrected.",
 };
 
-const LAST_UPDATED = "19 August 2026";
+const LAST_UPDATED = "31 August 2026";
 
 /**
  * Deliberately short and readable. A wall of legal boilerplate nobody reads
@@ -65,37 +65,33 @@ export default function TermsPage() {
           <Section title="Tell us when something is wrong">
             <P>
               Every listing has a <B>&ldquo;Report a problem&rdquo;</B> button at
-              the bottom of its page. You do not need an account to use it. If
-              the listing is your business and something is wrong — or you would
-              rather not be listed at all — use that button and we will put it
-              right.
+              the bottom of its page. It is not connected yet — this build has no
+              backend, and the form says so when you submit it. If the listing is
+              your business and something is wrong, or you would rather not be
+              listed at all, contact us directly and we will put it right.
             </P>
           </Section>
 
-          <Section title="Your account">
+          <Section title="Accounts">
             <P>
-              Keep your password to yourself. You are responsible for what
-              happens under your account. If you think someone else has got in,
-              change your password — that signs out every other device — or use
-              &ldquo;sign out on all devices&rdquo; in Settings.
+              There are no accounts. Tembera has no sign-in, no profiles and no
+              reviews — those screens are part of a design that is not connected
+              yet, and they tell you so when you use them.
             </P>
             <P>
-              Reviews you write are public and show your name and handle. Write
-              about your own experience. We remove reviews that are abusive,
-              dishonest, or about something other than the place.
-            </P>
-            <P>
-              You can delete your account at any time in Settings. See the{" "}
-              <Link href="/privacy">privacy policy</Link> for what we store and
-              what happens when you delete it.
+              Your saved places and visit history are kept in your own browser
+              and never reach us. See the{" "}
+              <Link href="/privacy">privacy policy</Link>.
             </P>
           </Section>
 
           <Section title="Bookings">
             <P>
-              Booking requests sent through Tembera are <B>enquiries</B>. They
-              are not a confirmed reservation and no payment is taken. A trip is
-              only booked once the operator confirms it with you directly.
+              The booking screen is not connected yet: nothing you enter is sent
+              anywhere, and the form says so when you submit it. Even once it is
+              connected, requests sent through Tembera will be <B>enquiries</B> —
+              not a confirmed reservation, with no payment taken. A trip is only
+              booked once the operator confirms it with you directly.
             </P>
           </Section>
 
@@ -104,7 +100,7 @@ export default function TermsPage() {
               Listing photographs come from a range of sources and remain the
               property of whoever took them. Where a photograph requires
               credit, we show it beneath the image. If you own a photograph and
-              want it removed, use the report button on that listing.
+              want it removed, contact us directly.
             </P>
           </Section>
 

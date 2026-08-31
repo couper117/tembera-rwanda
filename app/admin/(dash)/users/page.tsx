@@ -1,9 +1,7 @@
 import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { PageHead, Panel } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
-import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
+import { CURRENT_ADMIN, USERS, adminDate } from "@/lib/admin/placeholder";
 import { setUserRole, deleteUser } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -13,29 +11,20 @@ export default async function UsersPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  // Still needed here specifically: the page compares each row against the
-  // signed-in admin so nobody can demote or delete themselves.
-  const admin = await requireAdmin();
   const { error } = await searchParams;
 
-  // Never select passwordHash.
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      email: true,
-      handle: true,
-      name: true,
-      role: true,
-      createdAt: true,
-      _count: { select: { saves: true, visits: true } },
-    },
-  });
+  // The page compares each row against the signed-in admin so nobody can
+  // demote or delete themselves. With no session store there is no real
+  // signed-in admin, so the sample one stands in and the guards still render.
+  const admin = CURRENT_ADMIN;
+  const users = USERS;
 
   const admins = users.filter((u) => u.role === "ADMIN").length;
 
   return (
     <>
+      <SampleNotice what="User accounts" />
+
       <PageHead
         title="Users"
         sub={`${users.length} account${users.length === 1 ? "" : "s"}, ${admins} with admin access.`}

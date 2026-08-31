@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { PageHead, Panel } from "@/components/admin/ui";
-import { prisma } from "@/lib/prisma";
+import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
+import { adminCategories } from "@/lib/data/categories";
+import { countByCategory } from "@/lib/data/places";
 import CategoryForm from "./CategoryForm";
 import {
   deleteCategory,
@@ -21,18 +22,17 @@ export default async function CategoriesPage({
   const { edit, error } = await searchParams;
 
   const [categories, counts] = await Promise.all([
-    prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: { subcategories: { orderBy: [{ sortOrder: "asc" }, { name: "asc" }] } },
-    }),
-    prisma.place.groupBy({ by: ["categoryId"], _count: { _all: true } }),
+    adminCategories(),
+    countByCategory(),
   ]);
 
-  const placeCount = new Map(counts.map((c) => [c.categoryId, c._count._all]));
+  const placeCount = new Map(Object.entries(counts));
   const editing = edit ? categories.find((c) => c.id === edit) ?? null : null;
 
   return (
     <>
+      <SampleNotice what="Editing the taxonomy" />
+
       <PageHead
         title="Categories"
         sub={`${categories.length} top-level categories and their subcategories.`}

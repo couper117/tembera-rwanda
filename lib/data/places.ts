@@ -1,48 +1,16 @@
-import "server-only";
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
-import type { Place as DbPlace } from "@prisma/client";
 import type { Coords, Place } from "@/lib/places/types";
-import {
-  CATEGORIES_TAG,
-  getCategories,
-  sensitiveCategoryIds,
-} from "@/lib/data/categories";
+import { getCategories, sensitiveCategoryIds } from "@/lib/data/categories";
+import { PLACES } from "@/lib/places/catalog";
 import * as engine from "@/lib/places/engine";
 import { searchPlaces } from "@/lib/places/search";
 
-export const PLACES_TAG = "places";
-
-/** Prisma row → the domain Place the whole UI speaks. Nulls become undefined. */
-function toDomain(row: DbPlace): Place {
-  return {
-    id: row.id,
-    name: row.name,
-    categoryId: row.categoryId,
-    subcategory: row.subcategory,
-    subtype: row.subtype ?? undefined,
-    city: row.city,
-    area: row.area ?? undefined,
-    lat: row.lat ?? undefined,
-    lng: row.lng ?? undefined,
-    coordsPrecision: row.coordsPrecision,
-    rating: row.rating ?? undefined,
-    image: row.image ?? undefined,
-    images: row.images.length ? row.images : undefined,
-    description: row.description ?? undefined,
-    hours: row.hours ?? undefined,
-    phone: row.phone ?? undefined,
-    mapLink: row.mapLink ?? undefined,
-    website: row.website ?? undefined,
-    highlights: row.highlights.length ? row.highlights : undefined,
-    priceFrom: row.priceFrom ?? undefined,
-    keywords: row.keywords.length ? row.keywords : undefined,
-    sensitive: row.sensitive,
-  };
-}
-
 /**
- * The whole catalog, cached until an admin edit revalidates the tag.
+ * The catalog, from the static dataset in lib/places/*.
+ *
+ * Every function here stays `async` even though nothing awaits I/O any more:
+ * the pages, metadata functions and components downstream all `await` these,
+ * and keeping the signatures lets the whole UI stay untouched when a real
+ * backend is wired in behind them again.
  *
  * Ratings and prices are stripped from sensitive categories here, at the
  * source, rather than hidden in each component that might render them. A
@@ -50,21 +18,13 @@ function toDomain(row: DbPlace): Place {
  * a search result or a future screen nobody has written yet — the guarantee
  * holds by construction instead of by everyone remembering.
  */
-export const getPlaces = unstable_cache(
-  async (): Promise<Place[]> => {
-    const [rows, sensitive] = await Promise.all([
-      prisma.place.findMany({ orderBy: { name: "asc" } }),
-      sensitiveCategoryIds(),
-    ]);
-    return rows.map((row) => {
-      const place = toDomain(row);
-      if (!sensitive.has(place.categoryId)) return place;
-      return { ...place, rating: undefined, priceFrom: undefined };
-    });
-  },
-  ["places-all"],
-  { tags: [PLACES_TAG, CATEGORIES_TAG] },
-);
+export async function getPlaces(): Promise<Place[]> {
+  const sensitive = await sensitiveCategoryIds();
+  return PLACES.map((place) => {
+    if (!sensitive.has(place.categoryId)) return place;
+    return { ...place, rating: undefined, priceFrom: undefined };
+  });
+}
 
 /* ------------------------------------------------------ lookups & lists */
 
@@ -108,9 +68,7 @@ export async function nearest(
 
 /**
  * Both rows are promotional, so both exclude sensitive categories — a memorial
- * site must never be ranked out of five or paraded on the home page. The
- * exclusion is applied here, where the taxonomy is available, rather than in
- * the engine, which stays pure.
+ * site must never be ranked out of five or paraded on the home page.
  */
 export async function topRated(limit = 10, categoryId?: string): Promise<Place[]> {
   const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
@@ -133,17 +91,6 @@ export async function searchCatalog(
   options: Parameters<typeof searchPlaces>[2] = {},
 ) {
   return searchPlaces(await getPlaces(), query, options);
-}
-
-/* --------------------------------------------------------------- images */
-
-/** The original inline image data for a place, if it had one. Server-only. */
-export async function getPlaceImageData(id: string): Promise<string | null> {
-  const row = await prisma.place.findUnique({
-    where: { id },
-    select: { imageData: true },
-  });
-  return row?.imageData ?? null;
 }
 
 export { engine };

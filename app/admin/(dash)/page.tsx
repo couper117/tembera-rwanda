@@ -1,28 +1,38 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, Stat, StatusBadge } from "@/components/admin/ui";
+import { PageHead, Panel, SampleNotice, Stat, StatusBadge } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
 import {
   ACTIVITY,
+  BOOKINGS,
   BUSINESSES,
   SUBMISSIONS,
   SUBMISSION_TREND,
+  USERS,
   adminDate,
 } from "@/lib/admin/placeholder";
-import { prisma } from "@/lib/prisma";
+import { getCategories } from "@/lib/data/categories";
+import { getCities } from "@/lib/data/cities";
+import { getPlaces } from "@/lib/data/places";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [places, categories, cities, users, pendingBookings, recentBookings] =
-    await Promise.all([
-      prisma.place.count(),
-      prisma.category.count(),
-      prisma.city.count(),
-      prisma.user.count(),
-      prisma.booking.count({ where: { status: "pending" } }),
-      prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
-    ]);
+  // Places, categories and cities are real counts off the static catalog.
+  // Users and bookings have no source in this build, so they count the sample
+  // rows — the <SampleNotice> below says which is which.
+  const [catalog, taxonomy, cityList] = await Promise.all([
+    getPlaces(),
+    getCategories(),
+    getCities(),
+  ]);
+
+  const places = catalog.length;
+  const categories = taxonomy.length;
+  const cities = cityList.length;
+  const users = USERS.length;
+  const pendingBookings = BOOKINGS.filter((b) => b.status === "pending").length;
+  const recentBookings = BOOKINGS.slice(0, 6);
 
   const pendingSubmissions = SUBMISSIONS.filter((s) => s.status === "pending");
   const unverified = BUSINESSES.filter((b) => b.status === "unverified").length;
@@ -45,6 +55,8 @@ export default async function AdminDashboardPage() {
           </>
         }
       />
+
+      <SampleNotice what="Submissions, businesses, bookings, users and the activity feed" />
 
       <div className="a-stats">
         <Stat

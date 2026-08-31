@@ -22,7 +22,7 @@ export interface CategoryGroup {
   /**
    * A place of remembrance rather than a place to consume — memorial sites.
    * Suppresses ratings, reviews, prices and promotional placement, and renders
-   * in a restrained style. See the note on Category.sensitive in schema.prisma.
+   * in a restrained style.
    */
   sensitive?: boolean;
   subcategories: string[];
@@ -112,7 +112,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     title: "Memorials & Heritage",
     icon: "memorial",
     // Places of remembrance. Never rated, reviewed, priced or promoted —
-    // see the note on Category.sensitive in prisma/schema.prisma.
+    // see the note on `sensitive` in the CategoryGroup interface above.
     sensitive: true,
     subcategories: ["Memorial Sites", "Genocide Memorials", "Historical Sites", "Heritage Sites"],
   },

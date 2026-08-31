@@ -1,34 +1,14 @@
-import "server-only";
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
-import type { CategoryGroup } from "@/lib/places/taxonomy";
-
-export const CATEGORIES_TAG = "categories";
+import { CATEGORY_GROUPS, type CategoryGroup } from "@/lib/places/taxonomy";
 
 /**
- * The taxonomy, from the database. Shaped exactly like the old static
- * CATEGORY_GROUPS array so every consumer keeps working — the difference is it
- * is now admin-editable. Cached until an admin edit revalidates the tag.
+ * The taxonomy, from the static list in lib/places/taxonomy.ts.
+ *
+ * Async for the same reason as lib/data/places.ts: every caller awaits it, so
+ * the shape survives a real backend being wired in later.
  */
-export const getCategories = unstable_cache(
-  async (): Promise<CategoryGroup[]> => {
-    const rows = await prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: { subcategories: { orderBy: [{ sortOrder: "asc" }, { name: "asc" }] } },
-    });
-    return rows.map((r) => ({
-      id: r.id,
-      label: r.label,
-      title: r.title,
-      icon: r.icon,
-      primary: r.primary,
-      sensitive: r.sensitive,
-      subcategories: r.subcategories.map((s) => s.name),
-    }));
-  },
-  ["categories-list"],
-  { tags: [CATEGORIES_TAG] },
-);
+export async function getCategories(): Promise<CategoryGroup[]> {
+  return CATEGORY_GROUPS;
+}
 
 /**
  * The ids of categories that must not be rated, priced or promoted.
@@ -57,4 +37,49 @@ export async function groupTitle(id: string): Promise<string> {
 
 export async function groupLabel(id: string): Promise<string> {
   return (await getGroup(id))?.label ?? id;
+}
+
+/* ------------------------------------------------------------------ admin */
+
+export interface AdminSubcategory {
+  id: string;
+  name: string;
+  sortOrder: number;
+}
+
+export interface AdminCategory {
+  id: string;
+  label: string;
+  title: string;
+  icon: string;
+  primary: boolean;
+  sensitive: boolean;
+  sortOrder: number;
+  subcategories: AdminSubcategory[];
+}
+
+/**
+ * The taxonomy in the shape the admin screen renders.
+ *
+ * The static taxonomy carries subcategories as bare strings and has no sort
+ * column, so both are positional here — derived from array order rather than
+ * invented. `id` on a subcategory is scoped to its parent so the rename and
+ * remove forms still have something unique to submit.
+ */
+export async function adminCategories(): Promise<AdminCategory[]> {
+  const groups = await getCategories();
+  return groups.map((group, index) => ({
+    id: group.id,
+    label: group.label,
+    title: group.title,
+    icon: group.icon,
+    primary: group.primary ?? false,
+    sensitive: group.sensitive ?? false,
+    sortOrder: index,
+    subcategories: group.subcategories.map((name, subIndex) => ({
+      id: `${group.id}:${name}`,
+      name,
+      sortOrder: subIndex,
+    })),
+  }));
 }

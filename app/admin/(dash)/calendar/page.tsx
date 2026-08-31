@@ -1,6 +1,5 @@
-import { PageHead, Panel, EmptyRow } from "@/components/admin/ui";
+import { PageHead, Panel, SampleNotice, EmptyRow } from "@/components/admin/ui";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { adminCalendarDates } from "@/lib/data/calendar";
 import {
   derivedHolidays,
   formatDay,
@@ -21,7 +20,10 @@ const EFFECT_LABEL: Record<string, string> = {
 export default async function CalendarPage() {
   const year = kigaliToday().year;
 
-  const added = await adminCalendarDates();
+  // Nowhere to store an added date, so this list is always empty. The two
+  // derived lists below are real — they are calculated, not stored.
+  const added: { id: number; date: Date; name: string; effect: string; note: string }[] =
+    [];
   const holidays = derivedHolidays(year);
   const umugandas = Array.from({ length: 12 }, (_, i) => umugandaFor(year, i + 1));
 
@@ -31,6 +33,8 @@ export default async function CalendarPage() {
         title="Calendar"
         sub="Days the country closes. Tembera warns visitors about these on the home page and on every place page."
       />
+
+      <SampleNotice what="Saving a date" />
 
       <Panel title="Add a date">
         <p className="a-hint" style={{ marginBottom: 16 }}>

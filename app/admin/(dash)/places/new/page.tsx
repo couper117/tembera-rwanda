@@ -1,5 +1,5 @@
 import { PageHead, Panel } from "@/components/admin/ui";
-import { prisma } from "@/lib/prisma";
+import { getCategories } from "@/lib/data/categories";
 import PlaceForm, { type CategoryOption, type PlaceFormValues } from "../PlaceForm";
 
 export const dynamic = "force-dynamic";
@@ -30,14 +30,10 @@ const EMPTY: PlaceFormValues = {
 
 export default async function NewPlacePage() {
 
-  const cats = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
-    include: { subcategories: { orderBy: [{ sortOrder: "asc" }, { name: "asc" }] } },
-  });
-  const categories: CategoryOption[] = cats.map((c) => ({
+  const categories: CategoryOption[] = (await getCategories()).map((c) => ({
     id: c.id,
     label: c.label,
-    subcategories: c.subcategories.map((s) => s.name),
+    subcategories: c.subcategories,
   }));
 
   return (

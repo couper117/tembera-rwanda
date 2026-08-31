@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import PageHeader from "@/components/app/PageHeader";
 
 export const metadata: Metadata = {
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
 // if PRIVACY_CONTACT_EMAIL is unset the page says so plainly, because a policy
 // that points at a mailbox nobody reads is worse than one that admits the gap.
 const CONTACT_EMAIL = process.env.PRIVACY_CONTACT_EMAIL?.trim() || null;
-const LAST_UPDATED = "19 August 2026";
+const LAST_UPDATED = "31 August 2026";
 
 function Contact() {
   if (!CONTACT_EMAIL) {
@@ -46,32 +45,28 @@ export default function PrivacyPage() {
               Last updated {LAST_UPDATED}
             </p>
             <p className="t-body" style={{ marginTop: "var(--t-3)", lineHeight: 1.6 }}>
-              Tembera is a directory of places in Rwanda. You can browse the
-              whole thing without an account. This page explains what we store
-              if you do create one, and how to get it back or erase it.
+              Tembera is a directory of places in Rwanda. It has no accounts
+              and no server-side storage of any kind: nothing you do here is
+              recorded about you. This page explains exactly what that means.
             </p>
           </div>
 
           <Section title="What we store">
             <P>
-              <B>If you browse without an account:</B> nothing is stored about
-              you on our servers. Your saved places, recent searches and chosen
-              city are kept in your own browser and never sent to us.
+              <B>Nothing.</B> Tembera has no database. There is no account
+              system, no sign-in, and nowhere for us to put information about
+              you even if we wanted to.
             </P>
             <P>
-              <B>If you create an account:</B> your name, email address, chosen
-              handle, and optionally a short bio and home city. Your password is
-              stored only as a scrambled hash — nobody at Tembera can read it,
-              including us.
+              <B>What stays in your browser:</B> your saved places, your visit
+              history, your recent searches and your chosen city. These are held
+              in your own browser&apos;s storage on this device, are never sent
+              to us, and are gone when you clear your browsing data.
             </P>
             <P>
-              <B>As you use the site:</B> the places you save, the places you
-              open (so your profile can show your history), and any reviews you
-              write. Reviews are public and show your name and handle.
-            </P>
-            <P>
-              <B>If you request a booking:</B> the name, email, date and party
-              size you enter, plus the calculated price.
+              <B>The sign-in, review and booking forms</B> are part of a design
+              that is not connected yet. They accept what you type and then tell
+              you plainly that nothing was sent, because nothing was.
             </P>
           </Section>
 
@@ -95,55 +90,40 @@ export default function PrivacyPage() {
               policy. Place photos are loaded from the sites that host them.
             </P>
             <P>
-              Tembera administrators can see account names, emails and bookings
-              in order to run the service. Nobody else has access.
+              Nobody at Tembera can see anything about you, because nothing
+              about you leaves your browser.
             </P>
           </Section>
 
           <Section title="How long we keep it">
             <P>
-              Account information is kept until you delete your account. Booking
-              records are kept for up to seven years after the booking date,
-              because they are commercial records — but once you delete your
-              account they are no longer linked to you.
+              There is nothing to keep. What your browser stores stays there for
+              as long as you leave it there.
             </P>
           </Section>
 
           <Section title="Your rights">
             <P>
-              Under Rwanda&apos;s Law N&deg; 058/2021 relating to the protection
-              of personal data and privacy, you can see the data we hold about
-              you, correct it, and have it erased. You do not need to ask us to
-              do any of it:
+              Rwanda&apos;s Law N&deg; 058/2021 relating to the protection of
+              personal data and privacy gives you the right to see the data an
+              organisation holds about you, correct it, and have it erased. We
+              hold none, so there is nothing to request — and no request could
+              return anything.
             </P>
-            <ul className="t-stack-2" style={{ paddingLeft: "1.1rem", lineHeight: 1.6 }}>
-              <li>
-                <B>See and correct it</B> — edit your details any time on your{" "}
-                <Link href="/profile" className="t-link">
-                  profile
-                </Link>
-                .
-              </li>
-              <li>
-                <B>Download it</B> — Settings has a button that gives you
-                everything we hold as a file.
-              </li>
-              <li>
-                <B>Erase it</B> — Settings can delete your account and everything
-                attached to it. This cannot be undone.
-              </li>
-            </ul>
             <P>
-              If something is wrong and you cannot fix it yourself, write to{" "}
-              <Contact /> and we will put it right.
+              The one store of anything is your own browser. Clearing this
+              site&apos;s data in your browser settings erases your saved places
+              and history completely and immediately.
+            </P>
+            <P>
+              If you have a question about any of this, write to <Contact />.
             </P>
           </Section>
 
           <Section title="Security">
             <P>
-              Passwords are hashed with bcrypt. Sign-in sessions use a signed,
-              server-verified cookie that expires after 30 days. Repeated failed
-              sign-in attempts are blocked automatically.
+              There are no passwords, no sign-in cookies and no personal data at
+              rest, so there is nothing here for an attacker to take.
             </P>
             <P>
               No system is perfect. If you find a security problem, please report

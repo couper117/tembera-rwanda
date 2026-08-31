@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { PageHead, Panel } from "@/components/admin/ui";
-import { prisma } from "@/lib/prisma";
+import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
+import { getCities } from "@/lib/data/cities";
 import CityForm from "./CityForm";
 import { deleteCity } from "./actions";
 
@@ -15,15 +15,15 @@ export default async function CitiesPage({
   const { edit } = await searchParams;
   const editId = edit ? Number(edit) : NaN;
 
-  const cities = await prisma.city.findMany({
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-  });
+  const cities = await getCities();
   const editing = Number.isInteger(editId)
     ? cities.find((c) => c.id === editId) ?? null
     : null;
 
   return (
     <>
+      <SampleNotice what="Editing the directory" />
+
       <PageHead
         title="Cities"
         sub={`${cities.length} districts and cities in the directory.`}

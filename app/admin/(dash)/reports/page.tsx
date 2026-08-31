@@ -1,23 +1,21 @@
 import Link from "next/link";
-import { PageHead, Panel, StatusBadge, EmptyRow } from "@/components/admin/ui";
+import { PageHead, Panel, SampleNotice, StatusBadge, EmptyRow } from "@/components/admin/ui";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { adminDate } from "@/lib/admin/placeholder";
-import { prisma } from "@/lib/prisma";
+import { REPORTS, adminDate } from "@/lib/admin/placeholder";
 import { REPORT_KIND_LABEL } from "@/lib/reports/kinds";
 import { deleteReportAction, setReportStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
-  const reports = await prisma.report.findMany({
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-    include: { place: { select: { id: true, name: true, city: true } } },
-  });
+  const reports = REPORTS;
 
   const open = reports.filter((r) => r.status === "open").length;
 
   return (
     <>
+      <SampleNotice what="Reported problems" />
+
       <PageHead
         title="Reports"
         sub={

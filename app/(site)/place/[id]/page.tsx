@@ -65,7 +65,7 @@ export default async function PlaceDetailPage({
   // A place of remembrance is not a place to consume. Memorial sites reach
   // this page through the same route as a restaurant, so the page itself has
   // to know the difference: no rating out of five, no reviews, no price, no
-  // "what to expect" chips. See Category.sensitive in schema.prisma.
+  // "what to expect" chips. See `sensitive` in lib/places/taxonomy.ts.
   // Three ways in, because they answer different questions: the category flag
   // covers a whole class of place, the per-place flag covers a memorial seeded
   // under another category (the Campaign Against Genocide museum sits in

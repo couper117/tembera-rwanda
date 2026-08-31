@@ -1,11 +1,11 @@
 import Icon from "@/components/Icon";
 import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/auth";
+import { CURRENT_ADMIN } from "@/lib/admin/placeholder";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
-  const admin = await requireAdmin();
+  const admin = CURRENT_ADMIN;
 
   return (
     <>
@@ -115,10 +115,9 @@ export default async function AdminSettingsPage() {
 
           <Panel title="Sessions">
             <p className="t-small t-muted">
-              Sessions are signed cookies valid for 30 days. There is no server-side
-              session table, so an issued cookie cannot be revoked individually — only
-              by rotating <code>ADMIN_SESSION_SECRET</code>, which signs every session
-              out at once.
+              There are no sessions in this build. Sign-in has no backend behind it,
+              so the admin screens are open and read-only — nothing here can be
+              changed, and there is nothing to sign out of.
             </p>
           </Panel>
         </div>

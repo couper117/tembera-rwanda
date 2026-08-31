@@ -1,10 +1,6 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { revalidateTag } from "next/cache";
-import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth";
-import { CITIES_TAG } from "@/lib/data/cities";
+import { READ_ONLY_MESSAGE } from "@/lib/admin/readonly";
 import { citySchema, firstError } from "@/lib/validation/admin";
 
 export interface CityFormState {
@@ -27,45 +23,18 @@ export async function createCity(
   _prev: CityFormState,
   formData: FormData,
 ): Promise<CityFormState> {
-  await requireAdmin();
   const parsed = parse(formData);
   if (!parsed.success) return { error: firstError(parsed.error) };
-
-  try {
-    await prisma.city.create({ data: parsed.data });
-  } catch {
-    return { error: `A city named "${parsed.data.name}" already exists.` };
-  }
-  revalidateTag(CITIES_TAG);
-  redirect("/admin/cities");
+  return { error: READ_ONLY_MESSAGE };
 }
 
 export async function updateCity(
   _prev: CityFormState,
   formData: FormData,
 ): Promise<CityFormState> {
-  await requireAdmin();
-  const id = Number(formData.get("id"));
-  if (!Number.isInteger(id)) return { error: "Missing city id." };
-
   const parsed = parse(formData);
   if (!parsed.success) return { error: firstError(parsed.error) };
-
-  try {
-    await prisma.city.update({ where: { id }, data: parsed.data });
-  } catch {
-    return { error: `A city named "${parsed.data.name}" already exists.` };
-  }
-  revalidateTag(CITIES_TAG);
-  redirect("/admin/cities");
+  return { error: READ_ONLY_MESSAGE };
 }
 
-export async function deleteCity(formData: FormData): Promise<void> {
-  await requireAdmin();
-  const id = Number(formData.get("id"));
-  if (Number.isInteger(id)) {
-    await prisma.city.delete({ where: { id } }).catch(() => {});
-    revalidateTag(CITIES_TAG);
-  }
-  redirect("/admin/cities");
-}
+export async function deleteCity(_formData: FormData): Promise<void> {}
