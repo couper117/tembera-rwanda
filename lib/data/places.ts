@@ -38,6 +38,7 @@ function toDomain(row: DbPlace): Place {
     priceFrom: row.priceFrom ?? undefined,
     keywords: row.keywords.length ? row.keywords : undefined,
     sensitive: row.sensitive,
+    status: row.status,
   };
 }
 

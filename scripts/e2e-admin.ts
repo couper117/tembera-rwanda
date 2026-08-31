@@ -95,6 +95,103 @@ async function run(browser: Browser) {
     check("unhiding a review persists", afterShow.includes("Hide"));
   }
 
+  /* ----------------------------------------------------- places list ----- */
+  {
+    await page.goto(`${BASE}/admin/places`, { waitUntil: "networkidle" });
+    const body = (await page.textContent("body")) ?? "";
+    check("places list loads the catalogue", body.includes("listings in the catalogue"));
+
+    await page.goto(`${BASE}/admin/places?gap=no-photo`, { waitUntil: "networkidle" });
+    const filtered = (await page.textContent("body")) ?? "";
+    check(
+      "the missing-photo filter narrows the list",
+      /\d+ of \d+ listings match/.test(filtered),
+      filtered.match(/\d+ of \d+ listings match/)?.[0] ?? "",
+    );
+  }
+
+  /* ----------------------------------------------------- archive/restore - */
+  {
+    const TARGET = "dining-inzora-rooftop";
+
+    await page.goto(`${BASE}/admin/places?q=inzora`, { waitUntil: "networkidle" });
+    // ConfirmButton arms on the first click, REPLACING itself with Sure?/Yes/No
+    // — so the confirming click lands on Yes, not on the original button.
+    await page.locator('button:has-text("Archive")').first().click();
+    await page.locator('button:has-text("Yes")').first().click();
+    await page.waitForTimeout(2000);
+
+    const publicRes = await page.goto(`${BASE}/place/${TARGET}`, {
+      waitUntil: "domcontentloaded",
+    });
+    check(
+      "an archived place leaves the public catalogue",
+      publicRes?.status() === 404,
+      String(publicRes?.status()),
+    );
+
+    await page.goto(`${BASE}/admin/places?q=inzora`, { waitUntil: "networkidle" });
+    const stillListed = (await page.textContent("table.a-table")) ?? "";
+    check("an archived place is still listed in admin", stillListed.includes("Inzora"));
+    // Read the badge inside the table, not the page: the status filter's own
+    // <option value="archived"> would make a whole-page check pass whether or
+    // not any row is actually archived.
+    const badge = await page.locator("table.a-table .a-badge").first().textContent();
+    check("...and shows as archived", badge?.trim() === "archived", badge ?? "none");
+
+    await page.locator('button:has-text("Restore")').first().click();
+    await page.waitForTimeout(1800);
+    const restored = await page.goto(`${BASE}/place/${TARGET}`, {
+      waitUntil: "domcontentloaded",
+    });
+    check(
+      "restoring puts it back on the public site",
+      restored?.status() === 200,
+      String(restored?.status()),
+    );
+  }
+
+  /* ----------------------------------------------------- editing a place - */
+  {
+    await page.goto(`${BASE}/admin/places/dining-inzora-rooftop`, {
+      waitUntil: "networkidle",
+    });
+
+    // This suite edits a real listing, so put the copy back afterwards rather
+    // than leaving test text in the catalogue.
+    const original = await page.inputValue('textarea[name="description"]');
+
+    const marker = `Verified by the e2e suite at ${new Date().toISOString()}`;
+    await page.fill('textarea[name="description"]', marker);
+    // Scoped to the form: the admin topbar carries its own search form, and a
+    // bare button[type=submit] matches that one first and navigates away.
+    await page.click('form.a-form button[type="submit"]');
+    await page.waitForTimeout(2000);
+
+    await page.reload({ waitUntil: "networkidle" });
+    const value = await page.inputValue('textarea[name="description"]');
+    check("editing a place saves", value === marker, value.slice(0, 40));
+
+    // Invalid input must be refused rather than silently stored.
+    await page.fill('input[name="website"]', "this is not a web address");
+    await page.click('form.a-form button[type="submit"]');
+    await page.waitForTimeout(2000);
+    const afterBad = (await page.textContent("body")) ?? "";
+    check(
+      "an invalid website is rejected with a message",
+      afterBad.includes("valid web address"),
+    );
+
+    // Clear the bad value and restore the original copy.
+    await page.fill('input[name="website"]', "");
+    await page.fill('textarea[name="description"]', original);
+    await page.click('form.a-form button[type="submit"]');
+    await page.waitForTimeout(2000);
+    await page.reload({ waitUntil: "networkidle" });
+    const restoredCopy = await page.inputValue('textarea[name="description"]');
+    check("the listing is left as it was found", restoredCopy === original);
+  }
+
   /* ----------------------------------------------------- audit trail ----- */
   {
     await page.goto(`${BASE}/admin/activity`, { waitUntil: "networkidle" });

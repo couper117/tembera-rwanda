@@ -14,6 +14,21 @@ export type CoordsPrecision =
   /** No usable location at all. */
   | "unknown";
 
+/**
+ * Where a listing is in its life.
+ *
+ * Declared here rather than imported from Prisma so this module stays free of
+ * the database layer — the public screens render this type, and dragging an
+ * ORM type into them would drag it into the browser bundle.
+ */
+export type PlaceStatus =
+  /** Not yet public: a new listing, or an edit awaiting review. */
+  | "draft"
+  /** Live in the catalogue. */
+  | "published"
+  /** Retired. The row and its public URL survive; it is out of the catalogue. */
+  | "archived";
+
 export interface Place {
   /** Stable, URL-safe. Derived from category + name, so links survive edits. */
   id: string;
@@ -58,6 +73,9 @@ export interface Place {
   /** Admin override to hide ratings/reviews. Use isSensitivePlace(), which
    *  also treats every "memorials" category place as sensitive by default. */
   sensitive?: boolean;
+  /** Where the listing is in its life. Only the staff reads care: the public
+   *  ones return published rows and nothing else. */
+  status?: PlaceStatus;
 }
 
 /** A place plus the distance from wherever the user currently is. */

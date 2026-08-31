@@ -72,9 +72,71 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
+/* ------------------------------------------------------- field validators */
+
+/**
+ * An optional URL. Accepts a bare domain and adds https://, because an editor
+ * pasting "visitrwanda.com" is doing the reasonable thing and being told it is
+ * invalid teaches them to distrust the form.
+ */
+const optionalUrl = z.preprocess(
+  (v) => {
+    if (typeof v !== "string") return v;
+    const t = v.trim();
+    if (t === "") return undefined;
+    return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+  },
+  z
+    .string()
+    .url("Enter a valid web address.")
+    .optional()
+    .nullable()
+    .transform((v) => v ?? null),
+);
+
+/**
+ * A phone number, kept deliberately loose.
+ *
+ * Rwandan numbers are written every which way — +250 788 123 456,
+ * 0788123456, (0788) 123-456. Rejecting a real business over punctuation is a
+ * worse failure than storing an untidy string, so this only asserts that the
+ * value looks like a phone number at all.
+ */
+const optionalPhone = z.preprocess(
+  emptyToUndefined,
+  z
+    .string()
+    .trim()
+    .regex(/^[+0-9][0-9\s().-]{6,24}$/, "That does not look like a phone number.")
+    .optional()
+    .nullable()
+    .transform((v) => v ?? null),
+);
+
+/**
+ * Rwanda's bounding box, with a little slack at the edges.
+ *
+ * A coordinate outside it is almost always a transposed pair or a stray minus
+ * sign — the two mistakes that put a Kigali restaurant in the Indian Ocean.
+ * Caught here rather than discovered on the map by a visitor.
+ */
+const RWANDA_BOUNDS = { minLat: -2.95, maxLat: -0.95, minLng: 28.8, maxLng: 31.0 };
+
+const latitude = optionalNumber.refine(
+  (v) => v === null || (v >= RWANDA_BOUNDS.minLat && v <= RWANDA_BOUNDS.maxLat),
+  `Latitude should be between ${RWANDA_BOUNDS.minLat} and ${RWANDA_BOUNDS.maxLat} for a place in Rwanda.`,
+);
+
+const longitude = optionalNumber.refine(
+  (v) => v === null || (v >= RWANDA_BOUNDS.minLng && v <= RWANDA_BOUNDS.maxLng),
+  `Longitude should be between ${RWANDA_BOUNDS.minLng} and ${RWANDA_BOUNDS.maxLng} for a place in Rwanda.`,
+);
+
 /* ----------------------------------------------------------------- place */
 
 export const coordsPrecisionSchema = z.enum(["exact", "district", "unknown"]);
+
+export const placeStatusSchema = z.enum(["draft", "published", "archived"]);
 
 export const placeSchema = z.object({
   name: z.string().trim().min(1, "Name is required."),
@@ -83,21 +145,28 @@ export const placeSchema = z.object({
   subtype: optionalString,
   city: z.string().trim().min(1, "City is required."),
   area: optionalString,
-  lat: optionalNumber,
-  lng: optionalNumber,
+  lat: latitude,
+  lng: longitude,
   coordsPrecision: coordsPrecisionSchema.default("unknown"),
-  rating: optionalNumber,
-  image: optionalString,
+  rating: optionalNumber.refine(
+    (v) => v === null || (v >= 0 && v <= 5),
+    "Rating must be between 0 and 5.",
+  ),
+  image: optionalUrl,
   images: commaList,
   description: optionalString,
   hours: optionalString,
-  phone: optionalString,
-  mapLink: optionalString,
-  website: optionalString,
+  phone: optionalPhone,
+  mapLink: optionalUrl,
+  website: optionalUrl,
   highlights: commaList,
-  priceFrom: optionalInt,
+  priceFrom: optionalInt.refine(
+    (v) => v === null || v >= 0,
+    "Price cannot be negative.",
+  ),
   keywords: commaList,
   sensitive: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
+  status: placeStatusSchema.default("published"),
 });
 
 export type PlaceInput = z.infer<typeof placeSchema>;
@@ -132,9 +201,9 @@ export const citySchema = z.object({
   name: z.string().trim().min(1, "Name is required."),
   group: optionalString,
   province: optionalString,
-  lat: optionalNumber,
-  lng: optionalNumber,
-  image: optionalString,
+  lat: latitude,
+  lng: longitude,
+  image: optionalUrl,
   sortOrder: intWithDefault(0),
 });
 
@@ -156,4 +225,25 @@ export function kebab(input: string): string {
 /** Flatten a ZodError into a single friendly message. */
 export function firstError(err: z.ZodError): string {
   return err.issues[0]?.message ?? "Invalid input.";
+}
+
+/**
+ * A ZodError as { field: message }, so a form can show each problem next to
+ * the input that caused it.
+ *
+ * firstError() reports one issue at a time, which turns a form with three
+ * mistakes into three round trips — the user fixes one, resubmits, and is told
+ * about the next. Showing them together is the difference between a form that
+ * helps and a form that plays twenty questions.
+ */
+export type FieldErrors = Record<string, string>;
+
+export function fieldErrors(err: z.ZodError): FieldErrors {
+  const out: FieldErrors = {};
+  for (const issue of err.issues) {
+    const key = issue.path.join(".") || "_";
+    // First message per field wins; later ones are usually consequences.
+    if (!(key in out)) out[key] = issue.message;
+  }
+  return out;
 }
