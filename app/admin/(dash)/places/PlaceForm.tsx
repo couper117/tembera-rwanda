@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Field } from "@/components/admin/Field";
 import HoursEditor from "@/components/admin/HoursEditor";
@@ -113,6 +113,16 @@ export default function PlaceForm({
   const subs = categories.find((c) => c.id === categoryId)?.subcategories ?? [];
   const err = (field: string) => state?.fields?.[field];
 
+  // When the server rejects something, go to the tab holding it. Marking the
+  // tab with a count says where the problem is; this saves the reader having
+  // to go looking for it — and on a phone, where the tabs scroll sideways, the
+  // marked tab may not even be on screen.
+  useEffect(() => {
+    if (!state?.fields) return;
+    const bad = TABS.find((t) => t.fields.some((f) => state.fields?.[f]));
+    if (bad) setTab(bad.id);
+  }, [state]);
+
   const done = useMemo(() => {
     const summary = summariseWeek(week);
     return {
@@ -137,7 +147,16 @@ export default function PlaceForm({
   const categoryLabel = categories.find((c) => c.id === categoryId)?.label ?? "";
 
   return (
-    <form action={formAction} className="a-form a-form--roomy">
+    <form action={formAction} className="a-form a-form--roomy" noValidate>
+      {/*
+        noValidate deliberately. Required fields live on tabs that are hidden
+        rather than unmounted, and a browser cannot show its "please fill this
+        in" bubble on an element it will not display — so it silently refuses
+        to submit and the button appears dead. The server validates every field
+        anyway and returns per-field messages, and the tab holding a rejected
+        field is marked with a count, which is the behaviour we actually want:
+        every problem reported at once, each next to its own input.
+      */}
       {mode === "edit" && <input type="hidden" name="id" defaultValue={values.id} />}
 
       {/* ---------------------------------------------------------- header */}
