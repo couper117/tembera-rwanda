@@ -97,7 +97,8 @@ export async function registerAction(
     },
   });
 
-  return signInWith(email, password);
+  // A brand-new account is always a USER, so there is no role to look up.
+  return signInWith(email, password, "/profile");
 }
 
 export async function loginAction(
@@ -131,7 +132,34 @@ export async function loginAction(
     };
   }
 
-  return signInWith(email, password);
+  return signInWith(email, password, await destinationFor(email));
+}
+
+/**
+ * Where signing in should land you.
+ *
+ * Staff go to the dashboard and businesses to their own, because that is what
+ * they signed in to do — being dropped on a visitor profile and having to find
+ * the way in from there is a small daily tax on the people who use this most.
+ *
+ * Looked up before the password is checked, which is safe: the answer never
+ * reaches the browser unless the sign-in actually succeeds, and an unknown
+ * address simply gets the default.
+ */
+async function destinationFor(email: string): Promise<string> {
+  const account = await prisma.user.findUnique({
+    where: { email },
+    select: { role: true },
+  });
+  switch (account?.role) {
+    case "ADMIN":
+    case "EDITOR":
+      return "/admin";
+    case "BUSINESS":
+      return "/business";
+    default:
+      return "/profile";
+  }
 }
 
 /**
@@ -143,9 +171,13 @@ export async function loginAction(
  * turn a successful sign-in into a silent "email or password is incorrect" —
  * the kind of bug that presents as "the button does nothing".
  */
-async function signInWith(email: string, password: string): Promise<AuthState> {
+async function signInWith(
+  email: string,
+  password: string,
+  redirectTo: string,
+): Promise<AuthState> {
   try {
-    await signIn("credentials", { email, password, redirectTo: "/profile" });
+    await signIn("credentials", { email, password, redirectTo });
     return {};
   } catch (error) {
     if (error instanceof AuthError) {

@@ -42,12 +42,8 @@ async function run(browser: Browser) {
     const page = await ctx.newPage();
     await signIn(page, ACCOUNTS.admin.email, ACCOUNTS.admin.password);
 
-    const url = page.url();
-    check("admin signs in at /login and leaves the login page", !url.includes("/login"), url);
-
-    await page.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
     check(
-      "admin reaches /admin using the session from /login",
+      "admin signs in at /login and lands straight on /admin",
       page.url().endsWith("/admin"),
       page.url(),
     );
@@ -59,7 +55,11 @@ async function run(browser: Browser) {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await signIn(page, ACCOUNTS.editor.email, ACCOUNTS.editor.password);
-    check("editor signs in at /login", !page.url().includes("/login"), page.url());
+    check(
+      "editor signs in at /login and lands straight on /admin",
+      page.url().endsWith("/admin"),
+      page.url(),
+    );
 
     await page.goto(`${BASE}/admin/places`, { waitUntil: "domcontentloaded" });
     check("editor reaches /admin/places", page.url().endsWith("/admin/places"));
@@ -74,10 +74,18 @@ async function run(browser: Browser) {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await signIn(page, ACCOUNTS.visitor.email, ACCOUNTS.visitor.password);
-    check("visitor signs in at /login", !page.url().includes("/login"), page.url());
+    check(
+      "visitor signs in at /login and lands on /profile",
+      page.url().endsWith("/profile"),
+      page.url(),
+    );
 
     await page.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
-    check("visitor is refused /admin", page.url().includes("/admin/login"), page.url());
+    check(
+      "visitor is refused /admin and sent to their own profile",
+      page.url().endsWith("/profile"),
+      page.url(),
+    );
     await ctx.close();
   }
 
@@ -95,6 +103,15 @@ async function run(browser: Browser) {
     await ctx.close();
   }
 
+  /* ---------------- there is no separate admin sign-in any more ---------- */
+  {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    const res = await page.goto(`${BASE}/admin/login`, { waitUntil: "domcontentloaded" });
+    check("the old /admin/login is gone", res?.status() === 404, String(res?.status()));
+    await ctx.close();
+  }
+
   /* ---------------- registration creates a working account --------------- */
   {
     const ctx = await browser.newContext();
@@ -109,12 +126,16 @@ async function run(browser: Browser) {
       page.waitForLoadState("networkidle"),
       page.click('button[type="submit"]'),
     ]);
-    check("registration leaves /register", !page.url().includes("/register"), page.url());
+    check(
+      "registration lands on /profile",
+      page.url().endsWith("/profile"),
+      page.url(),
+    );
 
     await page.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
     check(
       "a newly registered account is NOT staff",
-      page.url().includes("/admin/login"),
+      page.url().endsWith("/profile"),
       page.url(),
     );
     await ctx.close();

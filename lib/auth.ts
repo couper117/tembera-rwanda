@@ -124,7 +124,12 @@ export async function requireUser(redirectTo = "/login"): Promise<User> {
  */
 export async function requireStaff(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user || !isStaff(user)) redirect("/admin/login");
+  // Signed out means "sign in"; signed in but not staff means "this is not
+  // yours" — send them to their own dashboard rather than to a login form they
+  // are already past. Relying on /login to bounce them onward works, but a
+  // double redirect is harder to follow when it misbehaves.
+  if (!user) redirect("/login");
+  if (!isStaff(user)) redirect("/profile");
   return user;
 }
 
@@ -137,15 +142,20 @@ export async function requireStaff(): Promise<User> {
  */
 export async function requireAdmin(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/admin/login");
-  if (user.role !== "ADMIN") redirect("/admin?error=Admins%20only.");
+  if (!user) redirect("/login");
+  // An EDITOR is staff, so bounce them back into the dashboard they do have,
+  // with a reason. Anyone else is not staff at all.
+  if (isStaff(user) && user.role !== "ADMIN") {
+    redirect("/admin?error=Admins%20only.");
+  }
+  if (user.role !== "ADMIN") redirect("/profile");
   return user;
 }
 
 /** A business account, for the /business dashboard. */
 export async function requireBusiness(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/business");
-  if (user.role !== "BUSINESS") redirect("/");
+  if (!user) redirect("/login");
+  if (user.role !== "BUSINESS") redirect("/profile");
   return user;
 }

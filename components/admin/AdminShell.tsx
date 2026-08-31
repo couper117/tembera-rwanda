@@ -203,7 +203,7 @@ export default function AdminShell({ email, name, role, counts, children }: Prop
                 <span className="a-who__mail">{email}</span>
               </span>
               <form action="/logout" method="post">
-                <input type="hidden" name="redirectTo" value="/admin/login" />
+                <input type="hidden" name="redirectTo" value="/" />
                 <button type="submit" className="t-iconbtn" aria-label="Sign out">
                   <Icon name="lock" size={18} />
                 </button>

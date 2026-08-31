@@ -280,7 +280,6 @@ export default function ProfileScreen({ index }: Props) {
 
               <div className="t-card">
                 <Row icon="info" label="About Tembera" href="/about" />
-                <Row icon="lock" label="Admin sign in" href="/admin" />
                 {!authed && <Row icon="user" label="Sign in" href="/login" />}
               </div>
             </div>

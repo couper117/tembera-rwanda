@@ -21,8 +21,6 @@ export const dynamic = "force-dynamic";
  * roles, settings, business standing — enforce that themselves via
  * requireAdmin(); the nav hides them, but hiding is presentation, not
  * permission.
- *
- * /admin/login deliberately sits outside this group so it can render bare.
  */
 export default async function AdminDashLayout({
   children,
