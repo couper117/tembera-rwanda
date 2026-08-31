@@ -248,32 +248,114 @@
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: var(--t-2);
+  gap: var(--t-3);
   height: var(--t-header-h);
   padding: 0 var(--t-4);
-  background: var(--t-surface);
+  background: color-mix(in srgb, var(--t-surface) 88%, transparent);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--t-border);
 }
 
-.a-topbar__title {
-  flex: none;
-  font-size: var(--t-text-heading);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+/* Where you are: the nav section above, the page below. One word repeated
+   from the heading underneath said nothing; this says something. */
+.a-topbar__where {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.15;
 }
 
-.a-search {
-  flex: 1;
+.a-topbar__section {
+  font-size: var(--t-text-micro);
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-topbar__title {
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-topbar__tools {
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  max-width: 420px;
-  margin-inline: auto;
-  height: 38px;
-  padding: 0 var(--t-3);
-  border-radius: var(--t-r-pill);
+  margin-left: auto;
+}
+
+.a-topbar__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--t-r-md);
+  background: transparent;
+  color: var(--t-ink-2);
+  cursor: pointer;
+}
+
+.a-topbar__icon:hover {
   background: var(--t-surface-2);
+  border-color: var(--t-border);
+  color: var(--t-ink);
+}
+
+/* A count, not a dot. "There is something" is less use than "there are four",
+   and the queue it points at is the one thing this bar is for. */
+.a-topbar__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--t-surface);
+}
+
+.a-topbar__rule {
+  width: 1px;
+  height: 22px;
+  background: var(--t-border);
+  margin: 0 2px;
+}
+
+/* Narrower than it was, and no longer centred: it searches the catalogue, not
+   the application, and should not read as the main event on every screen. */
+.a-search {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  width: 260px;
+  height: 36px;
+  padding: 0 var(--t-3);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  border: 1px solid transparent;
   color: var(--t-ink-3);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.a-search:focus-within {
+  background: var(--t-surface);
+  border-color: var(--t-accent);
 }
 
 .a-search input {
@@ -283,37 +365,154 @@
   background: none;
   color: var(--t-ink);
   font: inherit;
+  font-size: 0.86rem;
   outline: none;
 }
 
-.a-who {
+/* --- account --- */
+.a-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.a-avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+.a-usermenu {
+  position: relative;
+}
+
+.a-usermenu__trigger {
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  margin-left: auto;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--t-r-pill);
+  background: transparent;
+  color: var(--t-ink-3);
+  cursor: pointer;
+  font: inherit;
 }
 
-.a-who__text {
+.a-usermenu__trigger:hover,
+.a-usermenu__trigger[aria-expanded="true"] {
+  background: var(--t-surface-2);
+  border-color: var(--t-border);
+}
+
+.a-usermenu__who {
   display: none;
   flex-direction: column;
   line-height: 1.2;
-  text-align: right;
+  text-align: left;
 }
 
-@media (min-width: 768px) {
-  .a-who__text {
+@media (min-width: 900px) {
+  .a-usermenu__who {
     display: flex;
   }
 }
 
-.a-who__name {
+.a-usermenu__name {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink);
+}
+
+/* The role, not the email address. Which powers you are holding matters every
+   day; the address matters when you check, which is what the menu is for. */
+.a-usermenu__role {
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+.a-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 252px;
+  padding: 6px;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow-raised);
+}
+
+.a-menu__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3);
+  border-bottom: 1px solid var(--t-border);
+  margin-bottom: 6px;
+}
+
+.a-menu__id {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.a-menu__name {
   font-size: var(--t-text-small);
   font-weight: 700;
 }
 
-.a-who__mail {
+.a-menu__mail {
   font-size: var(--t-text-micro);
   color: var(--t-ink-3);
+  overflow-wrap: anywhere;
+}
+
+.a-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  width: 100%;
+  padding: 9px var(--t-3);
+  border: 0;
+  border-radius: var(--t-r-sm);
+  background: transparent;
+  color: var(--t-ink);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.a-menu__item:hover {
+  background: var(--t-surface-2);
+}
+
+.a-menu__foot {
+  border-top: 1px solid var(--t-border);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.a-menu__item--danger {
+  color: var(--t-danger);
+}
+
+.a-menu__item--danger:hover {
+  background: var(--t-danger-soft);
 }
 
 .a-main {

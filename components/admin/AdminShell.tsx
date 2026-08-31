@@ -11,8 +11,9 @@ import {
   type ReactNode,
 } from "react";
 import Icon from "@/components/Icon";
+import UserMenu from "@/components/admin/UserMenu";
 import { useTheme } from "@/lib/client/theme";
-import { ADMIN_NAV, adminPageTitle } from "./adminNav";
+import { ADMIN_NAV, adminPageTitle, adminSectionTitle } from "./adminNav";
 
 const KEY = "tembera.adminrail";
 
@@ -46,6 +47,11 @@ interface Props {
  */
 export default function AdminShell({ email, name, role, counts, children }: Props) {
   const pathname = usePathname();
+
+  // The nav group the current page sits in, so the bar says "Catalogue /
+  // Places" rather than repeating the heading below it.
+  const pageTitle = adminPageTitle(pathname);
+  const sectionTitle = adminSectionTitle(pathname);
   const { theme, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
@@ -166,48 +172,55 @@ export default function AdminShell({ email, name, role, counts, children }: Prop
               <Icon name="list" size={20} />
             </button>
 
-            <h1 className="a-topbar__title">{adminPageTitle(pathname)}</h1>
+            {/* The section, then the page. Two lines rather than one word, so
+                the bar says where you are rather than merely repeating the
+                heading below it. */}
+            <div className="a-topbar__where">
+              <span className="a-topbar__section">{sectionTitle}</span>
+              <h1 className="a-topbar__title">{pageTitle}</h1>
+            </div>
 
-            <form action="/admin/places" method="get" className="a-search t-show-desktop">
-              <Icon name="search" size={16} />
-              <input
-                type="search"
-                name="q"
-                placeholder="Search places…"
-                aria-label="Search places"
-              />
-            </form>
-
-            <Link
-              href="/admin/submissions"
-              className="t-iconbtn"
-              aria-label={`${counts.submissions} submissions awaiting review`}
-              style={{ position: "relative" }}
-            >
-              <Icon name="bell" size={19} />
-              {counts.submissions > 0 && <span className="t-dot" />}
-            </Link>
-
-            <button
-              type="button"
-              className="t-iconbtn"
-              onClick={toggleTheme}
-              aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
-            >
-              <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
-            </button>
-
-            <div className="a-who">
-              <span className="a-who__text">
-                <span className="a-who__name">{name}</span>
-                <span className="a-who__mail">{email}</span>
-              </span>
-              <form action="/logout" method="post">
-                <input type="hidden" name="redirectTo" value="/" />
-                <button type="submit" className="t-iconbtn" aria-label="Sign out">
-                  <Icon name="lock" size={18} />
-                </button>
+            <div className="a-topbar__tools">
+              {/* Narrower than it was, and pushed right. It only ever searches
+                  the catalogue, so it should not sit at the centre of every
+                  screen as though it searched everything. */}
+              <form action="/admin/places" method="get" className="a-search t-show-desktop">
+                <Icon name="search" size={15} />
+                <input
+                  type="search"
+                  name="q"
+                  placeholder="Search the catalogue…"
+                  aria-label="Search places"
+                />
               </form>
+
+              <Link
+                href="/admin/submissions"
+                className="a-topbar__icon"
+                aria-label={
+                  counts.submissions > 0
+                    ? `${counts.submissions} submissions awaiting review`
+                    : "Submissions"
+                }
+              >
+                <Icon name="bell" size={18} />
+                {counts.submissions > 0 && (
+                  <span className="a-topbar__badge">{counts.submissions}</span>
+                )}
+              </Link>
+
+              <button
+                type="button"
+                className="a-topbar__icon"
+                onClick={toggleTheme}
+                aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
+              >
+                <Icon name={theme === "dark" ? "sun" : "moon"} size={18} />
+              </button>
+
+              <span className="a-topbar__rule" aria-hidden="true" />
+
+              <UserMenu name={name} email={email} role={role} />
             </div>
           </header>
 
