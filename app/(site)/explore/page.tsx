@@ -69,7 +69,7 @@ export default async function ExplorePage() {
                       src={collection.imageUrl}
                       alt={collection.title}
                       className="t-dest__img"
-                      fallbackIcon="sparkle"
+                      categoryId={collection.categoryId}
                       sizes="230px"
                     />
                     <span className="t-dest__veil" />

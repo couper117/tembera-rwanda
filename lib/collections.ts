@@ -13,6 +13,14 @@ export interface Collection {
   title: string;
   description: string;
   imageUrl: string;
+  /**
+   * The category this collection stands for. Carried so a card whose image
+   * fails to load still falls back to that category's own tint and glyph
+   * rather than a flat grey box — `isRenderableImage` can only judge the shape
+   * of a URL, not whether it still resolves, and several legacy ones no longer
+   * do.
+   */
+  categoryId: string;
   /** Relative to the site root, e.g. "c/dining". */
   pageLink: string;
   ctaText: string;
@@ -32,6 +40,7 @@ export async function getCollections(): Promise<Collection[]> {
         title: group.title,
         description: `${inCategory.length} place${inCategory.length === 1 ? "" : "s"} to explore`,
         imageUrl: image,
+        categoryId: group.id,
         pageLink: `c/${group.id}`,
         ctaText: "Explore",
       });

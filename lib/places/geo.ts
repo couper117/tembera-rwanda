@@ -160,12 +160,28 @@ export function formatDistance(km: number | undefined): string | undefined {
 }
 
 /**
+ * How far apart two district centres can be before a district-precision
+ * distance carries real information.
+ *
+ * Kigali's districts all sit within a few kilometres of each other, so every
+ * place pinned to a centroid inside the city reads as the same handful of
+ * numbers — "~3.3 km away" repeated down a list is not three distances, it is
+ * one centroid printed three times. Across the country the gap is an order of
+ * magnitude larger (Musanze ~90 km, Huye ~130 km), where "~90 km" genuinely
+ * tells you this is a different trip.
+ *
+ * 10 km sits in that gap: it swallows the intra-city noise and keeps the
+ * cross-country signal.
+ */
+const DISTRICT_DISTANCE_FLOOR_KM = 10;
+
+/**
  * Distance label that respects how well we actually know where a place is.
  *
- * District-precision records are pinned to their district centre, so a
- * sub-kilometre reading is meaningless — two places in the same district would
- * both read "0 m away". Below a kilometre we say nothing rather than invent
- * accuracy; above it, the "~" marks the estimate.
+ * District-precision records are pinned to their district centre, so a short
+ * reading is not a measurement — it is the distance to the middle of a
+ * neighbourhood we already name on the card. Below the floor we say nothing
+ * and let the area line do the work; above it, the "~" marks the estimate.
  */
 export function formatDistanceFor(
   km: number | undefined,
@@ -173,6 +189,6 @@ export function formatDistanceFor(
 ): string | undefined {
   if (km === undefined || !Number.isFinite(km)) return undefined;
   if (precision === "exact") return formatDistance(km);
-  if (km < 1) return undefined;
+  if (km < DISTRICT_DISTANCE_FLOOR_KM) return undefined;
   return `~${formatDistance(km)}`;
 }

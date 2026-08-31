@@ -42,6 +42,11 @@ export default function PlaceImage({
   }, [src]);
 
   if (!src || failed) {
+    // Only 15% of non-worship listings carry a usable photo, so this is a
+    // primary state rather than an edge case. What makes it read as chosen is
+    // the category's own tint and mark — an oversized watermark glyph was
+    // tried and dropped: at the 68px thumbnail these lists are mostly made of,
+    // it looks like a duplicated icon rather than a design.
     return (
       <div
         className="t-imgfallback"

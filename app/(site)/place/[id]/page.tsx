@@ -84,6 +84,24 @@ export default async function PlaceDetailPage({
   // same reason the highlights chips are.
   const activities = isSensitive ? [] : getThingsToDo(place);
 
+  // Most listings carry a name and a district and nothing else — only 5% have
+  // opening hours and 1% a phone number. Two consequences for this page:
+  //
+  // The facts list must not repeat the header. It sits directly under a line
+  // that already names the area, so a "Location" row saying the same word
+  // twice is furniture, not information. It earns its place only when it adds
+  // detail the header omits, or when the coordinates are district-level and
+  // the approximation itself is worth stating.
+  //
+  // And when we have no hours, phone or website, the honest thing is to say
+  // so. Silently rendering nothing reads as a broken page; saying we don't
+  // know reads as a guide that is straight with you.
+  const headerPlace = place.area ?? place.city;
+  const locationDetail = locationLine(place);
+  const locationAddsSomething =
+    locationDetail !== headerPlace || place.coordsPrecision === "district";
+  const hasPracticalDetail = Boolean(place.hours || place.phone || place.website);
+
   return (
     <>
       <PageHeader title={place.name} fallbackHref="/explore" revealTitleOnScroll />
@@ -168,20 +186,22 @@ export default async function PlaceDetailPage({
                     />
                   )}
 
-                  <Fact
-                    icon="pin"
-                    label="Location"
-                    value={
-                      <>
-                        {locationLine(place)}
-                        {place.coordsPrecision === "district" && (
-                          <span className="t-small t-muted" style={{ display: "block" }}>
-                            Approximate — we have the district, not an exact address.
-                          </span>
-                        )}
-                      </>
-                    }
-                  />
+                  {locationAddsSomething && (
+                    <Fact
+                      icon="pin"
+                      label="Location"
+                      value={
+                        <>
+                          {locationDetail}
+                          {place.coordsPrecision === "district" && (
+                            <span className="t-small t-muted" style={{ display: "block" }}>
+                              Approximate — we have the district, not an exact address.
+                            </span>
+                          )}
+                        </>
+                      }
+                    />
+                  )}
 
                   {place.priceFrom !== undefined && !isSensitive && (
                     <Fact
@@ -203,6 +223,19 @@ export default async function PlaceDetailPage({
                     />
                   )}
                 </div>
+
+                {/* Say what we don't know, rather than leaving a gap the
+                    reader has to interpret. A memorial is not a business and
+                    gets the plain statement without the invitation. */}
+                {!hasPracticalDetail && (
+                  <p
+                    className="t-small t-muted"
+                    style={{ marginTop: "var(--t-4)", lineHeight: 1.55 }}
+                  >
+                    No opening hours or phone number yet — worth calling ahead.
+                    {!isSensitive && " If it's your place, add them below."}
+                  </p>
+                )}
 
                 {isSensitive && (
                   <div className="t-remember__note" style={{ marginTop: "var(--t-5)" }}>

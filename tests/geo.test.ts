@@ -76,6 +76,29 @@ describe("formatDistanceFor", () => {
     assert.equal(formatDistanceFor(0.4, "unknown"), undefined);
     assert.equal(formatDistanceFor(30, "unknown"), "~30 km");
   });
+
+  test("says nothing for district distances inside one city", () => {
+    // Every Kigali district centre sits within a few km of the others, so a
+    // list of places pinned to those centroids used to read "~3.3 km away"
+    // over and over — one centroid printed many times, not many distances.
+    // The card already names the area, so we let that line do the work.
+    assert.equal(formatDistanceFor(3.3, "district"), undefined);
+    assert.equal(formatDistanceFor(8, "district"), undefined);
+    assert.equal(formatDistanceFor(9.9, "district"), undefined);
+  });
+
+  test("still shows a district distance once it means a different trip", () => {
+    // Musanze and Huye are ~90 km and ~130 km from Kigali. At that range the
+    // centroid error is irrelevant and the number is the whole point.
+    assert.equal(formatDistanceFor(10, "district"), "~10 km");
+    assert.equal(formatDistanceFor(90, "district"), "~90 km");
+  });
+
+  test("an exact record is never suppressed, however close", () => {
+    // The 17 places we have real coordinates for should say so.
+    assert.equal(formatDistanceFor(0.62, "exact"), "620 m");
+    assert.equal(formatDistanceFor(3.3, "exact"), "3.3 km");
+  });
 });
 
 describe("resolveDistrict", () => {
