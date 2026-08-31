@@ -28,19 +28,25 @@ import {
 export default function HoursEditor({
   name,
   initial,
+  onChange,
 }: {
   name: string;
   initial: WeekHours;
+  /** Lets the parent show the week in a completeness meter or summary. */
+  onChange?: (week: WeekHours) => void;
 }) {
-  const [week, setWeek] = useState<WeekHours>(initial);
+  const [week, setWeekState] = useState<WeekHours>(initial);
+
+  function setWeek(next: WeekHours) {
+    setWeekState(next);
+    onChange?.(next);
+  }
 
   function setDay(day: Weekday, value: DayHours | undefined) {
-    setWeek((current) => {
-      const next = { ...current };
-      if (value === undefined) delete next[day];
-      else next[day] = value;
-      return next;
-    });
+    const next = { ...week };
+    if (value === undefined) delete next[day];
+    else next[day] = value;
+    setWeek(next);
   }
 
   /** Copy the first filled-in day down the rest of the week. */

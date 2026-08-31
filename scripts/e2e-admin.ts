@@ -116,9 +116,13 @@ async function run(browser: Browser) {
 
     await page.goto(`${BASE}/admin/places?q=inzora`, { waitUntil: "networkidle" });
     // ConfirmButton arms on the first click, REPLACING itself with Sure?/Yes/No
-    // — so the confirming click lands on Yes, not on the original button.
+    // — so the confirming click lands on Yes, not on the original button. It
+    // also disarms itself after four seconds, so wait for Yes explicitly
+    // rather than assuming the re-render has happened.
     await page.locator('button:has-text("Archive")').first().click();
-    await page.locator('button:has-text("Yes")').first().click();
+    const confirm = page.locator('button:has-text("Yes")').first();
+    await confirm.waitFor({ state: "visible", timeout: 3000 });
+    await confirm.click();
     await page.waitForTimeout(2000);
 
     const publicRes = await page.goto(`${BASE}/place/${TARGET}`, {
@@ -157,6 +161,9 @@ async function run(browser: Browser) {
       waitUntil: "networkidle",
     });
 
+    // Fields live behind tabs now, so open the one holding each field first.
+    await page.locator('[role="tab"]:has-text("Content")').click();
+
     // This suite edits a real listing, so put the copy back afterwards rather
     // than leaving test text in the catalogue.
     const original = await page.inputValue('textarea[name="description"]');
@@ -169,10 +176,12 @@ async function run(browser: Browser) {
     await page.waitForTimeout(2000);
 
     await page.reload({ waitUntil: "networkidle" });
+    await page.locator('[role="tab"]:has-text("Content")').click();
     const value = await page.inputValue('textarea[name="description"]');
     check("editing a place saves", value === marker, value.slice(0, 40));
 
     // Invalid input must be refused rather than silently stored.
+    await page.locator('[role="tab"]:has-text("Contact")').click();
     await page.fill('input[name="website"]', "this is not a web address");
     await page.click('form.a-form button[type="submit"]');
     await page.waitForTimeout(2000);
@@ -183,11 +192,14 @@ async function run(browser: Browser) {
     );
 
     // Clear the bad value and restore the original copy.
+    await page.locator('[role="tab"]:has-text("Contact")').click();
     await page.fill('input[name="website"]', "");
+    await page.locator('[role="tab"]:has-text("Content")').click();
     await page.fill('textarea[name="description"]', original);
     await page.click('form.a-form button[type="submit"]');
     await page.waitForTimeout(2000);
     await page.reload({ waitUntil: "networkidle" });
+    await page.locator('[role="tab"]:has-text("Content")').click();
     const restoredCopy = await page.inputValue('textarea[name="description"]');
     check("the listing is left as it was found", restoredCopy === original);
   }
@@ -198,17 +210,38 @@ async function run(browser: Browser) {
       waitUntil: "networkidle",
     });
 
-    const body = (await page.textContent("body")) ?? "";
-    const sections = ["Identity", "Location", "Contact", "Opening hours", "Content", "Photos", "Publishing"];
+    const tabNames = ["Identity", "Location", "Contact", "Hours", "Content", "Photos", "Publishing"];
+    const tabCount = await page.locator('[role="tab"]').count();
+    check("the editor is split into tabs", tabCount === tabNames.length, `${tabCount} tabs`);
+
     check(
-      "the editor is grouped into sections",
-      sections.every((s) => body.includes(s)),
-      sections.filter((s) => !body.includes(s)).join(", ") || "all present",
+      "a live preview card shows what is being edited",
+      (await page.locator(".a-preview__name").textContent())?.includes("Inzora") ?? false,
+    );
+    const meter = (await page.locator(".a-complete__label").textContent()) ?? "";
+    check("completeness is shown", /\d+% complete/.test(meter), meter.slice(0, 60));
+
+    // Two separate requirements, and checking only the first hid a real bug:
+    // the fields must stay in the DOM so they still submit, AND the inactive
+    // panel must not be on screen.
+    await page.locator('[role="tab"]:has-text("Location")').click();
+    check(
+      "switching tabs keeps the other panels in the DOM",
+      (await page.locator('input[name="name"]').count()) === 1,
+    );
+    check(
+      "...but does not leave them visible",
+      !(await page.locator('input[name="name"]').isVisible()),
+    );
+    check(
+      "the selected panel is visible",
+      await page.locator('input[name="city"]').isVisible(),
     );
 
     // Leaflet is imported dynamically after hydration, so wait for it to be
     // attached rather than for networkidle, which resolves first and makes
     // this look flaky.
+    await page.locator('[role="tab"]:has-text("Location")').click();
     await page.waitForSelector(".leaflet-container", {
       state: "attached",
       timeout: 30000,
@@ -222,10 +255,11 @@ async function run(browser: Browser) {
 
     check(
       "there is a preview link to the public page",
-      (await page.locator('a:has-text("Preview as public")').count()) > 0,
+      (await page.locator('a:has-text("Preview")').count()) > 0,
     );
 
     // Set opening hours for Monday and save.
+    await page.locator('[role="tab"]:has-text("Hours")').click();
     await page.selectOption('select[aria-label="Monday status"]', "open");
     await page.fill('input[aria-label="Monday opening time"]', "08:30");
     await page.fill('input[aria-label="Monday closing time"]', "17:45");
@@ -236,10 +270,12 @@ async function run(browser: Browser) {
     await page.waitForTimeout(2000);
     await page.reload({ waitUntil: "networkidle" });
 
+    await page.locator('[role="tab"]:has-text("Hours")').click();
     const monOpen = await page.inputValue('input[aria-label="Monday opening time"]');
     check("opening hours persist", monOpen === "08:30", monOpen);
 
     // A coordinate outside Rwanda must be refused, not stored.
+    await page.locator('[role="tab"]:has-text("Location")').click();
     await page.fill('input[name="lat"]', "48.85");
     await page.fill('input[name="lng"]', "2.35");
     await page.click('form.a-form button[type="submit"]');
@@ -248,6 +284,10 @@ async function run(browser: Browser) {
     check(
       "a coordinate outside Rwanda is refused",
       rejected.includes("Latitude should be between"),
+    );
+    check(
+      "the tab holding the bad field is marked",
+      (await page.locator(".a-tab--bad").count()) > 0,
     );
   }
 

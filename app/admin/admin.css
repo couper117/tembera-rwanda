@@ -1019,3 +1019,198 @@ a.a-stat:hover {
 .a-hours__table .a-input:disabled {
   opacity: 0.45;
 }
+
+/* ============================================================ place editor */
+
+/* --- header: what you are editing, how finished it is, and how to save ---
+   Kept above the tabs and out of the scroll, so the save button is always
+   reachable and the preview always reflects what is in the fields. */
+.a-editorhead {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  min-width: 0;
+}
+
+.a-preview__img {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--t-r-md);
+  object-fit: cover;
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+  flex: none;
+}
+
+.a-preview__img--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t-ink-3);
+  border-style: dashed;
+}
+
+.a-preview__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.a-preview__name {
+  font-weight: 650;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-preview__meta {
+  font-size: 0.82rem;
+  color: var(--t-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- completeness ---
+   A listing is "done" when a visitor can see it, find it, reach it and know
+   what it is — not when every column is non-null. */
+.a-complete {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.a-complete__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--t-surface-3);
+  overflow: hidden;
+}
+
+.a-complete__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--t-accent);
+  transition: width 160ms ease-out;
+}
+
+.a-complete__label {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--t-ink-3);
+}
+
+.a-editorhead__actions {
+  display: flex;
+  gap: var(--t-2);
+  margin-left: auto;
+}
+
+/* --- tabs --- */
+.a-tabs {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--t-border);
+  margin: var(--t-4) 0 var(--t-4);
+}
+
+.a-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--t-ink-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--t-r-sm) var(--t-r-sm) 0 0;
+}
+
+.a-tab:hover {
+  color: var(--t-ink);
+  background: var(--t-surface-2);
+}
+
+.a-tab--on {
+  color: var(--t-ink);
+  border-bottom-color: var(--t-accent);
+}
+
+/* A tab holding a rejected field. Without this, an error on a hidden tab is
+   invisible and the form just refuses to save without saying where. */
+.a-tab--bad {
+  color: var(--t-danger);
+}
+
+.a-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--t-danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.a-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-4);
+}
+
+/* `display: flex` above beats the browser's own [hidden] { display: none },
+   so an inactive panel stays on screen without this. The panels are hidden
+   rather than unmounted so their inputs still submit — which means the only
+   thing keeping them out of sight is this rule. */
+.a-tabpanel[hidden] {
+  display: none;
+}
+
+.a-formactions {
+  margin-top: var(--t-5);
+  padding-top: var(--t-4);
+  border-top: 1px solid var(--t-border);
+}
+
+/* --- roomier inputs ---
+   Same visual language, more air. A form somebody spends their working day in
+   should not feel like a tax return. */
+.a-form--roomy .a-input,
+.a-form--roomy .a-select,
+.a-form--roomy .a-textarea {
+  padding: 11px 13px;
+  font-size: 0.95rem;
+}
+
+.a-form--roomy .a-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.a-form--roomy .a-hours__table .a-input,
+.a-form--roomy .a-hours__table .a-select {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
