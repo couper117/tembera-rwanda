@@ -1,108 +1,105 @@
 # HANDOFF
 
 ## Current Task
-Remove the backend entirely so the site deploys to Vercel as a static,
-browse-only build with no database to provision. Keep all UI — including the
-full admin dashboard — intact for a backend to be written later.
+Rebuilding the backend on Neon Postgres, on branch `backend-rebuild`. Ten
+phases; see `~/.claude/plans/good-now-that-we-virtual-locket.md` for the full
+plan. Phases 0–2 are done.
 
 ## Status
-**Done.** The app builds, runs and deploys with no `DATABASE_URL`, no
-`.env` at all, and no Postgres anywhere.
+**In progress — Phase 3 (Auth.js v5) is next.**
 
-Verified:
-- `tsc --noEmit` clean; `next lint` clean; **112 unit tests pass**
-- `next build` passes from a clean `.next`, with no environment variables
-- All **35 routes return 200** on `next start`, `/c/nope`, `/place/nope` and
-  `/admin/places/nope` return **404**, and the server log is error-free
-- Runtime dependencies are now just `next`, `react`, `react-dom`, `zod`
+The catalog is live in Neon and the whole public site reads it. No screen was
+changed to get there: `lib/data/*` kept its signatures, which is what that seam
+was built for.
+
+**⚠ `/admin` is still completely unauthenticated.** The guard came out with the
+sessions and goes back in Phase 3, in `app/admin/(dash)/layout.tsx`. Do not
+deploy before that lands.
 
 ## Progress
-- [x] Data layer (`lib/data/*`) rewritten over the static catalog, same async
-      signatures — no screen changed
-- [x] Prisma, bcryptjs, sessions, rate limiting and `prisma/` deleted
-- [x] Every server action made inert: validates, then declines to write
-- [x] Admin dashboard repointed at the static catalog + sample rows
-- [x] README, `.env.example`, CI, privacy policy and terms corrected
-- [ ] **`/admin` is unauthenticated.** Close it before any real deployment
+- [x] **Phase 0** — Neon linked (project `soft-butterfly-15369979`, `dev` +
+      `production` branches). Bookings and experiences deleted entirely.
+- [x] **Phase 1** — Schema, Prisma 7 + Neon WS adapter, one-way seed.
+      495 places, 16 categories, 71 subcategories, 30 districts.
+- [x] **Phase 2** — `lib/data/*` reads Postgres. `catalog.ts` is seed-only.
+- [ ] **Phase 3** — Auth.js v5, four roles, close the admin door, rewrite the
+      legal pages.
+- [ ] Phases 4–9 — public writes, admin CMS writes, business dashboard, the
+      richer place page, email, analytics and data quality.
 
 ## Working Notes
 
-### The shape of the change
-The catalog was always static — `lib/places/sources/*` + `catalog.ts` built the
-dataset that the Prisma seed had loaded into Postgres. So removing the backend
-meant pointing `lib/data/*` back at the catalog rather than at the database.
+### Where things stand
+- `.env` points at the **dev** Neon branch, which holds the whole catalog.
+  The **production branch is still completely empty — no tables at all.** The
+  dev branch was created before the first migration ran, so nothing has ever
+  been applied to production. It gets `prisma migrate deploy` + seed only once
+  the rebuild is proven out on dev.
+- Connection strings: `DATABASE_URL` is the pooled host, `DIRECT_URL` the
+  direct one. Migrations cannot run through Neon's pooler.
+- Nothing is pushed. Four commits sit on `backend-rebuild`; `static-fallback`
+  holds the pre-rebuild static state.
 
-`lib/data/*` functions stay `async` and keep their exact signatures. That is
-deliberate: every screen already awaits them, so restoring a real backend is a
-matter of replacing four function bodies, not editing the UI.
+### Traps found the hard way
+- **The `prisma` CLI publishes an RC to its `latest` tag.** A plain
+  `npm install prisma` gives 8.0.0-rc.12 against a stable 7.10.0 client — a
+  mismatched major pair. All three Prisma packages are pinned to 7.10.0.
+- **Prisma 7 moved the datasource URL out of the schema.** It lives in
+  `prisma.config.ts`, which reads `process.env.DIRECT_URL` directly rather than
+  Prisma's `env()` helper — that helper throws on a missing variable, which
+  would break `prisma generate` (needs no database) and with it Vercel's
+  `postinstall`.
+- **Prisma 7 evaluates `prisma.config.ts` before reading `.env`,** and `tsx`
+  never reads it. Both the config and the seed load `dotenv` explicitly.
+- **`unstable_cache` survives server restarts** via `.next/cache`. Changing a
+  row directly in the database looks like it did nothing. Admin actions call
+  `revalidateTag`; this only bites when poking the DB by hand.
+- A script run from outside the project root cannot resolve `node_modules`.
 
-### Where the seams are, for putting a backend back
-1. `lib/data/{places,categories,cities,calendar,user}.ts` — replace bodies.
-2. `lib/auth.ts` — a stub whose `getCurrentUser()` always returns null. Its
-   `User` interface is already the shape `app/(site)/layout.tsx` consumes.
-3. `lib/actions/*` and `app/**/actions.ts` — bodies return
-   `READ_ONLY_MESSAGE` (`lib/admin/readonly.ts`) or "Not signed in.". Forms,
-   zod schemas, error styling and pending states are all still wired.
-4. **`app/admin/(dash)/layout.tsx`** — the `requireAdmin()` guard was removed
-   from here. One line in one place re-closes the whole dashboard.
+### Invariants, and how they are verified
+1. **`lib/data/*` is the seam.** Rebuild behind the signatures. If a screen has
+   to change, the seam was used wrong.
+2. **Sensitive categories never show ratings, prices, reviews or promotion.**
+   Stripped at source in `getPlaces()`. Verified empirically, not assumed:
+   `/c/memorials` renders 0 occurrences of `t-rating` while `/c/dining` renders
+   10, and a memorial detail page has no rating and no reviews section.
+   Phase 4 must add the matching guard on the **write** side — nothing
+   currently stops a review being written against a memorial.
+3. **Place ids are one-way.** Derived from source array order in
+   `catalog.ts#assignIds`, and also public URLs and foreign keys.
+   `prisma/seed-ids.json` freezes all 495; the seed refuses to run against a
+   catalog that no longer matches, and `npm run verify-seed` checks the same
+   thing from the database side — including the case that actually matters, an
+   id that now points at a *different* place.
+4. **The pure domain layer stays pure.** `lib/places/{engine,search,geo}.ts`
+   import nothing from `lib/data`. 112 tests, still passing, no DB dependency.
 
-### Decisions made
-- **Account screens kept as inert UI**, per instruction. They render and
-  validate, then say plainly that nothing was sent. Never a fake success — a
-  booking confirmation for a discarded request would be worse than an error.
-- **Admin backend-only screens use hardcoded sample rows**, per instruction,
-  extending the `lib/admin/placeholder.ts` convention that already existed for
-  submissions/businesses/activity. Every such screen renders `<SampleNotice>`.
-- **Saved and visited still work** — they were always localStorage-first
-  (`lib/client/saved.tsx`, `visited.tsx`); the server actions were only the
-  "also sync to the account" half, called with `void` and ignored. They are now
-  no-ops, which is what those call sites already assumed.
-- **`/api/nearby` and `/api/place-image/[id]` were kept.** Neither touches a
-  database — the image route now reads `inlineImage()` from the catalog, which
-  is where the catalog's own image URLs already point.
-- **Privacy policy and terms were rewritten.** They claimed bcrypt hashing,
-  30-day session cookies, account deletion and seven-year booking retention —
-  all false now, and the privacy page is written against Law N° 058/2021, so
-  leaving it stale was not an option.
-- **Deleted three untracked leftovers**: `app/admin/{page.tsx,AdminShell.tsx,
-  admin.module.css}`. They were the pre-merge admin, superseded by
-  `components/admin/AdminShell.tsx` + the `(dash)` group, and `page.tsx`
-  collided with `(dash)/page.tsx` on `/admin`.
-- Also removed: the `_*.ts` scratch scripts, `scripts/` (all DB-dependent), and
-  `tests/{rate-limit,session-token}.test.ts` (their modules are gone).
-- **`/logout` was kept**, as an inert redirect. Four screens still POST to it
-  (profile, settings, admin sidebar, admin login), so deleting it would have
-  405'd those buttons. Its `redirectTo` field is now restricted to a path on
-  this site — the original passed it straight to `new URL(to, base)`, where an
-  absolute URL overrides the base, which was an open redirect.
+### Notes on what was built
+- `getPlaces()` filters to `status=published`. `getAllPlaces()`,
+  `getAnyPlace()` and `countByCategoryAllStatuses()` are uncached staff-only
+  reads so admin sees drafts and its own edits at once. **Staff reads do not
+  strip sensitive fields** — an editor must be able to correct a stored value —
+  so they must never feed a public screen.
+- One hot query: `getPlaces()` pulls all 495 rows, cached by tag; every list,
+  count, summary and ranking is then computed in-process by the pure engine.
+  Do not split this into per-screen SQL.
+- The seed writes `website`, `images` and `sensitive`, which the original
+  dropped — though the static catalog carries no values for the first two, so
+  that fix is correct rather than recovering anything.
+- `/c/[category]` and `/city/[city]` stay `force-dynamic`. Prerendering them
+  via `generateStaticParams` is what broke the Vercel build.
 
-### Open items
-- **`/admin` has no auth.** It exposes only sample data and the public catalog
-  and can change nothing, but it is publicly reachable. This is the single most
-  important thing to fix when the backend lands.
-- **The Google Maps API key is still in git history and must be revoked in the
-  Google Cloud console.** Carried over from before — still not done.
-- `lib/rwanda/calendar.ts` and `lib/rwanda/events.ts` still both derive
-  Umuganda and the public holidays. Worth collapsing onto one.
-- Admin "add a calendar date" can never show a result — there is nowhere to
-  store one, so that list is permanently empty. It is behind a `<SampleNotice>`.
-
-### Architecture traps worth knowing
-- **Never import `lib/places/catalog` from a client component** — it reaches
-  the raw datasets and would ship them to the browser. Pass
-  `buildSearchIndex()` down as props.
-- `lib/places/taxonomy.ts` is the source of truth for categories; the legacy
-  redirect map in `next.config.mjs` hardcodes group ids, so a stale id silently
-  404s old links.
-- `/c/[category]` and `/city/[city]` are `force-dynamic`. They previously
-  prerendered via `generateStaticParams`, which is what broke the Vercel build.
-  Do not reintroduce that: `notFound()` already returns a real 404.
+### Open items carried forward
+- **The Google Maps API key is still in git history and must be revoked** in
+  the Google Cloud console. Long-standing, still not done.
+- `lib/rwanda/calendar.ts` and `events.ts` still both derive Umuganda, the
+  fixed holidays and "today in Kigali", and export two different
+  `daysBetween`. Collapsing them is Phase 9.
+- Places have no owner yet: `Place.businessId` exists as a bare nullable
+  column; its relation lands with the `Business` model in Phase 6.
 
 ## Recently Completed
-- Backend removed: no database, no accounts, no sessions; static catalog only.
-- Vercel build fixed: `/c/[category]` and `/city/[city]` no longer query at
-  build time.
-- Review text required (10–1000 chars) from one shared schema.
-- Admin dashboard rebuilt on a shared shell, `(dash)` route group, plain CSS.
-- Turn-by-turn navigation at `/navigate/[id]` via OSRM.
-- Real licensed photos for the parks, lakes, museums and district cards.
+- Catalog reads from Postgres; `catalog.ts` demoted to seed-only input.
+- Schema, Neon client and the guarded one-way seed; 495 ids frozen.
+- Bookings and experiences removed from the product entirely.
+- Backend stripped to a static build (preserved on `static-fallback`).
