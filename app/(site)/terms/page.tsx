@@ -85,16 +85,6 @@ export default function TermsPage() {
             </P>
           </Section>
 
-          <Section title="Bookings">
-            <P>
-              The booking screen is not connected yet: nothing you enter is sent
-              anywhere, and the form says so when you submit it. Even once it is
-              connected, requests sent through Tembera will be <B>enquiries</B> —
-              not a confirmed reservation, with no payment taken. A trip is only
-              booked once the operator confirms it with you directly.
-            </P>
-          </Section>
-
           <Section title="Photographs">
             <P>
               Listing photographs come from a range of sources and remain the

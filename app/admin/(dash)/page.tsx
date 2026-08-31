@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, SampleNotice, Stat, StatusBadge } from "@/components/admin/ui";
+import { PageHead, Panel, SampleNotice, Stat } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
 import {
   ACTIVITY,
-  BOOKINGS,
   BUSINESSES,
   SUBMISSIONS,
   SUBMISSION_TREND,
@@ -19,8 +18,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   // Places, categories and cities are real counts off the static catalog.
-  // Users and bookings have no source in this build, so they count the sample
-  // rows — the <SampleNotice> below says which is which.
+  // Users have no source in this build, so that tile counts the sample rows —
+  // the <SampleNotice> below says which figures are which.
   const [catalog, taxonomy, cityList] = await Promise.all([
     getPlaces(),
     getCategories(),
@@ -31,8 +30,6 @@ export default async function AdminDashboardPage() {
   const categories = taxonomy.length;
   const cities = cityList.length;
   const users = USERS.length;
-  const pendingBookings = BOOKINGS.filter((b) => b.status === "pending").length;
-  const recentBookings = BOOKINGS.slice(0, 6);
 
   const pendingSubmissions = SUBMISSIONS.filter((s) => s.status === "pending");
   const unverified = BUSINESSES.filter((b) => b.status === "unverified").length;
@@ -56,7 +53,7 @@ export default async function AdminDashboardPage() {
         }
       />
 
-      <SampleNotice what="Submissions, businesses, bookings, users and the activity feed" />
+      <SampleNotice what="Submissions, businesses, users and the activity feed" />
 
       <div className="a-stats">
         <Stat
@@ -65,13 +62,6 @@ export default async function AdminDashboardPage() {
           icon="mail"
           note="awaiting review"
           href="/admin/submissions"
-        />
-        <Stat
-          label="Bookings"
-          value={pendingBookings}
-          icon="ticket"
-          note="pending"
-          href="/admin/bookings"
         />
         <Stat
           label="Businesses"
@@ -126,45 +116,6 @@ export default async function AdminDashboardPage() {
             )}
           </Panel>
 
-          <Panel title="Recent bookings" flush>
-            <div className="a-tablewrap">
-              <table className="a-table">
-                <thead>
-                  <tr>
-                    <th>Experience</th>
-                    <th>Guest</th>
-                    <th>Preferred</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentBookings.length === 0 ? (
-                    <tr>
-                      <td colSpan={5}>
-                        <p className="a-empty">No bookings yet.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    recentBookings.map((b) => (
-                      <tr key={b.id}>
-                        <td className="a-table__strong">{b.experience}</td>
-                        <td>
-                          {b.fullName}
-                          <span className="a-table__sub">{b.email}</span>
-                        </td>
-                        <td>{adminDate(b.preferredAt)}</td>
-                        <td>${b.totalPrice.toLocaleString()}</td>
-                        <td>
-                          <StatusBadge status={b.status} />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
         </div>
 
         <div>

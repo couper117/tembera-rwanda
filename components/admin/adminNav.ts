@@ -10,7 +10,7 @@ export interface AdminNavItem {
   label: string;
   icon: IconName;
   /** Which count, if any, rides on this row as a badge. */
-  badge?: "submissions" | "bookings";
+  badge?: "submissions";
   /** Nothing behind it yet — shown, but marked as sample data. */
   sample?: boolean;
 }
@@ -35,7 +35,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         badge: "submissions",
         sample: true,
       },
-      { href: "/admin/bookings", label: "Bookings", icon: "ticket", badge: "bookings" },
       { href: "/admin/reports", label: "Reports", icon: "alert" },
     ],
   },

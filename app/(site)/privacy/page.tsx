@@ -64,9 +64,9 @@ export default function PrivacyPage() {
               to us, and are gone when you clear your browsing data.
             </P>
             <P>
-              <B>The sign-in, review and booking forms</B> are part of a design
-              that is not connected yet. They accept what you type and then tell
-              you plainly that nothing was sent, because nothing was.
+              <B>The sign-in and review forms</B> are part of a design that is
+              not connected yet. They accept what you type and then tell you
+              plainly that nothing was sent, because nothing was.
             </P>
           </Section>
 

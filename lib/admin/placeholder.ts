@@ -298,7 +298,7 @@ export const ACTIVITY: ActivityEntry[] = [
   },
 ];
 
-/* ------------------------------------------- accounts, bookings, feedback */
+/* ----------------------------------------------- accounts and feedback */
 
 export interface AdminUser {
   id: number;
@@ -308,18 +308,6 @@ export interface AdminUser {
   role: "USER" | "ADMIN";
   createdAt: string;
   _count: { saves: number; visits: number };
-}
-
-export interface AdminBooking {
-  id: number;
-  experience: string;
-  fullName: string;
-  email: string;
-  preferredAt: string;
-  guests: number;
-  totalPrice: number;
-  createdAt: string;
-  status: "pending" | "confirmed" | "cancelled";
 }
 
 export interface AdminReport {
@@ -392,53 +380,6 @@ export const USERS: AdminUser[] = [
     role: "USER",
     createdAt: "2026-08-09T00:00:00Z",
     _count: { saves: 1, visits: 0 },
-  },
-];
-
-export const BOOKINGS: AdminBooking[] = [
-  {
-    id: 3182,
-    experience: "Gorilla trekking — Volcanoes National Park",
-    fullName: "Claudine Uwase",
-    email: "claudine.uwase@example.rw",
-    preferredAt: "2026-09-14T00:00:00Z",
-    guests: 2,
-    totalPrice: 3000,
-    createdAt: "2026-08-24T10:12:00Z",
-    status: "pending",
-  },
-  {
-    id: 3181,
-    experience: "Lake Kivu boat tour — Rubavu",
-    fullName: "Eric Habimana",
-    email: "eric.habimana@example.rw",
-    preferredAt: "2026-09-05T00:00:00Z",
-    guests: 4,
-    totalPrice: 240,
-    createdAt: "2026-08-23T16:44:00Z",
-    status: "pending",
-  },
-  {
-    id: 3179,
-    experience: "Kigali city and memorial tour",
-    fullName: "Samuel Rwema",
-    email: "samuel.rwema@example.rw",
-    preferredAt: "2026-08-30T00:00:00Z",
-    guests: 1,
-    totalPrice: 60,
-    createdAt: "2026-08-21T09:03:00Z",
-    status: "confirmed",
-  },
-  {
-    id: 3174,
-    experience: "Nyungwe canopy walk",
-    fullName: "Diane Ingabire",
-    email: "diane.ingabire@example.rw",
-    preferredAt: "2026-08-28T00:00:00Z",
-    guests: 3,
-    totalPrice: 180,
-    createdAt: "2026-08-19T13:20:00Z",
-    status: "cancelled",
   },
 ];
 

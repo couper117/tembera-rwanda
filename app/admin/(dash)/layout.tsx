@@ -1,6 +1,6 @@
 import AdminShell from "@/components/admin/AdminShell";
 import { ThemeProvider } from "@/lib/client/theme";
-import { BOOKINGS, CURRENT_ADMIN, PENDING_SUBMISSIONS } from "@/lib/admin/placeholder";
+import { CURRENT_ADMIN, PENDING_SUBMISSIONS } from "@/lib/admin/placeholder";
 import "../admin.css";
 
 // Counts change with every approval, so the chrome cannot be cached.
@@ -21,14 +21,13 @@ export default async function AdminDashLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const admin = CURRENT_ADMIN;
-  const bookings = BOOKINGS.filter((b) => b.status === "pending").length;
 
   return (
     <ThemeProvider>
       <AdminShell
         email={admin.email}
         name={admin.name}
-        counts={{ submissions: PENDING_SUBMISSIONS, bookings }}
+        counts={{ submissions: PENDING_SUBMISSIONS }}
       >
         {children}
       </AdminShell>
