@@ -70,6 +70,9 @@ export type IconName =
   | "bell"
   | "bellOff"
   | "mail"
+  | "briefcase"
+  | "bot"
+  | "messageSquare"
   // manoeuvres, for turn-by-turn directions
   | "goStraight"
   | "turnLeft"
@@ -431,6 +434,24 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <rect x="3.5" y="5.5" width="17" height="13" rx="2.2" />
       <path d="m4.2 6.7 7.8 6.4 7.8-6.4" />
     </>
+  ),
+  briefcase: (
+    <>
+      <rect x="3.5" y="6.5" width="17" height="13.5" rx="2" />
+      <path d="M8 6.5V4.5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M3.5 12h17" />
+    </>
+  ),
+  bot: (
+    <>
+      <rect x="4" y="6.5" width="16" height="13" rx="3" />
+      <circle cx="9" cy="12.5" r="1.5" />
+      <circle cx="15" cy="12.5" r="1.5" />
+      <path d="M12 2.5v4M8.5 16h7" />
+    </>
+  ),
+  messageSquare: (
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   ),
 
   // Manoeuvre arrows. Each reads bottom-to-tip, so the stem is where you are

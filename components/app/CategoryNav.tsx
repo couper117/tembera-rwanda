@@ -109,6 +109,28 @@ export default function CategoryNav({ summaries }: Props) {
           </div>
         );
       })}
+
+      <div className="t-catnav__group" style={{ marginTop: "var(--t-3)", paddingTop: "var(--t-2)", borderTop: "1px solid var(--t-border)" }}>
+        <div className={`t-catnav__row${pathname.startsWith("/business") ? " t-catnav__row--active" : ""}`}>
+          <Link
+            href="/business"
+            className="t-catnav__link"
+            aria-current={pathname.startsWith("/business") ? "page" : undefined}
+          >
+            <span
+              className="t-catnav__icon"
+              style={{
+                background: "var(--t-accent-soft)",
+                color: "var(--t-accent)",
+              }}
+            >
+              <Icon name="briefcase" size={18} />
+            </span>
+            <span className="t-catnav__label" style={{ fontWeight: 600 }}>For business</span>
+            <span className="t-catnav__count" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>Partner</span>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

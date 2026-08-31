@@ -58,6 +58,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     title: "System",
     items: [
+      { href: "/admin/chatbot", label: "AI Assistant", icon: "sparkle" },
       { href: "/admin/calendar", label: "Calendar", icon: "calendar" },
       { href: "/admin/activity", label: "Activity", icon: "clock", sample: true },
       { href: "/admin/settings", label: "Settings", icon: "settings", sample: true },
