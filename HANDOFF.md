@@ -86,8 +86,17 @@ reviews section.
   the rebuild is proven out on dev.
 - Connection strings: `DATABASE_URL` is the pooled host, `DIRECT_URL` the
   direct one. Migrations cannot run through Neon's pooler.
-- Nothing is pushed. Four commits sit on `backend-rebuild`; `static-fallback`
+- **`backend-rebuild` is merged into `main`** (`a17cd60`). `main` is 24 commits
+  ahead of `origin/main` and **nothing has been pushed yet.** `static-fallback`
   holds the pre-rebuild static state.
+- The merge brought in the landing redesign and the For Business page that had
+  landed on `origin/main` meanwhile. Three files conflicted:
+  `prisma/schema.prisma` (both sides added an identical `BusinessClaim`, since
+  the rebuild had cherry-picked `kenny/business` — the duplicate was dropped,
+  no structural change, no new migration), the place page (kept both the new
+  profile and `ClaimListing`, now gated on `!isSensitive`), and
+  `app/components.css` (auto-merged cleanly). The redesigned landing page
+  needed no changes to read Postgres — the `lib/data` seam did its job.
 
 ### Traps found the hard way
 - **The `prisma` CLI publishes an RC to its `latest` tag.** A plain
