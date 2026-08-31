@@ -1,7 +1,9 @@
 import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
-import { CURRENT_ADMIN, USERS, adminDate } from "@/lib/admin/placeholder";
+import { PageHead, Panel } from "@/components/admin/ui";
+import { adminDate } from "@/lib/admin/placeholder";
+import { requireAdmin } from "@/lib/auth";
+import { adminUsers } from "@/lib/data/user";
 import { setUserRole, deleteUser } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -13,18 +15,18 @@ export default async function UsersPage({
 }) {
   const { error } = await searchParams;
 
-  // The page compares each row against the signed-in admin so nobody can
-  // demote or delete themselves. With no session store there is no real
-  // signed-in admin, so the sample one stands in and the guards still render.
-  const admin = CURRENT_ADMIN;
-  const users = USERS;
+  // ADMIN only: an EDITOR maintains the catalogue, not accounts. The nav
+  // hides this row from them, but hiding is not a permission — this is.
+  const admin = await requireAdmin();
+
+  // Each row is compared against the signed-in admin so nobody can demote or
+  // delete themselves and lock the last administrator out.
+  const users = await adminUsers();
 
   const admins = users.filter((u) => u.role === "ADMIN").length;
 
   return (
     <>
-      <SampleNotice what="User accounts" />
-
       <PageHead
         title="Users"
         sub={`${users.length} account${users.length === 1 ? "" : "s"}, ${admins} with admin access.`}

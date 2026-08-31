@@ -72,16 +72,17 @@ export default function TermsPage() {
             </P>
           </Section>
 
-          <Section title="Accounts">
+          <Section title="Your account">
             <P>
-              There are no accounts. Tembera has no sign-in, no profiles and no
-              reviews — those screens are part of a design that is not connected
-              yet, and they tell you so when you use them.
+              You can browse all of Tembera without an account. If you create
+              one, keep your password to yourself — you are responsible for what
+              happens under your account. If you think someone else has got in,
+              change your password: that signs out every other device.
             </P>
             <P>
-              Your saved places and visit history are kept in your own browser
-              and never reach us. See the{" "}
-              <Link href="/privacy">privacy policy</Link>.
+              You can delete your account at any time in Settings. See the{" "}
+              <Link href="/privacy">privacy policy</Link> for what we store and
+              what happens when you delete it.
             </P>
           </Section>
 

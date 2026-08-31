@@ -13,6 +13,7 @@ import {
 import { getCategories } from "@/lib/data/categories";
 import { getCities } from "@/lib/data/cities";
 import { getAllPlaces } from "@/lib/data/places";
+import { getCurrentUser, isAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,11 @@ export default async function AdminDashboardPage() {
     getCategories(),
     getCities(),
   ]);
+
+  // An EDITOR cannot open Users or Businesses, so they do not get a tile that
+  // only leads to a redirect. The guard is on those screens; this is just not
+  // dangling a door they cannot walk through.
+  const admin = isAdmin(await getCurrentUser());
 
   const places = catalog.length;
   const categories = taxonomy.length;
@@ -63,13 +69,15 @@ export default async function AdminDashboardPage() {
           note="awaiting review"
           href="/admin/submissions"
         />
-        <Stat
-          label="Businesses"
-          value={BUSINESSES.length}
-          icon="basket"
-          note={`${unverified} unverified`}
-          href="/admin/businesses"
-        />
+        {admin && (
+          <Stat
+            label="Businesses"
+            value={BUSINESSES.length}
+            icon="basket"
+            note={`${unverified} unverified`}
+            href="/admin/businesses"
+          />
+        )}
         <Stat label="Places" value={places} icon="pin" note="published" href="/admin/places" />
         <Stat
           label="Categories"
@@ -78,7 +86,9 @@ export default async function AdminDashboardPage() {
           note={`${cities} cities`}
           href="/admin/categories"
         />
-        <Stat label="Users" value={users} icon="user" note="accounts" href="/admin/users" />
+        {admin && (
+          <Stat label="Users" value={users} icon="user" note="accounts" href="/admin/users" />
+        )}
       </div>
 
       <div className="a-cols">

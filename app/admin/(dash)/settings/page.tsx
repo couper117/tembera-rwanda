@@ -1,11 +1,11 @@
 import Icon from "@/components/Icon";
 import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
-import { CURRENT_ADMIN } from "@/lib/admin/placeholder";
+import { requireAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
-  const admin = CURRENT_ADMIN;
+  const admin = await requireAdmin();
 
   return (
     <>

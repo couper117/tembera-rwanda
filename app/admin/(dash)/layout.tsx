@@ -1,32 +1,40 @@
 import AdminShell from "@/components/admin/AdminShell";
 import { ThemeProvider } from "@/lib/client/theme";
-import { CURRENT_ADMIN, PENDING_SUBMISSIONS } from "@/lib/admin/placeholder";
+import { PENDING_SUBMISSIONS } from "@/lib/admin/placeholder";
+import { requireStaff } from "@/lib/auth";
 import "../admin.css";
 
 // Counts change with every approval, so the chrome cannot be cached.
 export const dynamic = "force-dynamic";
 
 /**
- * Every admin screen sits under this layout, so the shell is mounted once
- * rather than re-wrapped nine times.
+ * Every admin screen sits under this layout, which makes it the one place that
+ * gates the whole dashboard. The guard runs here rather than being repeated by
+ * each page, so a new screen added to this group is protected by existing.
  *
- * There is no auth guard here any more: this build has no session store, so
- * there is nothing to check and nothing to protect — every admin screen is
- * read-only sample data. A real deployment must put the guard back here, which
- * is the one place that covers the whole group.
+ * This covers READS. It does not cover writes: a server action is a POST
+ * endpoint reachable by anyone who can craft a request, whether or not the
+ * button that calls it was ever rendered. Every mutating action therefore
+ * calls requireStaff() or requireAdmin() as its own first line.
+ *
+ * ADMIN and EDITOR both get in. The screens only an ADMIN may use — accounts,
+ * roles, settings, business standing — enforce that themselves via
+ * requireAdmin(); the nav hides them, but hiding is presentation, not
+ * permission.
  *
  * /admin/login deliberately sits outside this group so it can render bare.
  */
 export default async function AdminDashLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const admin = CURRENT_ADMIN;
+  const staff = await requireStaff();
 
   return (
     <ThemeProvider>
       <AdminShell
-        email={admin.email}
-        name={admin.name}
+        email={staff.email}
+        name={staff.name}
+        role={staff.role}
         counts={{ submissions: PENDING_SUBMISSIONS }}
       >
         {children}

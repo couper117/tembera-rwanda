@@ -2,10 +2,14 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { PageHead, Panel, SampleNotice, Stat, StatusBadge } from "@/components/admin/ui";
 import { BUSINESSES, adminDate } from "@/lib/admin/placeholder";
+import { requireAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function BusinessesPage() {
+  // ADMIN only: business standing is an account decision, not a catalogue one.
+  await requireAdmin();
+
   const verified = BUSINESSES.filter((b) => b.status === "verified").length;
   const unverified = BUSINESSES.filter((b) => b.status === "unverified").length;
   const listings = BUSINESSES.reduce((sum, b) => sum + b.listings, 0);

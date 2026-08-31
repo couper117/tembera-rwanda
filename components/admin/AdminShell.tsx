@@ -30,6 +30,8 @@ export function useAdminRail(): ShellValue {
 interface Props {
   email: string;
   name: string;
+  /** Drives which nav rows are shown. Not a permission — see adminNav.ts. */
+  role: "ADMIN" | "EDITOR" | "USER" | "BUSINESS";
   /** Live counts for the queue badges. */
   counts: { submissions: number };
   children: ReactNode;
@@ -42,7 +44,7 @@ interface Props {
  * The collapse behaviour and its storage key mirror the public app's rail
  * (components/app/AppShell.tsx) so the two halves of the product feel like one.
  */
-export default function AdminShell({ email, name, counts, children }: Props) {
+export default function AdminShell({ email, name, role, counts, children }: Props) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
@@ -112,10 +114,15 @@ export default function AdminShell({ email, name, counts, children }: Props) {
           </div>
 
           <nav className="a-side__nav">
-            {ADMIN_NAV.map((group) => (
+            {ADMIN_NAV.map((group) => {
+              const items = group.items.filter(
+                (item) => !item.adminOnly || role === "ADMIN",
+              );
+              if (items.length === 0) return null;
+              return (
               <div key={group.title} className="a-navgroup">
                 <p className="a-navgroup__title">{group.title}</p>
-                {group.items.map((item) => {
+                {items.map((item) => {
                   const count = item.badge ? counts[item.badge] : 0;
                   return (
                     <Link
@@ -134,7 +141,8 @@ export default function AdminShell({ email, name, counts, children }: Props) {
                   );
                 })}
               </div>
-            ))}
+              );
+            })}
           </nav>
 
           <div className="a-side__foot">

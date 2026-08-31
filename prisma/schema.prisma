@@ -62,14 +62,77 @@ model User {
   /// "signed out". Raised on password change so a stolen cookie dies with the
   /// password it outlived.
   tokenVersion Int      @default(0) @map("token_version")
+  /// Set when the address is confirmed. Auth.js owns this column; a BUSINESS
+  /// must be verified before it can submit a listing, while an ordinary
+  /// visitor may browse and save without it.
+  emailVerified DateTime? @map("email_verified")
+  /// Auth.js writes an avatar URL here for OAuth providers. Unused today —
+  /// the only provider is credentials — but the adapter expects the column.
+  image        String?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   saves    SavedPlace[]
   visits   VisitedPlace[]
   reviews  Review[]
+  accounts Account[]
+  sessions Session[]
 
   @@map("users")
+}
+
+/* --------------------------------------------------------------- Auth.js */
+//
+// The three models below are Auth.js's own, kept at its expected field names
+// (snake_case columns aside) so the Prisma adapter can drive them unchanged.
+//
+// Sessions are JWTs, not database rows, so the Session table stays empty in
+// normal use: the Credentials provider requires the JWT strategy, and a JWT
+// avoids a database round trip on every request in a serverless deployment.
+// Revocation still works, via User.tokenVersion above.
+//
+// The adapter is mounted anyway because it owns VerificationToken, which
+// password reset and email verification both need — and because keeping
+// Account here means a Google provider can be added later without a migration.
+
+model Account {
+  userId            Int     @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  sessionToken String   @id @map("session_token")
+  userId       Int      @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("auth_verification_tokens")
 }
 
 /// Top level of the taxonomy ("dining", "stays", …). Admin-editable.

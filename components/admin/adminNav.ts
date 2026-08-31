@@ -13,6 +13,12 @@ export interface AdminNavItem {
   badge?: "submissions";
   /** Nothing behind it yet — shown, but marked as sample data. */
   sample?: boolean;
+  /**
+   * Hide the row from an EDITOR. Presentation only — the screen and its
+   * actions enforce the same rule with requireAdmin(), which is where the
+   * permission actually lives. Never rely on this alone.
+   */
+  adminOnly?: boolean;
 }
 
 export interface AdminNavGroup {
@@ -49,9 +55,15 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     title: "Community",
     items: [
-      { href: "/admin/businesses", label: "Businesses", icon: "basket", sample: true },
+      {
+        href: "/admin/businesses",
+        label: "Businesses",
+        icon: "basket",
+        sample: true,
+        adminOnly: true,
+      },
       { href: "/admin/reviews", label: "Reviews", icon: "star" },
-      { href: "/admin/users", label: "Users", icon: "user" },
+      { href: "/admin/users", label: "Users", icon: "user", adminOnly: true },
     ],
   },
   {
@@ -59,7 +71,13 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     items: [
       { href: "/admin/calendar", label: "Calendar", icon: "calendar" },
       { href: "/admin/activity", label: "Activity", icon: "clock", sample: true },
-      { href: "/admin/settings", label: "Settings", icon: "settings", sample: true },
+      {
+        href: "/admin/settings",
+        label: "Settings",
+        icon: "settings",
+        sample: true,
+        adminOnly: true,
+      },
     ],
   },
 ];
