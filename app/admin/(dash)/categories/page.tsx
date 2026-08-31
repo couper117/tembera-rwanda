@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
+import { PageHead, Panel } from "@/components/admin/ui";
 import { adminCategories } from "@/lib/data/categories";
 import { countByCategoryAllStatuses } from "@/lib/data/places";
 import CategoryForm from "./CategoryForm";
@@ -31,8 +31,6 @@ export default async function CategoriesPage({
 
   return (
     <>
-      <SampleNotice what="Editing the taxonomy" />
-
       <PageHead
         title="Categories"
         sub={`${categories.length} top-level categories and their subcategories.`}

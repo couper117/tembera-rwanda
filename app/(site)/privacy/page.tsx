@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/app/PageHeader";
+import { getSettings } from "@/lib/data/settings";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -10,29 +11,32 @@ export const metadata: Metadata = {
 // personal data and privacy: say what is collected, why, how long it is kept,
 // and how the data subject exercises their rights.
 //
-// The contact address comes from the environment so it can be corrected
-// without a code change. There is deliberately no plausible-looking default:
-// if PRIVACY_CONTACT_EMAIL is unset the page says so plainly, because a policy
-// that points at a mailbox nobody reads is worse than one that admits the gap.
-const CONTACT_EMAIL = process.env.PRIVACY_CONTACT_EMAIL?.trim() || null;
+// The contact address is set in the admin, falling back to the environment so
+// an existing deployment keeps working. There is deliberately no
+// plausible-looking default: with neither set, the page says so plainly,
+// because a policy pointing at a mailbox nobody reads is worse than one that
+// admits the gap.
 const LAST_UPDATED = "31 August 2026";
 
-function Contact() {
-  if (!CONTACT_EMAIL) {
+function Contact({ email }: { email: string | null }) {
+  if (!email) {
     return (
       <strong style={{ fontWeight: 600 }}>
-        [no contact address configured &mdash; set PRIVACY_CONTACT_EMAIL]
+        [no contact address configured &mdash; set one in the admin settings]
       </strong>
     );
   }
   return (
-    <a href={`mailto:${CONTACT_EMAIL}`} style={{ fontWeight: 600 }}>
-      {CONTACT_EMAIL}
+    <a href={`mailto:${email}`} style={{ fontWeight: 600 }}>
+      {email}
     </a>
   );
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const settings = await getSettings();
+  const contactEmail =
+    settings.orgContact.trim() || process.env.PRIVACY_CONTACT_EMAIL?.trim() || null;
   return (
     <>
       <PageHeader title="Privacy" fallbackHref="/settings" revealTitleOnScroll />
@@ -150,7 +154,7 @@ export default function PrivacyPage() {
             </ul>
             <P>
               If something is wrong and you cannot fix it yourself, write to{" "}
-              <Contact /> and we will put it right.
+              <Contact email={contactEmail} /> and we will put it right.
             </P>
           </Section>
 
@@ -164,12 +168,12 @@ export default function PrivacyPage() {
             </P>
             <P>
               No system is perfect. If you find a security problem, please
-              report it to <Contact /> rather than posting it publicly, and we
+              report it to <Contact email={contactEmail} /> rather than posting it publicly, and we
               will fix it.
             </P>
             <P>
               No system is perfect. If you find a security problem, please report
-              it to <Contact /> rather than posting it publicly, and
+              it to <Contact email={contactEmail} /> rather than posting it publicly, and
               we will fix it.
             </P>
           </Section>

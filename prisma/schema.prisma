@@ -398,3 +398,17 @@ model AuditEvent {
   @@index([createdAt])
   @@map("audit_events")
 }
+
+/// Deployment settings an administrator can change without a code deploy.
+///
+/// Key/value rather than a column per setting: these are a handful of strings
+/// read once per render, and every new one would otherwise be a migration.
+/// Anything that needs a type, a relation or a constraint does not belong
+/// here — it belongs in a real column.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

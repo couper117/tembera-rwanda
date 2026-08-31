@@ -1413,3 +1413,19 @@ a.a-stat:hover {
   padding: 8px 10px;
   font-size: 0.9rem;
 }
+
+/* A heading over a row of stats. Work waiting on somebody and the size of the
+   catalogue are different questions; putting them under one row makes a
+   number nobody can act on sit beside one that needs doing today. */
+.a-statsgroup {
+  margin: var(--t-5) 0 var(--t-3);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-statsgroup:first-of-type {
+  margin-top: var(--t-4);
+}

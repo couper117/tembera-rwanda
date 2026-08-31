@@ -291,6 +291,70 @@ async function run(browser: Browser) {
     );
   }
 
+  /* ----------------------------------------------------- taxonomy -------- */
+  {
+    await page.goto(`${BASE}/admin/categories`, { waitUntil: "networkidle" });
+    check(
+      "categories screen lists the taxonomy",
+      ((await page.textContent("body")) ?? "").includes("Dining"),
+    );
+
+    // Rename a subcategory. Asserted on the input's VALUE, not the page text:
+    // textContent does not include what is inside a form control, so a check
+    // against the body passes whether or not anything actually changed.
+    const input = page.locator('input[name="name"]').first();
+    const original = await input.inputValue();
+    await input.fill(`${original} TEST`);
+    await input.locator("xpath=ancestor::form").locator('button:has-text("Save")').click();
+    await page.waitForTimeout(2500);
+
+    const renamed = await page.locator('input[name="name"]').first().inputValue();
+    check("renaming a subcategory persists", renamed === `${original} TEST`, renamed);
+
+    // Put it back, so the suite can run twice.
+    const again = page.locator('input[name="name"]').first();
+    await again.fill(original);
+    await again.locator("xpath=ancestor::form").locator('button:has-text("Save")').click();
+    await page.waitForTimeout(2500);
+    const back = await page.locator('input[name="name"]').first().inputValue();
+    check("the taxonomy is left as it was found", back === original, back);
+  }
+
+  /* ----------------------------------------------------- settings -------- */
+  {
+    await page.goto(`${BASE}/admin/settings`, { waitUntil: "networkidle" });
+    await page.fill('input[name="orgContact"]', "not an email");
+    await page.click('form.a-form button[type="submit"]');
+    // Wait for the message rather than a fixed delay: the action does a
+    // transaction, and a sleep long enough on a warm run is not long enough on
+    // a cold one.
+    const refused = await page
+      .locator(".a-error")
+      .waitFor({ state: "visible", timeout: 10000 })
+      .then(() => true)
+      .catch(() => false);
+    check(
+      "an invalid contact address is refused",
+      refused && ((await page.textContent(".a-error")) ?? "").includes("valid email"),
+    );
+
+    await page.fill('input[name="orgContact"]', "privacy@tembera.rw");
+    await page.click('form.a-form button[type="submit"]');
+    await page.waitForTimeout(2000);
+    await page.reload({ waitUntil: "networkidle" });
+    check(
+      "settings persist",
+      (await page.inputValue('input[name="orgContact"]')) === "privacy@tembera.rw",
+    );
+
+    // The setting is the address the privacy page prints, so it has to reach it.
+    await page.goto(`${BASE}/privacy`, { waitUntil: "networkidle" });
+    check(
+      "the contact address reaches the privacy page",
+      ((await page.textContent("body")) ?? "").includes("privacy@tembera.rw"),
+    );
+  }
+
   /* ----------------------------------------------------- audit trail ----- */
   {
     await page.goto(`${BASE}/admin/activity`, { waitUntil: "networkidle" });
