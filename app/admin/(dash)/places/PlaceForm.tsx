@@ -8,6 +8,7 @@ import HoursEditor from "@/components/admin/HoursEditor";
 import MapPicker from "@/components/admin/MapPicker";
 import Icon from "@/components/Icon";
 import { summariseWeek, type WeekHours } from "@/lib/places/hours";
+import { categoryHasPricing, priceFieldLabel } from "@/lib/places/pricing";
 import { createPlace, updatePlace, type PlaceFormState } from "./actions";
 
 export interface PlaceFormValues {
@@ -605,20 +606,25 @@ export default function PlaceForm({
           </Field>
         </div>
 
-        <Field
-          name="priceFrom"
-          label="Price from"
-          error={err("priceFrom")}
-          hint="Whole numbers. Used for stays."
-        >
-          <input
-            id="priceFrom"
+        {/* The unit comes from the category — see lib/places/pricing.ts. A
+            number with the wrong unit is worse than no number, because the
+            reader believes it. */}
+        {categoryHasPricing(categoryId) && (
+          <Field
             name="priceFrom"
-            className="a-input"
-            defaultValue={values.priceFrom}
-            inputMode="numeric"
-          />
-        </Field>
+            label={priceFieldLabel(categoryId)}
+            error={err("priceFrom")}
+            hint="Whole francs."
+          >
+            <input
+              id="priceFrom"
+              name="priceFrom"
+              className="a-input"
+              defaultValue={values.priceFrom}
+              inputMode="numeric"
+            />
+          </Field>
+        )}
 
         <label className="a-check">
           <input type="checkbox" name="sensitive" defaultChecked={values.sensitive} />

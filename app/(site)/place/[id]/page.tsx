@@ -14,6 +14,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { getGroup, groupTitle } from "@/lib/data/categories";
 import { getPlace, isSensitivePlace, nearest } from "@/lib/data/places";
 import { getThingsToDo } from "@/lib/places/activities";
+import { displayPrice } from "@/lib/places/pricing";
 import { getCurrentUser } from "@/lib/auth";
 import { getPlaceReviews } from "@/lib/data/user";
 import type { Place } from "@/lib/places/types";
@@ -72,6 +73,10 @@ export default async function PlaceDetailPage({
   // "arts"), and the memorials id is the backstop for rows predating both.
   const group = await getGroup(place.categoryId);
   const isSensitive = group?.sensitive === true || isSensitivePlace(place);
+
+  // What a price means depends on what the place is: "per night" on a
+  // restaurant is noise, and on a memorial it is worse than noise.
+  const price = displayPrice(place);
 
   // Reviews + who's reading, for the ratings section. Skipped entirely for
   // sensitive places — not fetched, not rendered, not collectable.
@@ -182,12 +187,8 @@ export default async function PlaceDetailPage({
                     }
                   />
 
-                  {place.priceFrom !== undefined && !isSensitive && (
-                    <Fact
-                      icon="sparkle"
-                      label="From"
-                      value={`$${place.priceFrom} per night`}
-                    />
+                  {price && !isSensitive && (
+                    <Fact icon="sparkle" label={price.label} value={price.value} />
                   )}
 
                   {place.website && (

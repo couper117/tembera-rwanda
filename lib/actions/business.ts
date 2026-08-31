@@ -23,6 +23,24 @@ export interface BusinessState {
   fields?: FieldErrors;
   ok?: boolean;
   notice?: string;
+  /**
+   * What was submitted, echoed back.
+   *
+   * React resets a form after its action runs. On a rejected submission that
+   * wipes everything the person typed — which is worse than the validation
+   * error it was reporting, because they have to start again to fix one field.
+   * The form re-seeds itself from this.
+   */
+  values?: Record<string, string>;
+}
+
+/** Every text value on the form, so a rejection can hand it straight back. */
+function echo(formData: FormData): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === "string") out[key] = value;
+  }
+  return out;
 }
 
 const SIGNUP_PER_IP = { limit: 5, windowMs: 60 * 60 * 1000 };
@@ -64,7 +82,11 @@ export async function registerBusinessAction(
     plan: formData.get("plan") ?? "free",
   });
   if (!parsed.success) {
-    return { error: firstError(parsed.error), fields: fieldErrors(parsed.error) };
+    return {
+      error: firstError(parsed.error),
+      fields: fieldErrors(parsed.error),
+      values: echo(formData),
+    };
   }
   const d = parsed.data;
 
@@ -76,6 +98,7 @@ export async function registerBusinessAction(
     return {
       error: "An account with that email already exists. Sign in instead.",
       fields: { email: "Already registered." },
+      values: echo(formData),
     };
   }
 
@@ -166,7 +189,11 @@ export async function updateBusinessProfileAction(
     tin: formData.get("tin"),
   });
   if (!parsed.success) {
-    return { error: firstError(parsed.error), fields: fieldErrors(parsed.error) };
+    return {
+      error: firstError(parsed.error),
+      fields: fieldErrors(parsed.error),
+      values: echo(formData),
+    };
   }
 
   await prisma.business.update({
@@ -240,7 +267,11 @@ export async function updateMyPlaceAction(
 
   const parsed = businessPlaceSchema.safeParse(readPlaceFields(formData));
   if (!parsed.success) {
-    return { error: firstError(parsed.error), fields: fieldErrors(parsed.error) };
+    return {
+      error: firstError(parsed.error),
+      fields: fieldErrors(parsed.error),
+      values: echo(formData),
+    };
   }
 
   if (business.status !== "verified") {
@@ -298,7 +329,11 @@ export async function proposePlaceAction(
     city: formData.get("city"),
   });
   if (!parsed.success) {
-    return { error: firstError(parsed.error), fields: fieldErrors(parsed.error) };
+    return {
+      error: firstError(parsed.error),
+      fields: fieldErrors(parsed.error),
+      values: echo(formData),
+    };
   }
 
   await prisma.submission.create({

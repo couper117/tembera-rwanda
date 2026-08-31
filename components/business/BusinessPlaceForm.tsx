@@ -8,6 +8,7 @@ import HoursEditor from "@/components/admin/HoursEditor";
 import MapPicker from "@/components/admin/MapPicker";
 import Icon from "@/components/Icon";
 import type { WeekHours } from "@/lib/places/hours";
+import { categoryHasPricing, priceFieldLabel } from "@/lib/places/pricing";
 import {
   proposePlaceAction,
   updateMyPlaceAction,
@@ -115,6 +116,16 @@ export default function BusinessPlaceForm({
   const err = (field: string) => state?.fields?.[field];
   const locked = mode === "edit";
 
+  /**
+   * What each field should show.
+   *
+   * React resets the form after the action runs, so on a rejected submission
+   * the values prop is the only record of what was typed. Preferring it means
+   * a person fixes one field rather than retyping all of them.
+   */
+  const v = (field: keyof BusinessPlaceValues) =>
+    state?.values?.[field] ?? String(values[field] ?? "");
+
   // When the server rejects something, go to the tab holding it. Marking the
   // tab with a count says where the problem is; this saves the reader having
   // to go looking for it — and on a phone, where the tabs scroll sideways, the
@@ -124,6 +135,20 @@ export default function BusinessPlaceForm({
     const bad = TABS.find((t) => t.fields.some((f) => state.fields?.[f]));
     if (bad) setTab(bad.id);
   }, [state]);
+
+  // The controlled fields have to be put back by hand. The uncontrolled ones
+  // are re-seeded by remounting them: React ignores a changed `defaultValue`
+  // on an input that is already mounted, so bumping this key is what makes the
+  // returned values actually appear. The key sits on the panels, not the
+  // component, so the chosen tab survives.
+  const [seed, setSeed] = useState(0);
+  useEffect(() => {
+    if (!state?.values) return;
+    setCategoryId(state.values.categoryId ?? "");
+    setLat(state.values.lat ?? "");
+    setLng(state.values.lng ?? "");
+    setSeed((n) => n + 1);
+  }, [state?.values]);
 
   function setPoint(nextLat: string, nextLng: string) {
     setLat(nextLat);
@@ -188,7 +213,7 @@ export default function BusinessPlaceForm({
 
       {/* Panels are hidden, not unmounted — an unmounted input is not
           submitted, so switching tabs would drop what was typed. */}
-      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "about"}>
+      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "about"} key={`about-${seed}`}>
         <Field
           name="name"
           label="Name"
@@ -200,7 +225,7 @@ export default function BusinessPlaceForm({
             id="name"
             name="name"
             className="a-input"
-            defaultValue={values.name}
+            defaultValue={v("name")}
             readOnly={locked}
             required
           />
@@ -232,7 +257,7 @@ export default function BusinessPlaceForm({
               name="subcategory"
               className="a-input"
               list="biz-subcategories"
-              defaultValue={values.subcategory}
+              defaultValue={v("subcategory")}
               readOnly={locked}
               required
             />
@@ -250,7 +275,7 @@ export default function BusinessPlaceForm({
           error={err("subtype")}
           hint="Optional — a cuisine, a denomination, what you are known for."
         >
-          <input id="subtype" name="subtype" className="a-input" defaultValue={values.subtype} />
+          <input id="subtype" name="subtype" className="a-input" defaultValue={v("subtype")} />
         </Field>
 
         <Field
@@ -264,7 +289,7 @@ export default function BusinessPlaceForm({
             name="description"
             className="a-textarea"
             rows={5}
-            defaultValue={values.description}
+            defaultValue={v("description")}
           />
         </Field>
 
@@ -278,16 +303,16 @@ export default function BusinessPlaceForm({
             id="highlights"
             name="highlights"
             className="a-input"
-            defaultValue={values.highlights}
+            defaultValue={v("highlights")}
           />
         </Field>
 
         <Field name="keywords" label="Search words" error={err("keywords")} hint="Comma separated.">
-          <input id="keywords" name="keywords" className="a-input" defaultValue={values.keywords} />
+          <input id="keywords" name="keywords" className="a-input" defaultValue={v("keywords")} />
         </Field>
       </div>
 
-      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "where"}>
+      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "where"} key={`where-${seed}`}>
         <div className="a-grid2">
           <Field
             name="city"
@@ -301,7 +326,7 @@ export default function BusinessPlaceForm({
               name="city"
               className="a-input"
               list="biz-cities"
-              defaultValue={values.city}
+              defaultValue={v("city")}
               readOnly={locked}
               required
             />
@@ -312,7 +337,7 @@ export default function BusinessPlaceForm({
             </datalist>
           </Field>
           <Field name="area" label="Area" error={err("area")}>
-            <input id="area" name="area" className="a-input" defaultValue={values.area} />
+            <input id="area" name="area" className="a-input" defaultValue={v("area")} />
           </Field>
         </div>
 
@@ -344,14 +369,14 @@ export default function BusinessPlaceForm({
         <input type="hidden" name="coordsPrecision" value={precision} />
 
         <Field name="mapLink" label="Map link" error={err("mapLink")}>
-          <input id="mapLink" name="mapLink" className="a-input" defaultValue={values.mapLink} />
+          <input id="mapLink" name="mapLink" className="a-input" defaultValue={v("mapLink")} />
         </Field>
       </div>
 
-      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "contact"}>
+      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "contact"} key={`contact-${seed}`}>
         <div className="a-grid2">
           <Field name="phone" label="Phone" error={err("phone")}>
-            <input id="phone" name="phone" className="a-input" defaultValue={values.phone} />
+            <input id="phone" name="phone" className="a-input" defaultValue={v("phone")} />
           </Field>
           <Field
             name="website"
@@ -359,12 +384,12 @@ export default function BusinessPlaceForm({
             error={err("website")}
             hint="A bare domain is fine."
           >
-            <input id="website" name="website" className="a-input" defaultValue={values.website} />
+            <input id="website" name="website" className="a-input" defaultValue={v("website")} />
           </Field>
         </div>
       </div>
 
-      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "hours"}>
+      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "hours"} key={`hours-${seed}`}>
         <HoursEditor name="hoursJson" initial={values.hoursJson} />
         <Field
           name="hours"
@@ -372,36 +397,40 @@ export default function BusinessPlaceForm({
           error={err("hours")}
           hint="Used when the week above is empty."
         >
-          <input id="hours" name="hours" className="a-input" defaultValue={values.hours} />
+          <input id="hours" name="hours" className="a-input" defaultValue={v("hours")} />
         </Field>
       </div>
 
-      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "photos"}>
+      <div className="a-tabpanel" role="tabpanel" hidden={tab !== "photos"} key={`photos-${seed}`}>
         <Field
           name="image"
           label="Main photo"
           error={err("image")}
           hint="Paste the web address of a photo. Uploads are coming."
         >
-          <input id="image" name="image" className="a-input" defaultValue={values.image} />
+          <input id="image" name="image" className="a-input" defaultValue={v("image")} />
         </Field>
         <Field name="images" label="More photos" error={err("images")} hint="Comma separated.">
-          <input id="images" name="images" className="a-input" defaultValue={values.images} />
+          <input id="images" name="images" className="a-input" defaultValue={v("images")} />
         </Field>
-        <Field
-          name="priceFrom"
-          label="Price from"
-          error={err("priceFrom")}
-          hint="Whole numbers, for stays."
-        >
-          <input
-            id="priceFrom"
+        {/* Only where a starting price is a real concept. A bank or a
+            memorial has no "from" price, and offering the field invites one. */}
+        {categoryHasPricing(categoryId) && (
+          <Field
             name="priceFrom"
-            className="a-input"
-            defaultValue={values.priceFrom}
-            inputMode="numeric"
-          />
-        </Field>
+            label={priceFieldLabel(categoryId)}
+            error={err("priceFrom")}
+            hint="Whole francs. Shown to visitors as a starting price."
+          >
+            <input
+              id="priceFrom"
+              name="priceFrom"
+              className="a-input"
+              defaultValue={v("priceFrom")}
+              inputMode="numeric"
+            />
+          </Field>
+        )}
       </div>
 
       <div className="a-formactions t-inline t-wrap">

@@ -23,6 +23,21 @@ export interface PlaceFormState {
   fields?: FieldErrors;
   /** Set after a successful save, so the form can confirm rather than guess. */
   ok?: boolean;
+  /**
+   * What was submitted, echoed back. React resets a form after its action
+   * runs, so without this a rejected save wipes everything that was typed —
+   * worse than the error it was reporting.
+   */
+  values?: Record<string, string>;
+}
+
+/** Every text value on the form, so a rejection can hand it straight back. */
+function echo(formData: FormData): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === "string") out[key] = value;
+  }
+  return out;
 }
 
 /**
@@ -73,8 +88,11 @@ function parse(formData: FormData) {
   });
 }
 
-function invalid(error: Parameters<typeof fieldErrors>[0]): PlaceFormState {
-  return { error: firstError(error), fields: fieldErrors(error) };
+function invalid(
+  error: Parameters<typeof fieldErrors>[0],
+  formData: FormData,
+): PlaceFormState {
+  return { error: firstError(error), fields: fieldErrors(error), values: echo(formData) };
 }
 
 /**
@@ -121,7 +139,7 @@ export async function createPlace(
   const staff = await requireStaff();
 
   const parsed = parse(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalid(parsed.error, formData);
   const d = parsed.data;
 
   const badCategory = await checkCategory(d.categoryId, d.subcategory);
@@ -152,7 +170,7 @@ export async function updatePlace(
   if (!id) return { error: "Missing place id." };
 
   const parsed = parse(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalid(parsed.error, formData);
   const d = parsed.data;
 
   const badCategory = await checkCategory(d.categoryId, d.subcategory);

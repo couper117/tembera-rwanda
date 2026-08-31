@@ -2,7 +2,8 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { EmptyRow, PageHead, Panel, StatusBadge } from "@/components/admin/ui";
 import { requireBusiness } from "@/lib/auth";
-import { getMyBusiness, getMyPlaces } from "@/lib/data/business";
+import { getMyBusiness, getMyPlaces, getMySubmissions } from "@/lib/data/business";
+import { adminDate } from "@/lib/admin/placeholder";
 import { isRenderableImage } from "@/lib/places/engine";
 
 export const dynamic = "force-dynamic";
@@ -12,16 +13,29 @@ export default async function MyListingsPage() {
   const business = await getMyBusiness(user.id);
   if (!business) return null;
 
-  const places = await getMyPlaces(business.id);
+  const [places, submissions] = await Promise.all([
+    getMyPlaces(business.id),
+    getMySubmissions(business.id),
+  ]);
+
+  /*
+   * A proposed listing has no Place row until Tembera approves it, so it was
+   * invisible here — you sent something in and nothing appeared, which reads
+   * as the submission having failed. Pending and rejected proposals are shown
+   * alongside the real listings, clearly marked as not live yet.
+   */
+  const proposals = submissions.filter(
+    (s) => s.kind === "create" && s.status !== "approved",
+  );
 
   return (
     <>
       <PageHead
         title="My listings"
         sub={
-          places.length === 0
+          places.length === 0 && proposals.length === 0
             ? "Nothing yet."
-            : `${places.length} listing${places.length === 1 ? "" : "s"} you manage.`
+            : `${places.length} live, ${proposals.length} waiting on Tembera.`
         }
         actions={
           <Link
@@ -34,7 +48,49 @@ export default async function MyListingsPage() {
         }
       />
 
-      <Panel title="Listings" flush>
+      {proposals.length > 0 && (
+        <Panel title="Waiting on Tembera" flush>
+          <div className="a-tablewrap">
+            <table className="a-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>District</th>
+                  <th>Sent</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proposals.map((s) => {
+                  const payload = s.payload as
+                    | { name?: string; city?: string; subcategory?: string }
+                    | null;
+                  return (
+                    <tr key={s.id}>
+                      <td>
+                        <span className="a-table__strong">
+                          {payload?.name ?? "A new listing"}
+                        </span>
+                        <span className="a-table__sub">{payload?.subcategory ?? ""}</span>
+                      </td>
+                      <td>{payload?.city ?? "—"}</td>
+                      <td>{adminDate(s.createdAt)}</td>
+                      <td>
+                        <StatusBadge status={s.status} />
+                        {s.status === "rejected" && s.rejectionReason && (
+                          <span className="a-table__sub">{s.rejectionReason}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      )}
+
+      <Panel title={proposals.length > 0 ? "Live listings" : "Listings"} flush>
         <div className="a-tablewrap">
           <table className="a-table">
             <thead>
