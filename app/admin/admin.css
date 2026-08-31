@@ -846,3 +846,14 @@ a.a-stat:hover {
   border: 1px solid var(--t-border);
   box-shadow: var(--t-shadow-float);
 }
+
+/* A row whose record is present but not in force — a hidden review, an
+   archived listing. Dimmed rather than removed, because the moderator still
+   has to be able to find it and put it back. */
+.a-row--muted {
+  opacity: 0.55;
+}
+
+.a-row--muted:hover {
+  opacity: 1;
+}

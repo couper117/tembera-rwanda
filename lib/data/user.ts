@@ -38,10 +38,15 @@ export interface ReviewWithAuthor {
   userId: number;
 }
 
-/** Reviews for a place, newest first, with author display info. */
+/**
+ * Reviews for a place, newest first, with author display info.
+ *
+ * Hidden reviews are excluded. A moderator hiding one has to remove it from
+ * the public page, not merely flag it in the dashboard.
+ */
 export async function getPlaceReviews(placeId: string): Promise<ReviewWithAuthor[]> {
   const rows = await prisma.review.findMany({
-    where: { placeId },
+    where: { placeId, hidden: false },
     orderBy: { createdAt: "desc" },
     include: { user: { select: { name: true, handle: true, id: true } } },
   });

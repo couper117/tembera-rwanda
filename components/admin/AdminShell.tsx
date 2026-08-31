@@ -33,7 +33,7 @@ interface Props {
   /** Drives which nav rows are shown. Not a permission — see adminNav.ts. */
   role: "ADMIN" | "EDITOR" | "USER" | "BUSINESS";
   /** Live counts for the queue badges. */
-  counts: { submissions: number };
+  counts: { submissions: number; reports: number };
   children: ReactNode;
 }
 

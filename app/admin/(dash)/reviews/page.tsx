@@ -1,38 +1,40 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, SampleNotice, Stat } from "@/components/admin/ui";
-import { REVIEWS, adminDate } from "@/lib/admin/placeholder";
+import { EmptyRow, PageHead, Panel, Stat } from "@/components/admin/ui";
+import { adminDate } from "@/lib/admin/placeholder";
+import { requireStaff } from "@/lib/auth";
+import { adminReviews, reviewStats } from "@/lib/data/moderation";
+import { setReviewHiddenAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-/** Sample rows: there is no review table in this build, and no way to post one. */
 export default async function AdminReviewsPage() {
-  const reviews = REVIEWS;
-  const total = reviews.length;
-  const average = reviews.length
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-    : null;
+  await requireStaff();
 
-  const lowRated = reviews.filter((r) => r.rating <= 2).length;
+  const [reviews, stats] = await Promise.all([adminReviews(), reviewStats()]);
 
   return (
     <>
       <PageHead
         title="Reviews"
-        sub="What visitors are saying, newest first."
+        sub="What visitors are saying, newest first. Hiding a review removes it from the place page and from its rating."
       />
 
-      <SampleNotice what="Reviews" />
-
       <div className="a-stats">
-        <Stat label="Reviews" value={total} icon="star" />
+        <Stat label="Reviews" value={stats.total} icon="star" note="posted" />
         <Stat
           label="Average"
-          value={average ? average.toFixed(2) : "—"}
+          value={stats.average ? stats.average.toFixed(2) : "—"}
           icon="sparkle"
-          note="across all places"
+          note="visible reviews only"
         />
-        <Stat label="Low rated" value={lowRated} icon="alert" note="2 stars or fewer" />
+        <Stat
+          label="Low rated"
+          value={stats.lowRated}
+          icon="alert"
+          note="2 stars or fewer"
+        />
+        <Stat label="Hidden" value={stats.hidden} icon="lock" note="by a moderator" />
       </div>
 
       <Panel title="Latest reviews" flush>
@@ -50,18 +52,18 @@ export default async function AdminReviewsPage() {
             </thead>
             <tbody>
               {reviews.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="a-empty">No reviews yet.</p>
-                  </td>
-                </tr>
+                <EmptyRow colSpan={6}>
+                  No reviews yet. They are written from a place page by anyone
+                  signed in.
+                </EmptyRow>
               ) : (
                 reviews.map((r) => (
-                  <tr key={r.id}>
+                  <tr key={r.id} className={r.hidden ? "a-row--muted" : undefined}>
                     <td>
                       <Link href={`/place/${r.place.id}`} className="a-table__strong">
                         {r.place.name}
                       </Link>
+                      {r.hidden && <span className="a-table__sub">hidden</span>}
                     </td>
                     <td>
                       {r.user.name}
@@ -78,10 +80,21 @@ export default async function AdminReviewsPage() {
                     </td>
                     <td>{adminDate(r.createdAt)}</td>
                     <td>
-                      <div className="a-table__actions">
-                        <button type="button" className="t-btn t-btn--ghost t-btn--sm" disabled>
-                          Hide
-                        </button>
+                      <div className="a-table__actions" style={{ justifyContent: "flex-end" }}>
+                        <form action={setReviewHiddenAction}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <input
+                            type="hidden"
+                            name="hidden"
+                            value={r.hidden ? "false" : "true"}
+                          />
+                          <button
+                            type="submit"
+                            className="t-btn t-btn--secondary t-btn--sm"
+                          >
+                            {r.hidden ? "Show" : "Hide"}
+                          </button>
+                        </form>
                       </div>
                     </td>
                   </tr>

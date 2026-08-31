@@ -72,11 +72,12 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  saves    SavedPlace[]
-  visits   VisitedPlace[]
-  reviews  Review[]
-  accounts Account[]
-  sessions Session[]
+  saves       SavedPlace[]
+  visits      VisitedPlace[]
+  reviews     Review[]
+  accounts    Account[]
+  sessions    Session[]
+  auditEvents AuditEvent[]
 
   @@map("users")
 }
@@ -297,6 +298,10 @@ model Review {
   placeId   String   @map("place_id")
   rating    Int
   body      String   @default("")
+  /// Hidden by a moderator. The row survives so the author still sees their
+  /// own review and the decision is reversible; it is simply not shown to
+  /// anyone else and no longer counts towards the place's rating.
+  hidden    Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -362,4 +367,34 @@ model Report {
   @@index([status])
   @@index([placeId])
   @@map("reports")
+}
+
+/// Who changed what, and when.
+///
+/// The admin dashboard is for a body that has to answer for its decisions, so
+/// every write from it lands here. Deliberately append-only: nothing in the
+/// application updates or deletes a row, because a tamperable audit trail is
+/// worse than none — it invites trust it has not earned.
+///
+/// `actorId` is nullable and set null on delete, so removing a staff account
+/// does not erase the history of what they did.
+model AuditEvent {
+  id        Int      @id @default(autoincrement())
+  actorId   Int?     @map("actor_id")
+  /// Free-form but conventional: "place.update", "review.hide", "user.role".
+  action    String
+  /// The kind of thing acted on ("place", "review") and its id, kept as
+  /// strings so this table needs no foreign key to everything in the schema —
+  /// and so a row survives the thing it describes being deleted.
+  entity    String
+  entityId  String   @map("entity_id")
+  /// What changed, or anything worth reading later. Small by convention.
+  meta      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_events")
 }

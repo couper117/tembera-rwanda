@@ -1,21 +1,22 @@
 import Link from "next/link";
-import { PageHead, Panel, SampleNotice, StatusBadge, EmptyRow } from "@/components/admin/ui";
+import { PageHead, Panel, StatusBadge, EmptyRow } from "@/components/admin/ui";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { REPORTS, adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/placeholder";
+import { requireStaff } from "@/lib/auth";
+import { adminReports } from "@/lib/data/moderation";
 import { REPORT_KIND_LABEL } from "@/lib/reports/kinds";
 import { deleteReportAction, setReportStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
-  const reports = REPORTS;
+  await requireStaff();
+  const reports = await adminReports();
 
   const open = reports.filter((r) => r.status === "open").length;
 
   return (
     <>
-      <SampleNotice what="Reported problems" />
-
       <PageHead
         title="Reports"
         sub={
@@ -57,7 +58,13 @@ export default async function ReportsPage() {
                     </td>
                     <td>{REPORT_KIND_LABEL[r.kind] ?? r.kind}</td>
                     <td style={{ maxWidth: 320, whiteSpace: "pre-wrap" }}>{r.body}</td>
-                    <td>{r.contact || <span className="a-table__sub">Not given</span>}</td>
+                    <td>
+                      {r.contact ? (
+                        <a href={`mailto:${r.contact}`}>{r.contact}</a>
+                      ) : (
+                        <span className="a-table__sub">Not given</span>
+                      )}
+                    </td>
                     <td>{adminDate(r.createdAt)}</td>
                     <td>
                       <StatusBadge status={r.status} />
