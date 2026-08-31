@@ -14,6 +14,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { PLACES_TAG } from "@/lib/data/places";
+import { reviewSchema } from "@/lib/validation/review";
 
 /* ------------------------------------------------------------ saved */
 
@@ -291,12 +292,6 @@ export async function deleteMyAccountAction(
 }
 
 /* ----------------------------------------------------------- reviews */
-
-const reviewSchema = z.object({
-  placeId: z.string().min(1),
-  rating: z.coerce.number().int().min(1).max(5),
-  body: z.string().trim().max(1000).optional().default(""),
-});
 
 export async function submitReviewAction(
   input: unknown,

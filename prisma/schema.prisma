@@ -106,14 +106,14 @@ model Subcategory {
 /// Districts/cities, with a centre coordinate and an optional display group
 /// (Kigali's three districts read as one city). Admin-editable directory.
 model City {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
   group     String?
   province  String?
   lat       Float?
   lng       Float?
   image     String?
-  sortOrder Int      @default(0) @map("sort_order")
+  sortOrder Int     @default(0) @map("sort_order")
 
   @@map("cities")
 }
@@ -135,21 +135,28 @@ model Place {
   /// Original inline data: URI, lifted out of `image` and served by
   /// /api/place-image/[id]. Null for the vast majority of places.
   imageData       String?         @map("image_data")
+  /// Extra photos shown in the detail page's gallery, beyond the hero `image`.
+  images          String[]        @default([])
   description     String?
   hours           String?
   phone           String?
+  website         String?
   mapLink         String?         @map("map_link")
   highlights      String[]        @default([])
   priceFrom       Int?            @map("price_from")
   keywords        String[]        @default([])
+  /// Admin override to hide ratings/reviews out of respect. OR'd at render
+  /// time with `categoryId === "memorials"` — see isSensitivePlace().
+  sensitive       Boolean         @default(false)
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 
-  category Category       @relation(fields: [categoryId], references: [id])
+  category Category        @relation(fields: [categoryId], references: [id])
   saves    SavedPlace[]
   visits   VisitedPlace[]
   reviews  Review[]
   reports  Report[]
+  claims   BusinessClaim[]
 
   @@index([categoryId])
   @@index([city])
@@ -279,4 +286,46 @@ model Booking {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("bookings")
+}
+
+enum ClaimStatus {
+  pending
+  approved
+  rejected
+}
+
+/// A business asking to take ownership of its own listing.
+///
+/// This is the paid side of Tembera: a hotel or restaurant claims the listing
+/// we already publish about them, and from then on it is theirs to correct.
+/// Open to signed-out visitors on purpose — the owner of a restaurant should
+/// not have to create a visitor account before they can tell us the listing is
+/// theirs. That openness is why it is rate limited, like reports.
+///
+/// Nothing here charges anybody. `plan` records which plan they asked for; a
+/// claim only becomes real when an admin approves it.
+model BusinessClaim {
+  id           Int         @id @default(autoincrement())
+  /// The listing being claimed. Null if they could not find it and typed a
+  /// name instead — we would rather take the lead than lose it.
+  placeId      String?     @map("place_id")
+  /// What they call the business, in their own words.
+  businessName String      @map("business_name")
+  /// Which plan they asked for: free, checked or top. Not a payment.
+  plan         String      @default("checked")
+  contactName  String      @map("contact_name")
+  phone        String
+  email        String
+  /// Anything else they wanted to tell us. Optional.
+  note         String      @default("")
+  status       ClaimStatus @default(pending)
+  /// Set when an admin approves or rejects it, for a basic audit trail.
+  handledAt    DateTime?   @map("handled_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  place Place? @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([placeId])
+  @@map("business_claims")
 }

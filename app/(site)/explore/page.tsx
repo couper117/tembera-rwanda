@@ -7,6 +7,7 @@ import PlaceImage from "@/components/ui/PlaceImage";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { citySummaries, groupSummaries } from "@/lib/data/places";
 import { getCategories } from "@/lib/data/categories";
+import { getCollections } from "@/lib/collections";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export default async function ExplorePage() {
   const byId = new Map(summaries.map((s) => [s.id, s]));
   const cities = await citySummaries();
   const categories = await getCategories();
+  const collections = await getCollections();
   const total = summaries.reduce((sum, group) => sum + group.total, 0);
 
   return (
@@ -48,6 +50,40 @@ export default async function ExplorePage() {
               <span>Search places, restaurants, hotels…</span>
             </Link>
           </section>
+
+          {collections.length > 0 && (
+            <section className="t-section">
+              <SectionHeader
+                title="Popular categories"
+                subtitle="A closer look at six places to start"
+              />
+              <div className="t-scroller">
+                {collections.map((collection) => (
+                  <Link
+                    key={collection.pageLink}
+                    href={`/${collection.pageLink}`}
+                    className="t-dest"
+                    style={{ aspectRatio: "4 / 3", width: 230 }}
+                  >
+                    <PlaceImage
+                      src={collection.imageUrl}
+                      alt={collection.title}
+                      className="t-dest__img"
+                      fallbackIcon="sparkle"
+                      sizes="230px"
+                    />
+                    <span className="t-dest__veil" />
+                    <span className="t-dest__body">
+                      <span className="t-dest__name">{collection.title}</span>
+                      <span className="t-dest__meta t-clamp-2">
+                        {collection.description}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="t-section">
             <SectionHeader
@@ -88,20 +124,13 @@ export default async function ExplorePage() {
                     </Link>
 
                     <div className="t-catcard__subs">
-                      {group.subcategories.map((sub) => {
-                        const count =
-                          summary?.subcategories.find((s) => s.name === sub)?.count ?? 0;
-
-                        // Listed either way so the taxonomy reads completely,
-                        // but only linked when there is something behind it.
-                        if (count === 0) {
-                          return (
-                            <span key={sub} className="t-subchip t-subchip--empty">
-                              {sub}
-                            </span>
-                          );
-                        }
-                        return (
+                      {group.subcategories
+                        .map((sub) => ({
+                          sub,
+                          count: summary?.subcategories.find((s) => s.name === sub)?.count ?? 0,
+                        }))
+                        .filter(({ count }) => count > 0)
+                        .map(({ sub, count }) => (
                           <Link
                             key={sub}
                             href={`/c/${group.id}?type=${encodeURIComponent(sub)}`}
@@ -110,8 +139,7 @@ export default async function ExplorePage() {
                             {sub}
                             <span className="t-chip__count">{count}</span>
                           </Link>
-                        );
-                      })}
+                        ))}
                     </div>
                   </div>
                 );

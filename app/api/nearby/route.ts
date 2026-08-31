@@ -27,7 +27,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "coordinates out of range" }, { status: 400 });
   }
 
-  const places = (await nearest({ lat, lng }, { limit, categoryId })).map((place) => ({
+  // requireImage: this endpoint only backs the homepage's "Near you" row —
+  // see the matching note on the server-rendered default list in page.tsx.
+  const places = (
+    await nearest({ lat, lng }, { limit, categoryId, requireImage: true })
+  ).map((place) => ({
     id: place.id,
     name: place.name,
     categoryId: place.categoryId,

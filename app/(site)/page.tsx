@@ -44,9 +44,18 @@ export default async function HomePage() {
   // chip, so this is six extra rankings over an already-cached catalog.
   const filterable = categories.filter((group) => group.primary).map((g) => g.id);
 
+  // requireImage on the unfiltered row only. Unfiltered is the view almost
+  // everyone sees, and there are enough photographed places near Kigali to
+  // fill it, so it stays all-photography. Requiring one per category would
+  // empty the row instead: Finance, Healthcare and Shopping have no photos at
+  // all between them, and a blank row is a worse answer than a placeholder.
+  // Those rows lean on the category gradients in PlaceImage.
   const nearby = await rowsByCategory(filterable, (categoryId) =>
-    nearest(KIGALI, { limit: ROW, categoryId }),
+    nearest(KIGALI, { limit: ROW, categoryId, requireImage: !categoryId }),
   );
+
+  // topRated needs no such flag — the engine already drops anything without a
+  // renderable image from the rating queue.
   const rated = await rowsByCategory(filterable, (categoryId) =>
     topRated(ROW, categoryId),
   );
@@ -108,7 +117,7 @@ export default async function HomePage() {
                     alt=""
                     className="t-city__img"
                     fallbackIcon="pin"
-                    sizes="148px"
+                    sizes="164px"
                   />
                   <span className="t-city__veil" />
                   <span className="t-city__body">
@@ -133,14 +142,14 @@ export default async function HomePage() {
                     key={collection.pageLink}
                     href={`/${collection.pageLink}`}
                     className="t-dest"
-                    style={{ aspectRatio: "4 / 3", width: 260 }}
+                    style={{ aspectRatio: "4 / 3", width: 230 }}
                   >
                     <PlaceImage
                       src={collection.imageUrl}
                       alt={collection.title}
                       className="t-dest__img"
                       fallbackIcon="sparkle"
-                      sizes="260px"
+                      sizes="230px"
                     />
                     <span className="t-dest__veil" />
                     <span className="t-dest__body">
@@ -176,7 +185,7 @@ export default async function HomePage() {
                       alt={place.name}
                       className="t-dest__img"
                       categoryId={place.categoryId}
-                      sizes="260px"
+                      sizes="230px"
                     />
                     <span className="t-dest__veil" />
                     <span className="t-dest__body">

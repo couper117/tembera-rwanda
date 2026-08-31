@@ -100,7 +100,7 @@ export default function PlaceCard({
           alt={place.name}
           className="t-place__img"
           categoryId={place.categoryId}
-          sizes="(min-width: 1100px) 260px, (min-width: 720px) 33vw, 45vw"
+          sizes="(min-width: 1100px) 240px, (min-width: 720px) 33vw, 45vw"
         />
         <SaveButton placeId={place.id} placeName={place.name} />
       </div>

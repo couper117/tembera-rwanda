@@ -28,13 +28,16 @@ function toDomain(row: DbPlace): Place {
     coordsPrecision: row.coordsPrecision,
     rating: row.rating ?? undefined,
     image: row.image ?? undefined,
+    images: row.images.length ? row.images : undefined,
     description: row.description ?? undefined,
     hours: row.hours ?? undefined,
     phone: row.phone ?? undefined,
     mapLink: row.mapLink ?? undefined,
+    website: row.website ?? undefined,
     highlights: row.highlights.length ? row.highlights : undefined,
     priceFrom: row.priceFrom ?? undefined,
     keywords: row.keywords.length ? row.keywords : undefined,
+    sensitive: row.sensitive,
   };
 }
 
@@ -98,7 +101,7 @@ export function cityGroup(place: Place): string {
 
 export async function nearest(
   origin: Coords,
-  options: { limit?: number; categoryId?: string; maxKm?: number } = {},
+  options: Parameters<typeof engine.nearest>[2] = {},
 ): Promise<ReturnType<typeof engine.nearest>> {
   return engine.nearest(await getPlaces(), origin, options);
 }
@@ -145,3 +148,4 @@ export async function getPlaceImageData(id: string): Promise<string | null> {
 
 export { engine };
 export const isRenderableImage = engine.isRenderableImage;
+export const isSensitivePlace = engine.isSensitivePlace;

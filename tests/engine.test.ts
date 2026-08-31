@@ -114,14 +114,29 @@ describe("citySummaries", () => {
   });
 
   test("never picks a known-dead image to represent a city", () => {
+    // "Bukavu" is not a Rwandan district and so has no curated photo, which is
+    // what puts this on the fallback path the assertion is about.
     const summaries = engine.citySummaries([
       place({
-        city: "Musanze",
+        city: "Bukavu",
         image: "https://lh3.googleusercontent.com/image_collection/dead",
       }),
-      place({ city: "Musanze", image: "https://images.unsplash.com/good" }),
+      place({ city: "Bukavu", image: "https://images.unsplash.com/good" }),
     ]);
     assert.equal(summaries[0].image, "https://images.unsplash.com/good");
+  });
+
+  test("prefers the curated city photo over any listing's own image", () => {
+    // A city card should show the city. Left to the listings it showed
+    // whichever row happened to have a photo first, which for most districts
+    // was a bulk-seeded church image.
+    const summaries = engine.citySummaries([
+      place({ city: "Musanze", image: "https://images.unsplash.com/some-listing" }),
+    ]);
+    assert.equal(
+      summaries[0].image,
+      "/assets/images/wonder_volcanoes_national_park.jpg",
+    );
   });
 });
 

@@ -16,6 +16,7 @@ const PRIMARY: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/explore", label: "Explore", icon: "compass" },
   { href: "/map", label: "Map", icon: "map" },
+  { href: "/calendar", label: "Calendar", icon: "calendar" },
 ];
 
 /** …and the personal ones pinned to the bottom. */

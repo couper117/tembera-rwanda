@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import AdminLoginForm from "./AdminLoginForm";
+// Login sits outside the (dash) group, so it pulls the admin styles in itself.
+import "../admin.css";
 
 export const dynamic = "force-dynamic";
 

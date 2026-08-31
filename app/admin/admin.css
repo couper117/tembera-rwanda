@@ -1,0 +1,848 @@
+/* Admin chrome.
+ *
+ * Only layout that is genuinely admin-specific lives here — the shell, the
+ * sidebar, tables, stat cards and the review queue. Everything else (buttons,
+ * fields, cards, badges, notices) reuses the .t-* components from
+ * components.css, and every colour comes from the --t-* tokens, so the admin
+ * inherits the product's palette and its dark mode instead of hardcoding a
+ * second design system the way admin.module.css did. */
+
+.a-shell {
+  --a-side-w: 248px;
+  display: flex;
+  min-height: 100dvh;
+  background: var(--t-bg);
+}
+
+.a-shell[data-rail="collapsed"] {
+  --a-side-w: 72px;
+}
+
+/* ------------------------------------------------------------- sidebar -- */
+
+.a-side {
+  position: fixed;
+  z-index: 70;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--a-side-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--t-surface);
+  border-right: 1px solid var(--t-border);
+  transition: width var(--t-base) var(--t-ease), transform var(--t-base) var(--t-ease);
+}
+
+/* Off-canvas until opened on a phone — the old admin sidebar had no mobile
+   behaviour at all and simply ate the screen. */
+@media (max-width: 1023px) {
+  .a-side {
+    --a-side-w: 260px;
+    transform: translateX(-100%);
+    box-shadow: var(--t-shadow-sheet);
+  }
+
+  .a-side[data-open] {
+    transform: none;
+  }
+}
+
+.a-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  border: 0;
+  background: rgba(15, 13, 10, 0.44);
+}
+
+.a-side__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  height: var(--t-header-h);
+  padding: 0 var(--t-3);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  flex: 1;
+  min-width: 0;
+  color: var(--t-ink);
+}
+
+.a-brand__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent);
+  color: #fff;
+}
+
+.a-brand__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.a-brand__sub {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t-accent);
+}
+
+.a-side__toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--t-r-sm);
+  color: var(--t-ink-3);
+}
+
+.a-side__toggle:hover {
+  background: var(--t-surface-2);
+  color: var(--t-ink);
+}
+
+.a-side__nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--t-3) var(--t-2);
+}
+
+.a-navgroup + .a-navgroup {
+  margin-top: var(--t-4);
+}
+
+.a-navgroup__title {
+  padding: 0 var(--t-2);
+  margin-bottom: var(--t-1);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-navrow {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  height: 40px;
+  padding: 0 var(--t-2);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--t-ease), color var(--t-fast) var(--t-ease);
+}
+
+.a-navrow:hover {
+  background: var(--t-surface-2);
+  color: var(--t-ink);
+}
+
+.a-navrow[aria-current="page"] {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-weight: 700;
+}
+
+.a-navrow__glyph {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+}
+
+.a-navrow__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-navrow__count {
+  flex: none;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-pill);
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.a-side__foot {
+  flex: none;
+  padding: var(--t-2);
+  border-top: 1px solid var(--t-border);
+}
+
+/* Collapsed: glyphs only. Labels and counts are hidden rather than removed so
+   the row keeps its accessible name. */
+.a-shell[data-rail="collapsed"] .a-navgroup__title,
+.a-shell[data-rail="collapsed"] .a-navrow__label,
+.a-shell[data-rail="collapsed"] .a-navrow__count,
+.a-shell[data-rail="collapsed"] .a-brand__text {
+  display: none;
+}
+
+.a-shell[data-rail="collapsed"] .a-navrow {
+  justify-content: center;
+  padding: 0;
+}
+
+@media (max-width: 1023px) {
+  .a-shell[data-rail="collapsed"] .a-navgroup__title,
+  .a-shell[data-rail="collapsed"] .a-navrow__label,
+  .a-shell[data-rail="collapsed"] .a-navrow__count,
+  .a-shell[data-rail="collapsed"] .a-brand__text {
+    display: revert;
+  }
+
+  .a-shell[data-rail="collapsed"] .a-navrow {
+    justify-content: flex-start;
+    padding: 0 var(--t-2);
+  }
+}
+
+/* ---------------------------------------------------------------- body -- */
+
+.a-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--a-side-w);
+  transition: margin-left var(--t-base) var(--t-ease);
+}
+
+@media (max-width: 1023px) {
+  .a-body {
+    margin-left: 0;
+  }
+}
+
+.a-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  height: var(--t-header-h);
+  padding: 0 var(--t-4);
+  background: var(--t-surface);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-topbar__title {
+  flex: none;
+  font-size: var(--t-text-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.a-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  max-width: 420px;
+  margin-inline: auto;
+  height: 38px;
+  padding: 0 var(--t-3);
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+}
+
+.a-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--t-ink);
+  font: inherit;
+  outline: none;
+}
+
+.a-who {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  margin-left: auto;
+}
+
+.a-who__text {
+  display: none;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: right;
+}
+
+@media (min-width: 768px) {
+  .a-who__text {
+    display: flex;
+  }
+}
+
+.a-who__name {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+}
+
+.a-who__mail {
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+.a-main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--t-5) var(--t-4) var(--t-10);
+}
+
+@media (min-width: 768px) {
+  .a-main {
+    padding: var(--t-6) var(--t-6) var(--t-10);
+  }
+}
+
+/* --------------------------------------------------------- page header -- */
+
+.a-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--t-5);
+}
+
+.a-head__text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.a-head h2 {
+  font-size: var(--t-text-title);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.a-head p {
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.a-head__actions {
+  display: flex;
+  gap: var(--t-2);
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------------------------- sample tag -- */
+
+/* Any screen fed by lib/admin/placeholder.ts carries this. Sample figures that
+   look live are worse than no figures at all. */
+.a-sample {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  padding: var(--t-2) var(--t-3);
+  margin-bottom: var(--t-4);
+  border-radius: var(--t-r-md);
+  border: 1px dashed var(--t-border-strong);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+}
+
+.a-sample strong {
+  color: var(--t-ink);
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------- stat cards -- */
+
+.a-stats {
+  display: grid;
+  gap: var(--t-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: var(--t-5);
+}
+
+@media (min-width: 720px) {
+  .a-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .a-stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.a-stat {
+  display: block;
+  padding: var(--t-4);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  box-shadow: var(--t-shadow-card);
+  transition: transform var(--t-fast) var(--t-ease), border-color var(--t-fast) var(--t-ease);
+}
+
+a.a-stat:hover {
+  transform: translateY(-2px);
+  border-color: var(--t-border-strong);
+}
+
+.a-stat__top {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  color: var(--t-ink-3);
+}
+
+.a-stat__label {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.a-stat__value {
+  display: block;
+  margin-top: var(--t-2);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.a-stat__note {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- panel -- */
+
+.a-panel {
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  box-shadow: var(--t-shadow-card);
+  overflow: hidden;
+}
+
+.a-panel + .a-panel,
+.a-cols + .a-panel,
+.a-panel + .a-cols {
+  margin-top: var(--t-5);
+}
+
+.a-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  padding: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-panel__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-text-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.a-panel__body {
+  padding: var(--t-4);
+}
+
+.a-cols {
+  display: grid;
+  gap: var(--t-5);
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .a-cols {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------- table -- */
+
+.a-tablewrap {
+  overflow-x: auto;
+}
+
+.a-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-text-small);
+  white-space: nowrap;
+}
+
+.a-table th {
+  padding: var(--t-3) var(--t-4);
+  text-align: left;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+  background: var(--t-surface-2);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-table td {
+  padding: var(--t-3) var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+  color: var(--t-ink-2);
+  vertical-align: middle;
+}
+
+.a-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.a-table tbody tr:hover td {
+  background: var(--t-surface-2);
+}
+
+.a-table__strong {
+  color: var(--t-ink);
+  font-weight: 700;
+}
+
+.a-table__sub {
+  display: block;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  font-weight: 600;
+}
+
+.a-table__actions {
+  display: flex;
+  gap: var(--t-2);
+  justify-content: flex-end;
+}
+
+.a-empty {
+  padding: var(--t-8) var(--t-4);
+  text-align: center;
+  color: var(--t-ink-3);
+  font-size: var(--t-text-small);
+}
+
+/* --------------------------------------------------------------- queue -- */
+
+.a-queue {
+  display: flex;
+  flex-direction: column;
+}
+
+.a-queue__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.a-queue__item:last-child {
+  border-bottom: none;
+}
+
+.a-queue__item:hover {
+  background: var(--t-surface-2);
+}
+
+.a-queue__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.a-queue__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.a-queue__name {
+  display: block;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink);
+}
+
+.a-queue__meta {
+  display: block;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- chart -- */
+
+.a-chart {
+  display: block;
+  width: 100%;
+  height: 140px;
+}
+
+.a-chart__line {
+  fill: none;
+  stroke: var(--t-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.a-chart__area {
+  fill: var(--t-accent-soft);
+}
+
+.a-chart__dot {
+  fill: var(--t-accent);
+}
+
+/* --------------------------------------------------------------- forms -- */
+
+.a-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-4);
+}
+
+.a-grid2 {
+  display: grid;
+  gap: var(--t-4);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 720px) {
+  .a-grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.a-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.a-label {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-input,
+.a-select,
+.a-textarea {
+  width: 100%;
+  padding: 10px var(--t-3);
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  color: var(--t-ink);
+  font: inherit;
+  font-size: var(--t-text-small);
+  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-fast) var(--t-ease);
+}
+
+.a-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.a-input:focus,
+.a-select:focus,
+.a-textarea:focus {
+  outline: none;
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 3px var(--t-accent-soft);
+}
+
+.a-hint {
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+/* Server-action feedback. Both sit at the top of a form and are announced,
+   so colour is reinforcement rather than the only signal. */
+
+.a-error,
+.a-success {
+  padding: var(--t-2) var(--t-3);
+  margin-bottom: var(--t-3);
+  border-radius: var(--t-r-md);
+  border: 1px solid;
+  font-size: var(--t-text-small);
+  font-weight: 600;
+}
+
+.a-error {
+  border-color: var(--t-danger);
+  background: var(--t-danger-soft);
+  color: var(--t-danger);
+}
+
+.a-success {
+  border-color: var(--t-accent-ink);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.a-checkrow {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+}
+
+.a-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  align-items: center;
+  padding: var(--t-3) var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+.a-toolbar .a-input,
+.a-toolbar .a-select {
+  width: auto;
+  min-width: 180px;
+  background: var(--t-surface);
+}
+
+.a-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  justify-content: flex-end;
+  padding: var(--t-3) var(--t-4);
+  border-top: 1px solid var(--t-border);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+/* -------------------------------------------------------------- badges -- */
+
+.a-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 var(--t-2);
+  border-radius: var(--t-r-pill);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  text-transform: capitalize;
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.a-badge--good {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.a-badge--warn {
+  background: var(--t-gold-soft);
+  color: var(--t-gold);
+}
+
+.a-badge--bad {
+  background: var(--t-danger-soft);
+  color: var(--t-danger);
+}
+
+/* The product UI has no destructive button — nothing on the public side
+   deletes anything. Admin does, so the variant is defined here rather than
+   pushed into components.css where it would go unused. */
+.t-btn--danger {
+  background: var(--t-danger);
+  color: #fff;
+}
+
+.t-btn--danger:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+/* ------------------------------------------------------------- confirm -- */
+
+/* Two-step delete. The old admin fired every destructive action on one click
+   with no confirmation anywhere. */
+.a-confirm {
+  display: inline-flex;
+  gap: var(--t-2);
+  align-items: center;
+}
+
+.a-confirm__ask {
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  color: var(--t-danger);
+}
+
+/* --------------------------------------------------------------- login -- */
+
+.a-login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--t-5);
+  background: var(--t-surface-2);
+}
+
+.a-login__card {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--t-6);
+  border-radius: var(--t-r-xl);
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  box-shadow: var(--t-shadow-float);
+}

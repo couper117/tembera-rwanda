@@ -2,13 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/Icon";
 import BottomSheet from "@/components/ui/BottomSheet";
+import Popover from "@/components/ui/Popover";
 import { useAccount } from "@/lib/client/account";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
 import { useTheme } from "@/lib/client/theme";
+import {
+  EVENT_KIND_META,
+  daysBetween,
+  formatShortDate,
+  getCalendarEvents,
+  kindStyleVars,
+  nowInKigali,
+} from "@/lib/rwanda/events";
 import CategoryNav from "./CategoryNav";
 import CityPicker from "./CityPicker";
 
@@ -23,6 +32,9 @@ export default function AppHeader() {
   const scrolled = useScrolled();
   const pathname = usePathname();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [catPopoverOpen, setCatPopoverOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const catButtonRef = useRef<HTMLButtonElement>(null);
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { authed, isAdmin } = useAccount();
@@ -31,11 +43,19 @@ export default function AppHeader() {
   const savedCount = ready ? ids.length : 0;
   const isLanding = pathname === "/";
 
+  const today = nowInKigali();
+  const upcoming = getCalendarEvents(today.year)
+    .filter((e) => e.date >= today.iso)
+    .slice(0, 3);
+  const soon = upcoming[0] && daysBetween(today.iso, upcoming[0].date) <= 7;
+
   // Close on route change rather than on click. Unmounting the sheet in the
   // same tick as the click tears the anchor out mid-navigation, which cancels
   // it — the link looked dead on mobile.
   useEffect(() => {
     setCategoriesOpen(false);
+    setCatPopoverOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   return (
@@ -80,9 +100,28 @@ export default function AppHeader() {
             <Icon name="search" size={20} />
           </Link>
 
+          {/* Desktop: the rail already covers navigation, so this is a quick
+              dropdown onto the full category tree (with subcategories) that
+              the rail trims for space. Anchored under the button — location
+              already has its own chip right next to it. */}
+          <button
+            ref={catButtonRef}
+            type="button"
+            className="t-iconbtn t-show-desktop"
+            aria-label="Browse categories"
+            aria-haspopup="dialog"
+            aria-expanded={catPopoverOpen}
+            onClick={() => setCatPopoverOpen((v) => !v)}
+            title="Categories"
+          >
+            <Icon name="grid" size={20} />
+          </button>
+
+          {/* Mobile/tablet: no rail, so this is the only way in — bundles
+              location and the full category tree into one sheet. */}
           <button
             type="button"
-            className="t-iconbtn"
+            className="t-iconbtn t-hide-desktop"
             aria-label="Browse categories and location"
             aria-haspopup="dialog"
             onClick={() => setCategoriesOpen(true)}
@@ -104,6 +143,19 @@ export default function AppHeader() {
             <Icon name="bookmark" size={21} />
             {savedCount > 0 && <span className="t-dot" />}
           </Link>
+
+          <button
+            type="button"
+            className="t-iconbtn"
+            aria-label="Notifications"
+            aria-haspopup="dialog"
+            onClick={() => setNotificationsOpen(true)}
+            title="Notifications"
+            style={{ position: "relative" }}
+          >
+            <Icon name="bell" size={20} />
+            {soon && <span className="t-dot" />}
+          </button>
 
           {isAdmin && (
             <Link
@@ -128,6 +180,13 @@ export default function AppHeader() {
         </div>
       </header>
 
+      <Popover open={catPopoverOpen} anchorRef={catButtonRef} onClose={() => setCatPopoverOpen(false)} width={340}>
+        <p className="t-label" style={{ marginBottom: "var(--t-3)" }}>
+          Categories
+        </p>
+        <CategoryNav summaries={summaries} />
+      </Popover>
+
       {/* The rail is desktop-only, so this sheet is how phones reach the
           full category tree. */}
       <BottomSheet
@@ -140,6 +199,51 @@ export default function AppHeader() {
           <CityPicker />
         </div>
         <CategoryNav summaries={summaries} />
+      </BottomSheet>
+
+      <BottomSheet
+        open={notificationsOpen}
+        title="Notifications"
+        onClose={() => setNotificationsOpen(false)}
+      >
+        {upcoming.length === 0 ? (
+          <div className="t-state" style={{ padding: "var(--t-6) 0" }}>
+            <span className="t-state__icon">
+              <Icon name="bell" size={22} />
+            </span>
+            <div className="t-state__title">You&apos;re all caught up</div>
+            <div className="t-state__text">Nothing left on the calendar this year.</div>
+          </div>
+        ) : (
+          <>
+            <p className="t-small t-muted" style={{ marginBottom: "var(--t-2)" }}>
+              From the Rwanda calendar
+            </p>
+            <div>
+              {upcoming.map((e) => (
+                <Link
+                  key={e.id}
+                  href="/calendar"
+                  className="t-cal-event"
+                  style={kindStyleVars(e.kind)}
+                >
+                  <span className="t-cal-event__icon">
+                    <Icon name={EVENT_KIND_META[e.kind].icon} size={17} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span className="t-row__name">{e.title}</span>
+                    <div className="t-small t-muted" style={{ marginTop: 2 }}>
+                      {formatShortDate(e.date)} · {e.summary}
+                    </div>
+                  </span>
+                  <span className="t-badge" style={{ flex: "none" }}>
+                    {e.date === today.iso ? "Today" : `${daysBetween(today.iso, e.date)}d`}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
       </BottomSheet>
     </>
   );
