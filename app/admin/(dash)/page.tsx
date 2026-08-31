@@ -1,16 +1,12 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, SampleNotice, Stat } from "@/components/admin/ui";
+import { PageHead, Panel, Stat } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
-import {
-  BUSINESSES,
-  SUBMISSIONS,
-  SUBMISSION_TREND,
-  adminDate,
-} from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/placeholder";
 import { recentAudit } from "@/lib/audit";
 import { getCategories } from "@/lib/data/categories";
 import { getCities } from "@/lib/data/cities";
+import { adminBusinesses, adminSubmissions } from "@/lib/data/business";
 import { openReportCount } from "@/lib/data/moderation";
 import { getAllPlaces } from "@/lib/data/places";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
@@ -19,17 +15,18 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  // Everything here is real except submissions and businesses, which have no
-  // table yet — the <SampleNotice> below names exactly those two rather than
-  // casting doubt over the whole screen.
-  const [catalog, taxonomy, cityList, users, openReports, activity] = await Promise.all([
-    getAllPlaces(),
-    getCategories(),
-    getCities(),
-    prisma.user.count(),
-    openReportCount(),
-    recentAudit({ take: 5 }),
-  ]);
+  // Every figure on this screen now comes from the database.
+  const [catalog, taxonomy, cityList, users, openReports, activity, submissions, businesses] =
+    await Promise.all([
+      getAllPlaces(),
+      getCategories(),
+      getCities(),
+      prisma.user.count(),
+      openReportCount(),
+      recentAudit({ take: 5 }),
+      adminSubmissions(),
+      adminBusinesses(),
+    ]);
 
   // An EDITOR cannot open Users or Businesses, so they do not get a tile that
   // only leads to a redirect. The guard is on those screens; this is just not
@@ -42,8 +39,22 @@ export default async function AdminDashboardPage() {
   const drafts = catalog.filter((p) => p.status === "draft").length;
   const missingPhoto = catalog.filter((p) => !p.image).length;
 
-  const pendingSubmissions = SUBMISSIONS.filter((s) => s.status === "pending");
-  const unverified = BUSINESSES.filter((b) => b.status === "unverified").length;
+  const pendingSubmissions = submissions.filter((s) => s.status === "pending");
+
+  // Eight buckets of seven days, oldest first. Derived rather than stored: at
+  // this volume counting in memory is cheaper than a grouped query, and a
+  // hardcoded series is a chart that lies.
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const weeklySubmissions = Array.from({ length: 8 }, (_, i) => {
+    const from = now - (8 - i) * WEEK;
+    const to = from + WEEK;
+    return submissions.filter((s) => {
+      const at = s.createdAt.getTime();
+      return at >= from && at < to;
+    }).length;
+  });
+  const unverified = businesses.filter((b) => b.status === "unverified").length;
 
   return (
     <>
@@ -63,8 +74,6 @@ export default async function AdminDashboardPage() {
           </>
         }
       />
-
-      <SampleNotice what="Submissions and business accounts" />
 
       {/* Two rows, deliberately. The first is work waiting on somebody; the
           second is the size and health of the catalogue. Mixing them makes a
@@ -117,7 +126,7 @@ export default async function AdminDashboardPage() {
         {admin && (
           <Stat
             label="Businesses"
-            value={BUSINESSES.length}
+            value={businesses.length}
             icon="basket"
             note={`${unverified} unverified`}
             href="/admin/businesses"
@@ -141,21 +150,31 @@ export default async function AdminDashboardPage() {
               <p className="a-empty">Nothing waiting. The queue is clear.</p>
             ) : (
               <div className="a-queue">
-                {pendingSubmissions.slice(0, 4).map((s) => (
-                  <Link key={s.id} href={`/admin/submissions/${s.id}`} className="a-queue__item">
-                    <span className="a-queue__icon">
-                      <Icon name="mail" size={18} />
-                    </span>
-                    <span className="a-queue__body">
-                      <span className="a-queue__name">{s.placeName}</span>
-                      <span className="a-queue__meta">
-                        {s.businessName} · {s.subcategory} · {s.city} ·{" "}
-                        {adminDate(s.submittedAt)}
+                {pendingSubmissions.slice(0, 4).map((s) => {
+                  const payload = s.payload as { name?: string } | null;
+                  return (
+                    <Link
+                      key={s.id}
+                      href={`/admin/submissions/${s.id}`}
+                      className="a-queue__item"
+                    >
+                      <span className="a-queue__icon">
+                        <Icon name="mail" size={18} />
                       </span>
-                    </span>
-                    <Icon name="chevronRight" size={16} />
-                  </Link>
-                ))}
+                      <span className="a-queue__body">
+                        <span className="a-queue__name">
+                          {s.kind === "create"
+                            ? payload?.name ?? "A new listing"
+                            : `Changes to ${s.placeId ?? "a listing"}`}
+                        </span>
+                        <span className="a-queue__meta">
+                          {s.business.name} · {adminDate(s.createdAt)}
+                        </span>
+                      </span>
+                      <Icon name="chevronRight" size={16} />
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </Panel>
@@ -164,9 +183,9 @@ export default async function AdminDashboardPage() {
 
         <div>
           <Panel title="Submissions per week">
-            <TrendChart values={SUBMISSION_TREND} />
+            <TrendChart values={weeklySubmissions} />
             <p className="a-hint" style={{ marginTop: "var(--t-2)" }}>
-              Sample series — the last eight weeks.
+              The last eight weeks.
             </p>
           </Panel>
 

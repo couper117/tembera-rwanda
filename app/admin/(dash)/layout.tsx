@@ -1,6 +1,6 @@
 import AdminShell from "@/components/admin/AdminShell";
 import { ThemeProvider } from "@/lib/client/theme";
-import { PENDING_SUBMISSIONS } from "@/lib/admin/placeholder";
+import { pendingSubmissionCount } from "@/lib/data/business";
 import { openReportCount } from "@/lib/data/moderation";
 import { requireStaff } from "@/lib/auth";
 import "../admin.css";
@@ -28,9 +28,10 @@ export default async function AdminDashLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const staff = await requireStaff();
 
-  // Reports are real rows; submissions still have no table — see the sample
-  // notice on that screen.
-  const reports = await openReportCount();
+  const [reports, submissions] = await Promise.all([
+    openReportCount(),
+    pendingSubmissionCount(),
+  ]);
 
   return (
     <ThemeProvider>
@@ -38,7 +39,7 @@ export default async function AdminDashLayout({
         email={staff.email}
         name={staff.name}
         role={staff.role}
-        counts={{ submissions: PENDING_SUBMISSIONS, reports }}
+        counts={{ submissions, reports }}
       >
         {children}
       </AdminShell>

@@ -1429,3 +1429,42 @@ a.a-stat:hover {
 .a-statsgroup:first-of-type {
   margin-top: var(--t-4);
 }
+
+/* --- submission diff ---
+   What is proposed, beside what the listing says now. Approving a change you
+   cannot see is not reviewing it. */
+.a-difflist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+.a-diff {
+  display: grid;
+  gap: 2px;
+}
+
+.a-diff__label {
+  font-size: var(--t-text-micro);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-diff__old {
+  font-size: 0.85rem;
+  color: var(--t-ink-3);
+  text-decoration: line-through;
+  overflow-wrap: anywhere;
+}
+
+.a-diff__new {
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.a-diff--changed .a-diff__new {
+  font-weight: 600;
+  color: var(--t-accent);
+}

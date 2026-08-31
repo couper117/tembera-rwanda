@@ -12,6 +12,7 @@
     "test:auth": "tsx scripts/e2e-auth.ts",
     "test:writes": "tsx scripts/e2e-writes.ts",
     "test:admin": "tsx scripts/e2e-admin.ts",
+    "test:business": "tsx scripts/e2e-business.ts",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "freeze-ids": "tsx scripts/freeze-ids.ts",

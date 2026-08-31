@@ -78,6 +78,10 @@ model User {
   accounts    Account[]
   sessions    Session[]
   auditEvents AuditEvent[]
+  /// The business this person works for, if any. A BUSINESS account without
+  /// one has signed up but not yet been given a business by an admin.
+  membership  BusinessMember?
+  submissions Submission[]
 
   @@map("users")
 }
@@ -247,11 +251,14 @@ model Place {
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 
-  category Category       @relation(fields: [categoryId], references: [id])
-  saves    SavedPlace[]
-  visits   VisitedPlace[]
-  reviews  Review[]
-  reports  Report[]
+  category    Category        @relation(fields: [categoryId], references: [id])
+  business    Business?       @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  saves       SavedPlace[]
+  visits      VisitedPlace[]
+  reviews     Review[]
+  reports     Report[]
+  claims      BusinessClaim[]
+  submissions Submission[]
 
   @@index([categoryId])
   @@index([city])
@@ -411,4 +418,141 @@ model Setting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("settings")
+}
+
+/* ------------------------------------------------------------- businesses */
+
+enum BusinessStatus {
+  /// Signed up, not yet checked by anybody.
+  unverified
+  /// Confirmed as who they say they are. Only these may edit a live listing.
+  verified
+  /// Barred, without deleting their record or their listings.
+  suspended
+}
+
+enum ClaimStatus {
+  pending
+  approved
+  rejected
+}
+
+enum SubmissionKind {
+  /// A listing that does not exist yet.
+  create
+  /// A change to one this business already owns.
+  edit
+}
+
+enum SubmissionStatus {
+  pending
+  approved
+  rejected
+}
+
+/// A hotel, restaurant or operator with an account on Tembera.
+///
+/// Ownership of a listing is only ever GRANTED, by an admin approving a claim
+/// or a submission — a business can never assign itself a place. All 495
+/// seeded listings start unowned.
+model Business {
+  id          Int            @id @default(autoincrement())
+  name        String
+  contactName String         @map("contact_name")
+  email       String
+  phone       String
+  city        String
+  /// Rwanda Revenue Authority taxpayer id. Optional at signup: asking for it
+  /// before anyone has seen value would cost more sign-ups than it prevents
+  /// bad ones, and an admin checks it before verifying.
+  tin         String?
+  /// Which plan they asked for — see lib/business/plans.ts. Nothing here
+  /// charges anybody; money is a conversation had afterwards.
+  plan        String         @default("free")
+  status      BusinessStatus @default(unverified)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  members     BusinessMember[]
+  places      Place[]
+  submissions Submission[]
+
+  @@index([status])
+  @@map("businesses")
+}
+
+/// Somebody who may act for a business.
+///
+/// A join table rather than a single owner column, because a hotel is not one
+/// person: the manager who signs up leaves, and the account has to survive
+/// them. `owner` marks who may invite and remove others.
+model BusinessMember {
+  id         Int      @id @default(autoincrement())
+  businessId Int      @map("business_id")
+  userId     Int      @unique @map("user_id")
+  owner      Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@map("business_members")
+}
+
+/// A business asking to take ownership of its own listing.
+///
+/// Open to signed-out visitors on purpose — the owner of a restaurant should
+/// not have to create a visitor account before they can tell us the listing is
+/// theirs. That openness is why it is rate limited, like reports.
+model BusinessClaim {
+  id           Int         @id @default(autoincrement())
+  /// The listing being claimed. Null if they could not find it and typed a
+  /// name instead — we would rather take the lead than lose it.
+  placeId      String?     @map("place_id")
+  businessName String      @map("business_name")
+  plan         String      @default("checked")
+  contactName  String      @map("contact_name")
+  phone        String
+  email        String
+  note         String      @default("")
+  status       ClaimStatus @default(pending)
+  handledAt    DateTime?   @map("handled_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  place Place? @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([placeId])
+  @@map("business_claims")
+}
+
+/// A listing a business is proposing, or a change to one it owns.
+///
+/// The proposal lives in `payload` as JSON rather than in twenty mirrored
+/// columns. It is validated by the same zod schema on the way in and on the
+/// way out, so its shape is already enforced by code that exists — whereas
+/// mirroring Place's columns would mean editing two models every time a field
+/// is added, forever.
+model Submission {
+  id                Int              @id @default(autoincrement())
+  kind              SubmissionKind
+  businessId        Int              @map("business_id")
+  submittedByUserId Int              @map("submitted_by_user_id")
+  /// Set when kind = edit: the listing being changed.
+  placeId           String?          @map("place_id")
+  payload           Json
+  status            SubmissionStatus @default(pending)
+  rejectionReason   String           @default("") @map("rejection_reason")
+  reviewedByUserId  Int?             @map("reviewed_by_user_id")
+  reviewedAt        DateTime?        @map("reviewed_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  submittedBy User     @relation(fields: [submittedByUserId], references: [id], onDelete: Cascade)
+  place       Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([businessId])
+  @@map("submissions")
 }

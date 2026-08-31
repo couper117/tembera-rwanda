@@ -156,7 +156,9 @@ async function destinationFor(email: string): Promise<string> {
     case "EDITOR":
       return "/admin";
     case "BUSINESS":
-      return "/business";
+      // The dashboard, not /business — that is the marketing page, and
+      // sending an owner who just signed in to a sales pitch is absurd.
+      return "/business/dashboard";
     default:
       return "/profile";
   }

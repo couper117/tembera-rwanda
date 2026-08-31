@@ -152,10 +152,16 @@ export async function requireAdmin(): Promise<User> {
   return user;
 }
 
-/** A business account, for the /business dashboard. */
+/**
+ * A business account, for the /business/dashboard screens.
+ *
+ * ADMIN is allowed through as well: somebody has to be able to look at what a
+ * business sees when they report that it is wrong, and locking staff out of it
+ * only leads to shared passwords.
+ */
 export async function requireBusiness(): Promise<User> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "BUSINESS") redirect("/profile");
+  if (user.role !== "BUSINESS" && user.role !== "ADMIN") redirect("/profile");
   return user;
 }
