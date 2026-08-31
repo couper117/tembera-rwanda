@@ -93,7 +93,7 @@ export default function ProfileScreen({ index }: Props) {
       <AppHeader />
 
       <main className="t-main">
-        {/* Wider than About/Booking's reading-width columns (720px read as a
+        {/* Wider than About's reading-width column (720px read as a
             sliver next to the rail on a real desktop screen) but short of the
             site's full 1240px content width — that would spread the 3-stat
             row and header thin instead of just closing the outer margin. */}
@@ -275,13 +275,11 @@ export default function ProfileScreen({ index }: Props) {
             <div className="t-stack-3">
               <div className="t-card">
                 <Row icon="settings" label="Settings" href="/settings" />
-                <Row icon="ticket" label="Your bookings" href="/booking" />
                 <Row icon="calendar" label="Rwanda calendar" href="/calendar" />
               </div>
 
               <div className="t-card">
                 <Row icon="info" label="About Tembera" href="/about" />
-                <Row icon="lock" label="Admin sign in" href="/admin" />
                 {!authed && <Row icon="user" label="Sign in" href="/login" />}
               </div>
             </div>

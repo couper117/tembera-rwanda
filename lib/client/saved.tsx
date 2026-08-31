@@ -19,6 +19,7 @@ import {
   type ReactNode,
 } from "react";
 import { toggleSaveAction, clearSavedAction } from "@/lib/actions/user";
+import { useToast } from "@/components/ui/Toast";
 
 const KEY = "tembera.saved";
 
@@ -46,6 +47,7 @@ export function SavedProvider({
   const [ids, setIds] = useState<string[]>(initialIds ?? []);
   const [ready, setReady] = useState(authed);
   const [, startTransition] = useTransition();
+  const { toast } = useToast();
 
   // Guest: hydrate from localStorage once.
   useEffect(() => {
@@ -67,11 +69,19 @@ export function SavedProvider({
       // Compute the next list and persist as a side effect of the *event*, not
       // inside the state updater — running a server action / startTransition
       // during React's render phase is illegal and drops the write.
+      const previous = ids;
       const next = ids.includes(id) ? ids.filter((x) => x !== id) : [id, ...ids];
       setIds(next);
       if (authed) {
-        startTransition(() => {
-          void toggleSaveAction(id);
+        // The result is awaited and acted on. Firing this off and ignoring it
+        // leaves a filled heart above a save that never happened, which is
+        // worse than an error: the user believes it worked.
+        startTransition(async () => {
+          const result = await toggleSaveAction(id);
+          if ("error" in result) {
+            setIds(previous);
+            toast(result.error);
+          }
         });
       } else {
         try {
@@ -81,14 +91,19 @@ export function SavedProvider({
         }
       }
     },
-    [ids, authed],
+    [ids, authed, toast],
   );
 
   const clear = useCallback(() => {
+    const previous = ids;
     setIds([]);
     if (authed) {
-      startTransition(() => {
-        void clearSavedAction();
+      startTransition(async () => {
+        const result = await clearSavedAction();
+        if (result.error) {
+          setIds(previous);
+          toast(result.error);
+        }
       });
     } else {
       try {
@@ -97,7 +112,7 @@ export function SavedProvider({
         // ignore
       }
     }
-  }, [authed]);
+  }, [ids, authed, toast]);
 
   const value = useMemo<SavedValue>(
     () => ({

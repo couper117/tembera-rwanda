@@ -3,7 +3,7 @@ import ConfirmButton from "@/components/admin/ConfirmButton";
 import { PageHead, Panel } from "@/components/admin/ui";
 import { adminDate } from "@/lib/admin/placeholder";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { adminUsers } from "@/lib/data/user";
 import { setUserRole, deleteUser } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -13,24 +13,15 @@ export default async function UsersPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  // Still needed here specifically: the page compares each row against the
-  // signed-in admin so nobody can demote or delete themselves.
-  const admin = await requireAdmin();
   const { error } = await searchParams;
 
-  // Never select passwordHash.
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      email: true,
-      handle: true,
-      name: true,
-      role: true,
-      createdAt: true,
-      _count: { select: { saves: true, visits: true } },
-    },
-  });
+  // ADMIN only: an EDITOR maintains the catalogue, not accounts. The nav
+  // hides this row from them, but hiding is not a permission — this is.
+  const admin = await requireAdmin();
+
+  // Each row is compared against the signed-in admin so nobody can demote or
+  // delete themselves and lock the last administrator out.
+  const users = await adminUsers();
 
   const admins = users.filter((u) => u.role === "ADMIN").length;
 

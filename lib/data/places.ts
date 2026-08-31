@@ -38,6 +38,8 @@ function toDomain(row: DbPlace): Place {
     priceFrom: row.priceFrom ?? undefined,
     keywords: row.keywords.length ? row.keywords : undefined,
     sensitive: row.sensitive,
+    status: row.status,
+    hoursJson: row.hoursJson,
   };
 }
 
@@ -53,7 +55,13 @@ function toDomain(row: DbPlace): Place {
 export const getPlaces = unstable_cache(
   async (): Promise<Place[]> => {
     const [rows, sensitive] = await Promise.all([
-      prisma.place.findMany({ orderBy: { name: "asc" } }),
+      prisma.place.findMany({
+        // Only published rows are ever public. A business edit lands as a
+        // draft, and retiring a listing archives it rather than deleting it,
+        // so both must be invisible here without either being gone.
+        where: { status: "published" },
+        orderBy: { name: "asc" },
+      }),
       sensitiveCategoryIds(),
     ]);
     return rows.map((row) => {
@@ -65,6 +73,38 @@ export const getPlaces = unstable_cache(
   ["places-all"],
   { tags: [PLACES_TAG, CATEGORIES_TAG] },
 );
+
+/**
+ * Every place regardless of status, uncached — for the admin and business
+ * screens, which must see drafts and archived listings and must reflect an
+ * edit on the next request rather than at the next revalidation.
+ *
+ * STAFF ONLY. This does not strip ratings and prices from sensitive
+ * categories, because an editor has to be able to see and correct the stored
+ * values. Never hand the result to a public screen; use getPlaces() there.
+ */
+export async function getAllPlaces(): Promise<Place[]> {
+  const rows = await prisma.place.findMany({ orderBy: { name: "asc" } });
+  return rows.map(toDomain);
+}
+
+/** One place regardless of status, uncached. STAFF ONLY, as getAllPlaces(). */
+export async function getAnyPlace(id: string): Promise<Place | undefined> {
+  const row = await prisma.place.findUnique({ where: { id } });
+  return row ? toDomain(row) : undefined;
+}
+
+/**
+ * Place counts per category across every status, for the admin taxonomy
+ * screen — a category with only draft listings still must not look empty.
+ */
+export async function countByCategoryAllStatuses(): Promise<Record<string, number>> {
+  const rows = await prisma.place.groupBy({
+    by: ["categoryId"],
+    _count: { _all: true },
+  });
+  return Object.fromEntries(rows.map((r) => [r.categoryId, r._count._all]));
+}
 
 /* ------------------------------------------------------ lookups & lists */
 

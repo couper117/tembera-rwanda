@@ -1,15 +1,11 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { AuthError } from "next-auth";
 import { z } from "zod";
+import { signIn } from "@/auth";
+import { hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createSession, hashPassword, verifyPassword } from "@/lib/auth";
-import {
-  clearRateLimit,
-  clientIp,
-  formatRetryAfter,
-  rateLimit,
-} from "@/lib/rate-limit";
+import { clientIp, formatRetryAfter, rateLimit } from "@/lib/rate-limit";
 
 export interface AuthState {
   error?: string;
@@ -22,6 +18,18 @@ const LOGIN_PER_IP = { limit: 20, windowMs: 15 * 60 * 1000 };
 const LOGIN_PER_EMAIL = { limit: 5, windowMs: 15 * 60 * 1000 };
 const REGISTER_PER_IP = { limit: 5, windowMs: 60 * 60 * 1000 };
 
+const registerSchema = z.object({
+  name: z.string().trim().min(1, "Please enter your name.").max(80),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address."),
+  handle: z.string().trim().optional(),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+});
+
+const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, "Enter your email address."),
+  password: z.string().min(1, "Enter your password."),
+});
+
 function slugifyHandle(value: string): string {
   return value
     .toLowerCase()
@@ -29,12 +37,18 @@ function slugifyHandle(value: string): string {
     .slice(0, 24);
 }
 
-const registerSchema = z.object({
-  name: z.string().trim().min(1, "Please enter your name.").max(80),
-  email: z.string().trim().toLowerCase().email("Enter a valid email address."),
-  handle: z.string().trim().optional(),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
+/** Append -2, -3 … until the handle is free. */
+async function uniqueHandle(base: string): Promise<string> {
+  const stem = base || "visitor";
+  for (let n = 1; ; n++) {
+    const candidate = n === 1 ? stem : `${stem}${n}`;
+    const taken = await prisma.user.findUnique({
+      where: { handle: candidate },
+      select: { handle: true },
+    });
+    if (!taken) return candidate;
+  }
+}
 
 export async function registerAction(
   _prev: AuthState,
@@ -59,86 +73,120 @@ export async function registerAction(
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid details." };
+    return { error: parsed.error.issues[0]?.message ?? "Check the form." };
   }
   const { name, email, password } = parsed.data;
 
-  // Derive a unique handle from the requested one (or the email local-part).
-  const base = slugifyHandle(parsed.data.handle || email.split("@")[0]) || "user";
-  let handle = base;
-  for (let i = 2; await prisma.user.findUnique({ where: { handle } }); i++) {
-    handle = `${base}${i}`;
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  if (existing) {
+    return { error: "An account with that email already exists." };
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "An account with that email already exists." };
+  const handle = await uniqueHandle(slugifyHandle(parsed.data.handle || name));
 
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
-      name,
       email,
+      name,
       handle,
       passwordHash: await hashPassword(password),
       role: "USER",
     },
   });
 
-  await createSession(user.id);
-  redirect("/");
+  // A brand-new account is always a USER, so there is no role to look up.
+  return signInWith(email, password, "/profile");
 }
-
-const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Enter a valid email address."),
-  password: z.string().min(1, "Enter your password."),
-});
 
 export async function loginAction(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
-  const ip = await clientIp();
-  const perIp = rateLimit(`login:ip:${ip}`, LOGIN_PER_IP.limit, LOGIN_PER_IP.windowMs);
-  if (!perIp.ok) {
-    return {
-      error: `Too many sign-in attempts. Try again in ${formatRetryAfter(perIp.retryAfter)}.`,
-    };
-  }
-
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid details." };
+    return { error: parsed.error.issues[0]?.message ?? "Check the form." };
   }
   const { email, password } = parsed.data;
 
-  // Checked after validation so a malformed submission doesn't burn an attempt,
-  // but before the database is touched so throttled requests cost nothing.
-  const emailKey = `login:email:${email}`;
+  const ip = await clientIp();
+  const perIp = rateLimit(`login:ip:${ip}`, LOGIN_PER_IP.limit, LOGIN_PER_IP.windowMs);
+  if (!perIp.ok) {
+    return {
+      error: `Too many attempts from here. Try again in ${formatRetryAfter(perIp.retryAfter)}.`,
+    };
+  }
   const perEmail = rateLimit(
-    emailKey,
+    `login:email:${email}`,
     LOGIN_PER_EMAIL.limit,
     LOGIN_PER_EMAIL.windowMs,
   );
   if (!perEmail.ok) {
     return {
-      error: `Too many sign-in attempts. Try again in ${formatRetryAfter(perEmail.retryAfter)}.`,
+      error: `Too many attempts for this account. Try again in ${formatRetryAfter(perEmail.retryAfter)}.`,
     };
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  // Constant-ish time: always run a compare even for unknown emails.
-  const hash = user?.passwordHash ?? "$2a$10$invalidinvalidinvalidinvalidinva";
-  const ok = await verifyPassword(password, hash);
-  if (!user || !ok) return { error: "Invalid email or password." };
-
-  // Only a real sign-in clears the counters — a failed attempt must keep
-  // counting, or the limit could be reset by making more attempts.
-  clearRateLimit(emailKey);
-  clearRateLimit(`login:ip:${ip}`);
-
-  await createSession(user.id);
-  redirect("/");
+  return signInWith(email, password, await destinationFor(email));
 }
 
+/**
+ * Where signing in should land you.
+ *
+ * Staff go to the dashboard and businesses to their own, because that is what
+ * they signed in to do — being dropped on a visitor profile and having to find
+ * the way in from there is a small daily tax on the people who use this most.
+ *
+ * Looked up before the password is checked, which is safe: the answer never
+ * reaches the browser unless the sign-in actually succeeds, and an unknown
+ * address simply gets the default.
+ */
+async function destinationFor(email: string): Promise<string> {
+  const account = await prisma.user.findUnique({
+    where: { email },
+    select: { role: true },
+  });
+  switch (account?.role) {
+    case "ADMIN":
+    case "EDITOR":
+      return "/admin";
+    case "BUSINESS":
+      // The dashboard, not /business — that is the marketing page, and
+      // sending an owner who just signed in to a sales pitch is absurd.
+      return "/business/dashboard";
+    default:
+      return "/profile";
+  }
+}
+
+/**
+ * The one place that calls Auth.js.
+ *
+ * `signIn` reports SUCCESS by throwing a redirect, which Next then uses to
+ * navigate. Only an AuthError means the credentials were actually rejected;
+ * everything else must be rethrown untouched. Catching too broadly here would
+ * turn a successful sign-in into a silent "email or password is incorrect" —
+ * the kind of bug that presents as "the button does nothing".
+ */
+async function signInWith(
+  email: string,
+  password: string,
+  redirectTo: string,
+): Promise<AuthState> {
+  try {
+    await signIn("credentials", { email, password, redirectTo });
+    return {};
+  } catch (error) {
+    if (error instanceof AuthError) {
+      // Never say which half was wrong: "no such account" tells an attacker
+      // which addresses are registered.
+      return { error: "Email or password is incorrect." };
+    }
+    throw error;
+  }
+}

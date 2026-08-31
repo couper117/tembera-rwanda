@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import PlaceActions from "@/components/place/PlaceActions";
+import PlaceHero from "@/components/place/PlaceHero";
+import PlaceMap from "@/components/place/PlaceMap";
+import OpeningHours from "@/components/place/OpeningHours";
+import WhyVisit from "@/components/place/WhyVisit";
 import VisitRecorder from "@/components/place/VisitRecorder";
 import CalendarNotice from "@/components/app/CalendarNotice";
 import ClaimListing from "@/components/place/ClaimListing";
@@ -15,6 +18,8 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { getGroup, groupTitle } from "@/lib/data/categories";
 import { getPlace, isSensitivePlace, nearest } from "@/lib/data/places";
 import { getThingsToDo } from "@/lib/places/activities";
+import { displayPrice } from "@/lib/places/pricing";
+import { openStateNow, weekHoursOf } from "@/lib/places/hours";
 import { getCurrentUser } from "@/lib/auth";
 import { getPlaceReviews } from "@/lib/data/user";
 import type { Place } from "@/lib/places/types";
@@ -66,13 +71,22 @@ export default async function PlaceDetailPage({
   // A place of remembrance is not a place to consume. Memorial sites reach
   // this page through the same route as a restaurant, so the page itself has
   // to know the difference: no rating out of five, no reviews, no price, no
-  // "what to expect" chips. See Category.sensitive in schema.prisma.
+  // "what to expect" chips. See `sensitive` in lib/places/taxonomy.ts.
   // Three ways in, because they answer different questions: the category flag
   // covers a whole class of place, the per-place flag covers a memorial seeded
   // under another category (the Campaign Against Genocide museum sits in
   // "arts"), and the memorials id is the backstop for rows predating both.
   const group = await getGroup(place.categoryId);
   const isSensitive = group?.sensitive === true || isSensitivePlace(place);
+
+  // What a price means depends on what the place is: "per night" on a
+  // restaurant is noise, and on a memorial it is worse than noise.
+  const price = displayPrice(place);
+
+  // Structured hours drive both the hero pill and the week table. The
+  // free-text `hours` line stays as the fallback for imported rows.
+  const week = weekHoursOf(place);
+  const openState = openStateNow(week);
 
   // Reviews + who's reading, for the ratings section. Skipped entirely for
   // sensitive places — not fetched, not rendered, not collectable.
@@ -84,6 +98,10 @@ export default async function PlaceDetailPage({
   // same reason the highlights chips are.
   const activities = isSensitive ? [] : getThingsToDo(place);
 
+  // `images` includes the hero shot on most rows, so an unfiltered gallery
+  // showed the same photograph twice and claimed "2 photos" for one.
+  const gallery = (place.images ?? []).filter((src) => src !== place.image);
+
   return (
     <>
       <PageHeader title={place.name} fallbackHref="/explore" revealTitleOnScroll />
@@ -91,83 +109,20 @@ export default async function PlaceDetailPage({
 
       <main className="t-main t-main--hasactionbar">
         <div className="t-page">
-          {/* Controlled hero — big enough to place you, not big enough to
-              push the useful information off the screen. */}
-          <div className="t-detail__hero">
-            <PlaceImage
-              src={place.image}
-              alt={place.name}
-              categoryId={place.categoryId}
-              sizes="(min-width: 768px) 900px, 100vw"
-            />
-          </div>
+          <PlaceHero
+            place={place}
+            categoryTitle={categoryTitle}
+            isSensitive={isSensitive}
+            photoCount={gallery.length + 1}
+            openLabel={openState.label}
+            isOpen={openState.open}
+          />
 
           <div className="t-detail__body">
             <div className="t-detail__cols">
-              <div>
-                <div className="t-inline t-wrap" style={{ marginBottom: "var(--t-2)" }}>
-                  <Link href={`/c/${place.categoryId}`} className="t-badge t-badge--accent">
-                    {categoryTitle}
-                  </Link>
-                  <Link
-                    href={`/c/${place.categoryId}?type=${encodeURIComponent(place.subcategory)}`}
-                    className="t-badge"
-                  >
-                    {place.subcategory}
-                  </Link>
-                  {place.subtype && place.subtype !== place.subcategory && (
-                    <span className="t-badge">{place.subtype}</span>
-                  )}
-                </div>
-
-                <h1 className="t-display">{place.name}</h1>
-
-                <div className="t-detail__metarow">
-                  {place.rating !== undefined && !isSensitive && (
-                    <>
-                      <span className="t-rating">
-                        <Icon name="star" size={15} filled />
-                        {place.rating.toFixed(1)}
-                      </span>
-                      <span className="t-place__sep" aria-hidden="true" />
-                    </>
-                  )}
-                  <span className="t-inline" style={{ gap: 4 }}>
-                    <Icon name="pin" size={15} style={{ color: "var(--t-ink-3)" }} />
-                    <Link href={`/city/${encodeURIComponent(cityLink(place))}`}>
-                      {place.area ?? place.city}
-                    </Link>
-                  </span>
-                </div>
-
-                {place.description && (
-                  <p className="t-body" style={{ marginTop: "var(--t-4)", lineHeight: 1.6 }}>
-                    {place.description}
-                  </p>
-                )}
-
-                {/* A closure warning sits directly above the opening hours,
-                    because that is the line it contradicts. */}
-                <div style={{ marginTop: "var(--t-5)" }}>
-                  <CalendarNotice />
-                </div>
-
-                {/* ------------------------------------------- facts --- */}
-                <div className="t-facts">
-                  {place.hours && (
-                    <Fact icon="clock" label="Opening hours" value={place.hours} />
-                  )}
-
-                  {place.phone && (
-                    <Fact
-                      icon="phone"
-                      label="Phone"
-                      value={
-                        <a href={`tel:${place.phone.replace(/\s/g, "")}`}>{place.phone}</a>
-                      }
-                    />
-                  )}
-
+              <div className="t-detail__main">
+                {/* --------------------------------------- quick facts --- */}
+                <div className="t-facts t-facts--quick">
                   <Fact
                     icon="pin"
                     label="Location"
@@ -183,11 +138,13 @@ export default async function PlaceDetailPage({
                     }
                   />
 
-                  {place.priceFrom !== undefined && !isSensitive && (
+                  {place.phone && (
                     <Fact
-                      icon="sparkle"
-                      label="From"
-                      value={`$${place.priceFrom} per night`}
+                      icon="phone"
+                      label="Phone"
+                      value={
+                        <a href={`tel:${place.phone.replace(/\s/g, "")}`}>{place.phone}</a>
+                      }
                     />
                   )}
 
@@ -202,7 +159,30 @@ export default async function PlaceDetailPage({
                       }
                     />
                   )}
+
+                  {price && !isSensitive && (
+                    <Fact icon="sparkle" label={price.label} value={price.value} />
+                  )}
                 </div>
+
+                {/* A closure warning sits directly above the opening hours,
+                    because that is the line it contradicts. */}
+                <div style={{ marginTop: "var(--t-5)" }}>
+                  <CalendarNotice />
+                </div>
+
+                {/* --------------------------------------------- about --- */}
+                {place.description && (
+                  <section className="t-section" id="about">
+                    <h2 className="t-heading">About</h2>
+                    <p
+                      className="t-body"
+                      style={{ marginTop: "var(--t-2)", lineHeight: 1.7 }}
+                    >
+                      {place.description}
+                    </p>
+                  </section>
+                )}
 
                 {isSensitive && (
                   <div className="t-remember__note" style={{ marginTop: "var(--t-5)" }}>
@@ -219,9 +199,12 @@ export default async function PlaceDetailPage({
                   </div>
                 )}
 
-                {/* ------------------------------------ things to do --- */}
+                {/* ----------------------------------------- why visit --- */}
+                {!isSensitive && <WhyVisit place={place} />}
+
+                {/* -------------------------------------- things to do --- */}
                 {activities.length > 0 && (
-                  <section style={{ marginTop: "var(--t-6)" }}>
+                  <section className="t-section">
                     <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
                       Things to do
                     </h2>
@@ -238,14 +221,14 @@ export default async function PlaceDetailPage({
                   </section>
                 )}
 
-                {/* ---------------------------------------- gallery --- */}
-                {place.images && place.images.length > 0 && (
-                  <section style={{ marginTop: "var(--t-6)" }}>
+                {/* -------------------------------------------- photos --- */}
+                {gallery.length > 0 && (
+                  <section className="t-section" id="photos">
                     <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
                       Photos
                     </h2>
                     <div className="t-scroller">
-                      {place.images.map((src, i) => (
+                      {gallery.map((src, i) => (
                         <div key={src} className="t-gallery__tile">
                           <PlaceImage
                             src={src}
@@ -258,6 +241,24 @@ export default async function PlaceDetailPage({
                     </div>
                   </section>
                 )}
+
+                {/* --------------------------------------------- hours --- */}
+                <OpeningHours week={week} state={openState} fallback={place.hours} />
+
+                {/* ------------------------------------------ location --- */}
+                {place.lat !== undefined && place.lng !== undefined && (
+                  <section className="t-section" id="location">
+                    <h2 className="t-heading" style={{ marginBottom: "var(--t-3)" }}>
+                      Where it is
+                    </h2>
+                    <PlaceMap
+                      lat={place.lat}
+                      lng={place.lng}
+                      name={place.name}
+                      approximate={place.coordsPrecision !== "exact"}
+                    />
+                  </section>
+                )}
               </div>
 
               {/* Desktop action panel; mobile gets the sticky bar below. */}
@@ -265,25 +266,6 @@ export default async function PlaceDetailPage({
                 <PlaceActions place={place} variant="panel" />
               </aside>
             </div>
-
-            {/* ---------------------------------------------- nearby --- */}
-            {around.length > 0 && (
-              <section className="t-section">
-                <SectionHeader
-                  title="Nearby"
-                  subtitle={`Other places close to ${place.name}`}
-                />
-                <div className="t-list">
-                  {around.map((other) => (
-                    <PlaceRow
-                      key={other.id}
-                      place={other}
-                      measureFrom={{ lat: place.lat!, lng: place.lng! }}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
 
             {/* ---------------------------------------------- reviews --- */}
             {!isSensitive && (
@@ -304,10 +286,34 @@ export default async function PlaceDetailPage({
               </section>
             )}
 
-            {/* ----------------------------------------------- claim --- */}
-            <ClaimListing placeId={place.id} placeName={place.name} />
+            {/* ----------------------------------------------- nearby --- */}
+            {around.length > 0 && (
+              <section className="t-section">
+                <SectionHeader
+                  title="Nearby"
+                  subtitle={`Other places close to ${place.name}`}
+                />
+                <div className="t-list">
+                  {around.map((other) => (
+                    <PlaceRow
+                      key={other.id}
+                      place={other}
+                      measureFrom={{ lat: place.lat!, lng: place.lng! }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
-            {/* ---------------------------------------------- report --- */}
+            {/* ------------------------------------------------ claim --- */}
+            {/* A memorial is not a business and cannot be claimed as one.
+                "Is this your business?" under a genocide memorial is exactly
+                the promotion the sensitive-category rule exists to prevent. */}
+            {!isSensitive && (
+              <ClaimListing placeId={place.id} placeName={place.name} />
+            )}
+
+            {/* ----------------------------------------------- report --- */}
             <ReportProblem placeId={place.id} placeName={place.name} />
           </div>
         </div>

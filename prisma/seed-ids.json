@@ -1,0 +1,2972 @@
+[
+  {
+    "id": "airports-bugesera-international-airport",
+    "name": "Bugesera International Airport",
+    "categoryId": "airports",
+    "city": "Bugesera"
+  },
+  {
+    "id": "airports-gisenyi-airport",
+    "name": "Gisenyi Airport",
+    "categoryId": "airports",
+    "city": "Rubavu"
+  },
+  {
+    "id": "airports-huye-airport",
+    "name": "Huye Airport",
+    "categoryId": "airports",
+    "city": "Huye"
+  },
+  {
+    "id": "airports-kamembe-international-airport",
+    "name": "Kamembe International Airport",
+    "categoryId": "airports",
+    "city": "Rusizi"
+  },
+  {
+    "id": "airports-kigali-international-airport",
+    "name": "Kigali International Airport",
+    "categoryId": "airports",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "airports-nemba-airstrip",
+    "name": "Nemba Airstrip",
+    "categoryId": "airports",
+    "city": "Gakenke"
+  },
+  {
+    "id": "airports-ruhengeri-airstrip",
+    "name": "Ruhengeri Airstrip",
+    "categoryId": "airports",
+    "city": "Musanze"
+  },
+  {
+    "id": "arts-campaign-against-genocide",
+    "name": "Campaign Against Genocide",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-ethnographic-museum",
+    "name": "Ethnographic Museum",
+    "categoryId": "arts",
+    "city": "Huye"
+  },
+  {
+    "id": "arts-goethe-institut-kigali",
+    "name": "Goethe-Institut Kigali",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-impact-hub-kigali",
+    "name": "Impact Hub Kigali",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-institut-francais-du-rwanda",
+    "name": "Institut Français du Rwanda",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-ivuka-arts-kigali",
+    "name": "Ivuka Arts Kigali",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-kandt-house-museum",
+    "name": "Kandt House Museum",
+    "categoryId": "arts",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "arts-kigali-cultural-village",
+    "name": "Kigali Cultural Village",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-king-s-palace-museum",
+    "name": "King's Palace Museum",
+    "categoryId": "arts",
+    "city": "Nyanza"
+  },
+  {
+    "id": "arts-museum-of-environment",
+    "name": "Museum of Environment",
+    "categoryId": "arts",
+    "city": "Karongi"
+  },
+  {
+    "id": "arts-national-liberation-museum-park",
+    "name": "National Liberation Museum Park",
+    "categoryId": "arts",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "arts-niyo-art-gallery",
+    "name": "Niyo Art Gallery",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "arts-rwanda-art-museum",
+    "name": "Rwanda Art Museum",
+    "categoryId": "arts",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "arts-rwanda-cultural-heritage-academy",
+    "name": "Rwanda Cultural Heritage Academy",
+    "categoryId": "arts",
+    "city": "Nyanza"
+  },
+  {
+    "id": "arts-rwesero-art-museum",
+    "name": "Rwesero Art Museum",
+    "categoryId": "arts",
+    "city": "Nyanza"
+  },
+  {
+    "id": "arts-uburanga-arts-studio",
+    "name": "Uburanga Arts Studio",
+    "categoryId": "arts",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-bourbon-coffee-kigali-heights",
+    "name": "Bourbon Coffee — Kigali Heights",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-camellia-tea",
+    "name": "Camellia Tea",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-chez-lando",
+    "name": "Chez Lando",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-cocobean",
+    "name": "Cocobean",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-envy-lounge",
+    "name": "Envy Lounge",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-heaven-restaurant",
+    "name": "Heaven Restaurant",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-inzora-rooftop",
+    "name": "Inzora Rooftop",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-java-house-rwanda",
+    "name": "Java House Rwanda",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-khana-khazana",
+    "name": "Khana Khazana",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-meze-fresh",
+    "name": "Meze Fresh",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-neo-cafe",
+    "name": "Neo Cafe",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-pili-pili",
+    "name": "Pili Pili",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-poivre-noir",
+    "name": "Poivre Noir",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-question-coffee",
+    "name": "Question Coffee",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-repub-lounge",
+    "name": "Repub Lounge",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-riders-lounge-kigali",
+    "name": "Riders Lounge Kigali",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-rubia-roasters",
+    "name": "Rubia Roasters",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-shokola-cafe",
+    "name": "Shokola Cafe",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-sole-luna",
+    "name": "Sole Luna",
+    "categoryId": "dining",
+    "city": "Gasabo"
+  },
+  {
+    "id": "dining-soy-asian-table",
+    "name": "Soy Asian Table",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "dining-the-bistro",
+    "name": "The Bistro",
+    "categoryId": "dining",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "education-adventist-university-of-central-africa",
+    "name": "Adventist University of Central Africa",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-african-leadership-university",
+    "name": "African Leadership University",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-carnegie-mellon-university-africa",
+    "name": "Carnegie Mellon University Africa",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-ecole-belge-de-kigali",
+    "name": "École Belge de Kigali",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-gashora-girls-academy-of-science-and-technology",
+    "name": "Gashora Girls Academy of Science and Technology",
+    "categoryId": "education",
+    "city": "Bugesera"
+  },
+  {
+    "id": "education-green-hills-academy",
+    "name": "Green Hills Academy",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-groupe-scolaire-officiel-de-butare",
+    "name": "Groupe Scolaire Officiel de Butare",
+    "categoryId": "education",
+    "city": "Huye"
+  },
+  {
+    "id": "education-ines-ruhengeri",
+    "name": "INES-Ruhengeri",
+    "categoryId": "education",
+    "city": "Musanze"
+  },
+  {
+    "id": "education-iprc-huye",
+    "name": "IPRC Huye",
+    "categoryId": "education",
+    "city": "Huye"
+  },
+  {
+    "id": "education-iprc-karongi",
+    "name": "IPRC Karongi",
+    "categoryId": "education",
+    "city": "Karongi"
+  },
+  {
+    "id": "education-iprc-kigali",
+    "name": "IPRC Kigali",
+    "categoryId": "education",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "education-iprc-musanze",
+    "name": "IPRC Musanze",
+    "categoryId": "education",
+    "city": "Musanze"
+  },
+  {
+    "id": "education-kepler-kigali",
+    "name": "Kepler Kigali",
+    "categoryId": "education",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "education-kigali-independent-university-ulk",
+    "name": "Kigali Independent University (ULK)",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-kigali-international-community-school",
+    "name": "Kigali International Community School",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-kigali-public-library",
+    "name": "Kigali Public Library",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-lycee-de-kigali",
+    "name": "Lycée de Kigali",
+    "categoryId": "education",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "education-mount-kenya-university-rwanda",
+    "name": "Mount Kenya University Rwanda",
+    "categoryId": "education",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "education-protestant-institute-of-arts-and-social-sciences",
+    "name": "Protestant Institute of Arts and Social Sciences",
+    "categoryId": "education",
+    "city": "Huye"
+  },
+  {
+    "id": "education-riviera-high-school",
+    "name": "Riviera High School",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "education-rwanda-coding-academy",
+    "name": "Rwanda Coding Academy",
+    "categoryId": "education",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "education-rwanda-institute-for-conservation-agriculture",
+    "name": "Rwanda Institute for Conservation Agriculture",
+    "categoryId": "education",
+    "city": "Bugesera"
+  },
+  {
+    "id": "education-university-of-global-health-equity",
+    "name": "University of Global Health Equity",
+    "categoryId": "education",
+    "city": "Burera"
+  },
+  {
+    "id": "education-university-of-kigali",
+    "name": "University of Kigali",
+    "categoryId": "education",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "education-university-of-rwanda-busogo-campus",
+    "name": "University of Rwanda — Busogo Campus",
+    "categoryId": "education",
+    "city": "Musanze"
+  },
+  {
+    "id": "education-university-of-rwanda-college-of-science-and-technology",
+    "name": "University of Rwanda — College of Science and Technology",
+    "categoryId": "education",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "education-university-of-rwanda-huye-campus",
+    "name": "University of Rwanda — Huye Campus",
+    "categoryId": "education",
+    "city": "Huye"
+  },
+  {
+    "id": "education-university-of-rwanda-library-huye",
+    "name": "University of Rwanda Library — Huye",
+    "categoryId": "education",
+    "city": "Huye"
+  },
+  {
+    "id": "education-university-of-rwanda-nyagatare-campus",
+    "name": "University of Rwanda — Nyagatare Campus",
+    "categoryId": "education",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "education-university-of-rwanda-remera-campus",
+    "name": "University of Rwanda — Remera Campus",
+    "categoryId": "education",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-access-bank-rwanda",
+    "name": "Access Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-airtel-money-service-centre-kigali",
+    "name": "Airtel Money Service Centre — Kigali",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-airtel-rwanda-service-centre-remera",
+    "name": "Airtel Rwanda Service Centre — Remera",
+    "categoryId": "finance",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-bank-of-africa-rwanda",
+    "name": "Bank of Africa Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-bank-of-kigali-atm-kigali-heights",
+    "name": "Bank of Kigali ATM — Kigali Heights",
+    "categoryId": "finance",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-bank-of-kigali-atm-musanze",
+    "name": "Bank of Kigali ATM — Musanze",
+    "categoryId": "finance",
+    "city": "Musanze"
+  },
+  {
+    "id": "finance-bank-of-kigali-atm-nyabugogo",
+    "name": "Bank of Kigali ATM — Nyabugogo",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-bank-of-kigali-headquarters",
+    "name": "Bank of Kigali Headquarters",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-bpr-bank-rwanda",
+    "name": "BPR Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-development-bank-of-rwanda",
+    "name": "Development Bank of Rwanda",
+    "categoryId": "finance",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-duterimbere-imf",
+    "name": "Duterimbere IMF",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-ecobank-atm-kigali-international-airport",
+    "name": "Ecobank ATM — Kigali International Airport",
+    "categoryId": "finance",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "finance-ecobank-rwanda",
+    "name": "Ecobank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-equity-bank-atm-kigali-city-tower",
+    "name": "Equity Bank ATM — Kigali City Tower",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-equity-bank-rwanda",
+    "name": "Equity Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-guaranty-trust-bank-rwanda",
+    "name": "Guaranty Trust Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-i-m-bank-atm-remera",
+    "name": "I&M Bank ATM — Remera",
+    "categoryId": "finance",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-i-m-bank-rwanda",
+    "name": "I&M Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-kcb-bank-atm-kimironko",
+    "name": "KCB Bank ATM — Kimironko",
+    "categoryId": "finance",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-kcb-bank-rwanda",
+    "name": "KCB Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-mtn-momo-service-centre-kigali",
+    "name": "MTN MoMo Service Centre — Kigali",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-mtn-rwanda-headquarters",
+    "name": "MTN Rwanda Headquarters",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-national-bank-of-rwanda",
+    "name": "National Bank of Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-ncba-bank-rwanda",
+    "name": "NCBA Bank Rwanda",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-umurenge-sacco-kicukiro",
+    "name": "Umurenge SACCO — Kicukiro",
+    "categoryId": "finance",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "finance-umurenge-sacco-remera",
+    "name": "Umurenge SACCO — Remera",
+    "categoryId": "finance",
+    "city": "Gasabo"
+  },
+  {
+    "id": "finance-unguka-bank",
+    "name": "Unguka Bank",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-urwego-bank",
+    "name": "Urwego Bank",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "finance-vision-finance-company",
+    "name": "Vision Finance Company",
+    "categoryId": "finance",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "health-baho-international-hospital",
+    "name": "Baho International Hospital",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-butaro-district-hospital",
+    "name": "Butaro District Hospital",
+    "categoryId": "health",
+    "city": "Burera"
+  },
+  {
+    "id": "health-chuk-hospital-pharmacy",
+    "name": "CHUK Hospital Pharmacy",
+    "categoryId": "health",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "health-doctors-plaza",
+    "name": "Doctors' Plaza",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-gikondo-health-center",
+    "name": "Gikondo Health Center",
+    "categoryId": "health",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "health-kacyiru-district-hospital",
+    "name": "Kacyiru District Hospital",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-kibagabaga-district-hospital",
+    "name": "Kibagabaga District Hospital",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-kibagabaga-hospital-pharmacy",
+    "name": "Kibagabaga Hospital Pharmacy",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-kibuye-referral-hospital",
+    "name": "Kibuye Referral Hospital",
+    "categoryId": "health",
+    "city": "Karongi"
+  },
+  {
+    "id": "health-kigali-adventist-medical-centre",
+    "name": "Kigali Adventist Medical Centre",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-kimironko-health-center",
+    "name": "Kimironko Health Center",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-king-faisal-hospital",
+    "name": "King Faisal Hospital",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-king-faisal-hospital-pharmacy",
+    "name": "King Faisal Hospital Pharmacy",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-kinyinya-health-center",
+    "name": "Kinyinya Health Center",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-la-croix-du-sud-hospital",
+    "name": "La Croix du Sud Hospital",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-legacy-clinics",
+    "name": "Legacy Clinics",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-masaka-district-hospital",
+    "name": "Masaka District Hospital",
+    "categoryId": "health",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "health-muhima-district-hospital",
+    "name": "Muhima District Hospital",
+    "categoryId": "health",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "health-nyagatare-district-hospital",
+    "name": "Nyagatare District Hospital",
+    "categoryId": "health",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "health-nyamirambo-health-center",
+    "name": "Nyamirambo Health Center",
+    "categoryId": "health",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "health-polyclinique-du-plateau",
+    "name": "Polyclinique du Plateau",
+    "categoryId": "health",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "health-remera-health-center",
+    "name": "Remera Health Center",
+    "categoryId": "health",
+    "city": "Gasabo"
+  },
+  {
+    "id": "health-ruhengeri-hospital-pharmacy",
+    "name": "Ruhengeri Hospital Pharmacy",
+    "categoryId": "health",
+    "city": "Musanze"
+  },
+  {
+    "id": "health-ruhengeri-referral-hospital",
+    "name": "Ruhengeri Referral Hospital",
+    "categoryId": "health",
+    "city": "Musanze"
+  },
+  {
+    "id": "health-rwanda-military-hospital",
+    "name": "Rwanda Military Hospital",
+    "categoryId": "health",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "health-rwinkwavu-district-hospital",
+    "name": "Rwinkwavu District Hospital",
+    "categoryId": "health",
+    "city": "Kayonza"
+  },
+  {
+    "id": "health-university-teaching-hospital-of-butare-chub",
+    "name": "University Teaching Hospital of Butare (CHUB)",
+    "categoryId": "health",
+    "city": "Huye"
+  },
+  {
+    "id": "health-university-teaching-hospital-of-kigali-chuk",
+    "name": "University Teaching Hospital of Kigali (CHUK)",
+    "categoryId": "health",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "memorials-belgian-peacekeepers-memorial",
+    "name": "Belgian Peacekeepers Memorial",
+    "categoryId": "memorials",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "memorials-bisesero-genocide-memorial",
+    "name": "Bisesero Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Karongi"
+  },
+  {
+    "id": "memorials-kigali-genocide-memorial",
+    "name": "Kigali Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Gasabo"
+  },
+  {
+    "id": "memorials-murambi-memorial",
+    "name": "Murambi Memorial",
+    "categoryId": "memorials",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "memorials-ntarama-genocide-memorial",
+    "name": "Ntarama Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Bugesera"
+  },
+  {
+    "id": "memorials-nyamata-genocide-memorial",
+    "name": "Nyamata Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Bugesera"
+  },
+  {
+    "id": "memorials-nyanza-kicukiro-genocide-memorial",
+    "name": "Nyanza-Kicukiro Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "memorials-nyarubuye-genocide-memorial",
+    "name": "Nyarubuye Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Kirehe"
+  },
+  {
+    "id": "memorials-nyungwe-forest-heritage-site",
+    "name": "Nyungwe Forest Heritage Site",
+    "categoryId": "memorials",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "memorials-rebero-genocide-memorial",
+    "name": "Rebero Genocide Memorial",
+    "categoryId": "memorials",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "memorials-royal-tombs-of-mwima",
+    "name": "Royal Tombs of Mwima",
+    "categoryId": "memorials",
+    "city": "Nyanza"
+  },
+  {
+    "id": "memorials-rukari-ancient-royal-residence",
+    "name": "Rukari — Ancient Royal Residence",
+    "categoryId": "memorials",
+    "city": "Nyanza"
+  },
+  {
+    "id": "memorials-volcanoes-national-park-heritage-site",
+    "name": "Volcanoes National Park Heritage Site",
+    "categoryId": "memorials",
+    "city": "Musanze"
+  },
+  {
+    "id": "nature-akagera-national-park",
+    "name": "Akagera National Park",
+    "categoryId": "nature",
+    "city": "Kayonza"
+  },
+  {
+    "id": "nature-buhanga-eco-park",
+    "name": "Buhanga Eco-Park",
+    "categoryId": "nature",
+    "city": "Musanze"
+  },
+  {
+    "id": "nature-congo-nile-trail",
+    "name": "Congo Nile Trail",
+    "categoryId": "nature",
+    "city": "Karongi"
+  },
+  {
+    "id": "nature-gishwati-forest",
+    "name": "Gishwati Forest",
+    "categoryId": "nature",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "nature-gishwati-mukura-park",
+    "name": "Gishwati-Mukura Park",
+    "categoryId": "nature",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "nature-isumo-waterfall",
+    "name": "Isumo Waterfall",
+    "categoryId": "nature",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "nature-kamiranzovu-trail",
+    "name": "Kamiranzovu Trail",
+    "categoryId": "nature",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "nature-kigali-city-park",
+    "name": "Kigali City Park",
+    "categoryId": "nature",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "nature-lake-ihema",
+    "name": "Lake Ihema",
+    "categoryId": "nature",
+    "city": "Kayonza"
+  },
+  {
+    "id": "nature-lake-kivu",
+    "name": "Lake Kivu",
+    "categoryId": "nature",
+    "city": "Rubavu"
+  },
+  {
+    "id": "nature-lake-mugesera",
+    "name": "Lake Mugesera",
+    "categoryId": "nature",
+    "city": "Ngoma"
+  },
+  {
+    "id": "nature-lake-muhazi",
+    "name": "Lake Muhazi",
+    "categoryId": "nature",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "nature-lake-rweru",
+    "name": "Lake Rweru",
+    "categoryId": "nature",
+    "city": "Bugesera"
+  },
+  {
+    "id": "nature-mount-bisoke-trail",
+    "name": "Mount Bisoke Trail",
+    "categoryId": "nature",
+    "city": "Musanze"
+  },
+  {
+    "id": "nature-mount-karisimbi-trail",
+    "name": "Mount Karisimbi Trail",
+    "categoryId": "nature",
+    "city": "Musanze"
+  },
+  {
+    "id": "nature-mount-kigali-trail",
+    "name": "Mount Kigali Trail",
+    "categoryId": "nature",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "nature-mount-muhabura-trail",
+    "name": "Mount Muhabura Trail",
+    "categoryId": "nature",
+    "city": "Burera"
+  },
+  {
+    "id": "nature-mukura-forest",
+    "name": "Mukura Forest",
+    "categoryId": "nature",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "nature-ndaba-falls",
+    "name": "Ndaba Falls",
+    "categoryId": "nature",
+    "city": "Karongi"
+  },
+  {
+    "id": "nature-nyandungu-eco-park",
+    "name": "Nyandungu Eco-Park",
+    "categoryId": "nature",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "nature-nyarutarama-lake-park",
+    "name": "Nyarutarama Lake Park",
+    "categoryId": "nature",
+    "city": "Gasabo"
+  },
+  {
+    "id": "nature-nyungwe-forest-national-park",
+    "name": "Nyungwe Forest National Park",
+    "categoryId": "nature",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "nature-nyungwe-national-park",
+    "name": "Nyungwe National Park",
+    "categoryId": "nature",
+    "city": "Rusizi"
+  },
+  {
+    "id": "nature-rugezi-marsh",
+    "name": "Rugezi Marsh",
+    "categoryId": "nature",
+    "city": "Burera"
+  },
+  {
+    "id": "nature-rusumo-falls",
+    "name": "Rusumo Falls",
+    "categoryId": "nature",
+    "city": "Kirehe"
+  },
+  {
+    "id": "nature-twin-lakes-burera-ruhondo",
+    "name": "Twin Lakes (Burera & Ruhondo)",
+    "categoryId": "nature",
+    "city": "Burera"
+  },
+  {
+    "id": "nature-umusambi-village",
+    "name": "Umusambi Village",
+    "categoryId": "nature",
+    "city": "Burera"
+  },
+  {
+    "id": "nature-volcanoes-national-park",
+    "name": "Volcanoes National Park",
+    "categoryId": "nature",
+    "city": "Musanze"
+  },
+  {
+    "id": "recreation-cali-fitness",
+    "name": "Cali Fitness",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-cercle-sportif-de-kigali-pool",
+    "name": "Cercle Sportif de Kigali Pool",
+    "categoryId": "recreation",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "recreation-club-rafiki",
+    "name": "Club Rafiki",
+    "categoryId": "recreation",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "recreation-coconut-kigali",
+    "name": "Coconut Kigali",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-funland-kigali",
+    "name": "FunLand Kigali",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-happy-kids-playground",
+    "name": "Happy Kids Playground",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-joy-kids-play-area",
+    "name": "Joy Kids Play Area",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-kids-play-planet",
+    "name": "Kids Play Planet",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-kigali-kids-fun-park",
+    "name": "Kigali Kids Fun Park",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-kigali-serena-hotel-pool",
+    "name": "Kigali Serena Hotel Pool",
+    "categoryId": "recreation",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "recreation-little-angels-play-zone",
+    "name": "Little Angels Play Zone",
+    "categoryId": "recreation",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "recreation-nyarutarama-sports-club",
+    "name": "Nyarutarama Sports Club",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-nyarutarama-sports-club-pool",
+    "name": "Nyarutarama Sports Club Pool",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-spiderman-game-center",
+    "name": "Spiderman Game Center",
+    "categoryId": "recreation",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "recreation-tedga-s-recreation",
+    "name": "Tedga's Recreation",
+    "categoryId": "recreation",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "recreation-tintin-kids-play-centre",
+    "name": "Tintin Kids Play Centre",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-waka-fitness",
+    "name": "WAKA Fitness",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "recreation-waka-fitness-downtown",
+    "name": "WAKA Fitness Downtown",
+    "categoryId": "recreation",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "recreation-waka-fitness-kimihurura",
+    "name": "WAKA Fitness Kimihurura",
+    "categoryId": "recreation",
+    "city": "Gasabo"
+  },
+  {
+    "id": "safety-gisozi-police-station",
+    "name": "Gisozi Police Station",
+    "categoryId": "safety",
+    "city": "Gasabo"
+  },
+  {
+    "id": "safety-huye-police-station",
+    "name": "Huye Police Station",
+    "categoryId": "safety",
+    "city": "Huye"
+  },
+  {
+    "id": "safety-kicukiro-police-station",
+    "name": "Kicukiro Police Station",
+    "categoryId": "safety",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "safety-kigali-city-fire-station",
+    "name": "Kigali City Fire Station",
+    "categoryId": "safety",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "safety-muhanga-police-station",
+    "name": "Muhanga Police Station",
+    "categoryId": "safety",
+    "city": "Muhanga"
+  },
+  {
+    "id": "safety-musanze-fire-station",
+    "name": "Musanze Fire Station",
+    "categoryId": "safety",
+    "city": "Musanze"
+  },
+  {
+    "id": "safety-musanze-police-station",
+    "name": "Musanze Police Station",
+    "categoryId": "safety",
+    "city": "Musanze"
+  },
+  {
+    "id": "safety-nyamirambo-police-station",
+    "name": "Nyamirambo Police Station",
+    "categoryId": "safety",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "safety-remera-police-station",
+    "name": "Remera Police Station",
+    "categoryId": "safety",
+    "city": "Gasabo"
+  },
+  {
+    "id": "safety-rubavu-police-station",
+    "name": "Rubavu Police Station",
+    "categoryId": "safety",
+    "city": "Rubavu"
+  },
+  {
+    "id": "safety-rwanda-emergency-call-centre-112",
+    "name": "Rwanda Emergency Call Centre (112)",
+    "categoryId": "safety",
+    "city": "Gasabo"
+  },
+  {
+    "id": "safety-rwanda-national-police-fire-and-rescue-brigade",
+    "name": "Rwanda National Police Fire and Rescue Brigade",
+    "categoryId": "safety",
+    "city": "Gasabo"
+  },
+  {
+    "id": "safety-rwanda-national-police-headquarters",
+    "name": "Rwanda National Police Headquarters",
+    "categoryId": "safety",
+    "city": "Gasabo"
+  },
+  {
+    "id": "safety-rwanda-red-cross-society",
+    "name": "Rwanda Red Cross Society",
+    "categoryId": "safety",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "safety-samu-rwanda-pre-hospital-emergency-service",
+    "name": "SAMU Rwanda — Pre-hospital Emergency Service",
+    "categoryId": "safety",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-azizi-life-boutique",
+    "name": "Azizi Life Boutique",
+    "categoryId": "shopping",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "shopping-bourbon-coffee-shop-store",
+    "name": "Bourbon Coffee Shop & Store",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-caplaki-craft-village",
+    "name": "Caplaki Craft Village",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-carrefour-kigali-heights",
+    "name": "Carrefour Kigali Heights",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-chic-building",
+    "name": "CHIC Building",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-city-market",
+    "name": "City Market",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-gahaya-links-gift-shop",
+    "name": "Gahaya Links Gift Shop",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-gisozi-market",
+    "name": "Gisozi Market",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-huye-market",
+    "name": "Huye Market",
+    "categoryId": "shopping",
+    "city": "Huye"
+  },
+  {
+    "id": "shopping-ikirezi-perfumery-shop",
+    "name": "Ikirezi Perfumery & Shop",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-inema-arts-center",
+    "name": "Inema Arts Center",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-kigali-city-tower-shops",
+    "name": "Kigali City Tower Shops",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-kigali-heights-shopping-mall",
+    "name": "Kigali Heights Shopping Mall",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-kimihurura-fabric-market",
+    "name": "Kimihurura Fabric Market",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-kimironko-market",
+    "name": "Kimironko Market",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-kimisagara-market",
+    "name": "Kimisagara Market",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-la-galette",
+    "name": "La Galette",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-m-peace-plaza",
+    "name": "M Peace Plaza",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-makuza-peace-plaza",
+    "name": "Makuza Peace Plaza",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-mamba-club-grocery",
+    "name": "Mamba Club Grocery",
+    "categoryId": "shopping",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "shopping-musanze-market",
+    "name": "Musanze Market",
+    "categoryId": "shopping",
+    "city": "Musanze"
+  },
+  {
+    "id": "shopping-nyabugogo-market",
+    "name": "Nyabugogo Market",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-nyamirambo-women-s-center-market",
+    "name": "Nyamirambo Women's Center Market",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-question-coffee-cafe-shop",
+    "name": "Question Coffee Café & Shop",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-rubavu-market",
+    "name": "Rubavu Market",
+    "categoryId": "shopping",
+    "city": "Rubavu"
+  },
+  {
+    "id": "shopping-rwanda-art-museum-shop",
+    "name": "Rwanda Art Museum Shop",
+    "categoryId": "shopping",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "shopping-rwanda-clothing",
+    "name": "Rwanda Clothing",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-rwanda-craftworks",
+    "name": "Rwanda Craftworks",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-rwanda-fashion-week-boutique",
+    "name": "Rwanda Fashion Week Boutique",
+    "categoryId": "shopping",
+    "city": "Gasabo"
+  },
+  {
+    "id": "shopping-sawa-citi",
+    "name": "Sawa Citi",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-simba-supermarket",
+    "name": "Simba Supermarket",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "shopping-union-trade-center",
+    "name": "Union Trade Center",
+    "categoryId": "shopping",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "sports-amahoro-national-stadium",
+    "name": "Amahoro National Stadium",
+    "categoryId": "sports",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "sports-bk-arena",
+    "name": "BK Arena",
+    "categoryId": "sports",
+    "city": "Gasabo"
+  },
+  {
+    "id": "sports-bugesera-stadium",
+    "name": "Bugesera Stadium",
+    "categoryId": "sports",
+    "city": "Bugesera"
+  },
+  {
+    "id": "sports-camp-kigali-grounds",
+    "name": "Camp Kigali Grounds",
+    "categoryId": "sports",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "sports-cercle-sportif-de-kigali",
+    "name": "Cercle Sportif de Kigali",
+    "categoryId": "sports",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "sports-gikondo-expo-grounds",
+    "name": "Gikondo Expo Grounds",
+    "categoryId": "sports",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "sports-huye-stadium",
+    "name": "Huye Stadium",
+    "categoryId": "sports",
+    "city": "Huye"
+  },
+  {
+    "id": "sports-intare-conference-arena",
+    "name": "INTARE Conference Arena",
+    "categoryId": "sports",
+    "city": "Gasabo"
+  },
+  {
+    "id": "sports-kicukiro-stadium",
+    "name": "Kicukiro Stadium",
+    "categoryId": "sports",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "sports-kigali-convention-centre",
+    "name": "Kigali Convention Centre",
+    "categoryId": "sports",
+    "city": "Gasabo"
+  },
+  {
+    "id": "sports-kigali-golf-club",
+    "name": "Kigali Golf Club",
+    "categoryId": "sports",
+    "city": "Gasabo"
+  },
+  {
+    "id": "sports-kigali-pele-stadium",
+    "name": "Kigali Pelé Stadium",
+    "categoryId": "sports",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "sports-nyagatare-stadium",
+    "name": "Nyagatare Stadium",
+    "categoryId": "sports",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "sports-petit-stade-remera",
+    "name": "Petit Stade Remera",
+    "categoryId": "sports",
+    "city": "Gasabo"
+  },
+  {
+    "id": "sports-umuganda-stadium",
+    "name": "Umuganda Stadium",
+    "categoryId": "sports",
+    "city": "Rubavu"
+  },
+  {
+    "id": "stays-akagera-game-lodge",
+    "name": "Akagera Game Lodge",
+    "categoryId": "stays",
+    "city": "Kayonza"
+  },
+  {
+    "id": "stays-beausejour-hotel",
+    "name": "Beausejour Hotel",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "stays-bisate-lodge",
+    "name": "Bisate Lodge",
+    "categoryId": "stays",
+    "city": "Musanze"
+  },
+  {
+    "id": "stays-cleo-lake-kivu-hotel",
+    "name": "Cleo Lake Kivu Hotel",
+    "categoryId": "stays",
+    "city": "Rubavu"
+  },
+  {
+    "id": "stays-cormoran-lodge",
+    "name": "Cormoran Lodge",
+    "categoryId": "stays",
+    "city": "Karongi"
+  },
+  {
+    "id": "stays-discover-rwanda-youth-hostel",
+    "name": "Discover Rwanda Youth Hostel",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "stays-five-volcanoes-boutique-hotel",
+    "name": "Five Volcanoes Boutique Hotel",
+    "categoryId": "stays",
+    "city": "Musanze"
+  },
+  {
+    "id": "stays-grand-legacy-hotel",
+    "name": "Grand Legacy Hotel",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "stays-hotel-des-mille-collines",
+    "name": "Hôtel des Mille Collines",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-hotel-okapi",
+    "name": "Hotel Okapi",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-kigali-marriott-hotel",
+    "name": "Kigali Marriott Hotel",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-kigali-serena-hotel",
+    "name": "Kigali Serena Hotel",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-lake-kivu-serena-hotel",
+    "name": "Lake Kivu Serena Hotel",
+    "categoryId": "stays",
+    "city": "Rubavu"
+  },
+  {
+    "id": "stays-lemigo-hotel",
+    "name": "Lemigo Hotel",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "stays-m-hotel-kigali",
+    "name": "M Hotel Kigali",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-magashi-camp",
+    "name": "Magashi Camp",
+    "categoryId": "stays",
+    "city": "Kayonza"
+  },
+  {
+    "id": "stays-mantis-kivu-marina-bay",
+    "name": "Mantis Kivu Marina Bay",
+    "categoryId": "stays",
+    "city": "Rubavu"
+  },
+  {
+    "id": "stays-moriah-hill-resort",
+    "name": "Moriah Hill Resort",
+    "categoryId": "stays",
+    "city": "Karongi"
+  },
+  {
+    "id": "stays-nyungwe-top-view-hill-lodge",
+    "name": "Nyungwe Top View Hill Lodge",
+    "categoryId": "stays",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "stays-one-only-nyungwe-house",
+    "name": "One&Only Nyungwe House",
+    "categoryId": "stays",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "stays-onomo-hotel-kigali",
+    "name": "Onomo Hotel Kigali",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-park-inn-by-radisson",
+    "name": "Park Inn by Radisson",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-radisson-blu-hotel-convention-centre",
+    "name": "Radisson Blu Hotel & Convention Centre",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "stays-ruzizi-tented-lodge",
+    "name": "Ruzizi Tented Lodge",
+    "categoryId": "stays",
+    "city": "Kayonza"
+  },
+  {
+    "id": "stays-sabyinyo-silverback-lodge",
+    "name": "Sabyinyo Silverback Lodge",
+    "categoryId": "stays",
+    "city": "Musanze"
+  },
+  {
+    "id": "stays-step-town-motel",
+    "name": "Step Town Motel",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "stays-ubumwe-grande-hotel",
+    "name": "Ubumwe Grande Hotel",
+    "categoryId": "stays",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "stays-virunga-lodge",
+    "name": "Virunga Lodge",
+    "categoryId": "stays",
+    "city": "Burera"
+  },
+  {
+    "id": "stays-yambi-guesthouse",
+    "name": "Yambi Guesthouse",
+    "categoryId": "stays",
+    "city": "Gasabo"
+  },
+  {
+    "id": "transport-car-rental-desks-kigali-international-airport",
+    "name": "Car Rental Desks — Kigali International Airport",
+    "categoryId": "transport",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "transport-downtown-taxi-park",
+    "name": "Downtown Taxi Park",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-horizon-express-nyabugogo",
+    "name": "Horizon Express — Nyabugogo",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-huye-bus-park",
+    "name": "Huye Bus Park",
+    "categoryId": "transport",
+    "city": "Huye"
+  },
+  {
+    "id": "transport-kacyiru-taxi-stand",
+    "name": "Kacyiru Taxi Stand",
+    "categoryId": "transport",
+    "city": "Gasabo"
+  },
+  {
+    "id": "transport-kigali-city-centre-car-hire",
+    "name": "Kigali City Centre Car Hire",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-kimironko-bus-park",
+    "name": "Kimironko Bus Park",
+    "categoryId": "transport",
+    "city": "Gasabo"
+  },
+  {
+    "id": "transport-kimironko-taxi-stand",
+    "name": "Kimironko Taxi Stand",
+    "categoryId": "transport",
+    "city": "Gasabo"
+  },
+  {
+    "id": "transport-musanze-bus-park",
+    "name": "Musanze Bus Park",
+    "categoryId": "transport",
+    "city": "Musanze"
+  },
+  {
+    "id": "transport-nyabugogo-bus-terminal",
+    "name": "Nyabugogo Bus Terminal",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-nyabugogo-taxi-park",
+    "name": "Nyabugogo Taxi Park",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-nyamirambo-taxi-stand",
+    "name": "Nyamirambo Taxi Stand",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-remera-bus-park",
+    "name": "Remera Bus Park",
+    "categoryId": "transport",
+    "city": "Gasabo"
+  },
+  {
+    "id": "transport-remera-taxi-stand",
+    "name": "Remera Taxi Stand",
+    "categoryId": "transport",
+    "city": "Gasabo"
+  },
+  {
+    "id": "transport-ritco-ltd-nyabugogo",
+    "name": "Ritco Ltd — Nyabugogo",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "transport-rubavu-bus-park",
+    "name": "Rubavu Bus Park",
+    "categoryId": "transport",
+    "city": "Rubavu"
+  },
+  {
+    "id": "transport-rusizi-bus-park",
+    "name": "Rusizi Bus Park",
+    "categoryId": "transport",
+    "city": "Rusizi"
+  },
+  {
+    "id": "transport-volcano-express-nyabugogo",
+    "name": "Volcano Express — Nyabugogo",
+    "categoryId": "transport",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "wonders-akagera-boat-safari",
+    "name": "Akagera Boat Safari",
+    "categoryId": "wonders",
+    "city": "Kayonza"
+  },
+  {
+    "id": "wonders-bisoke-crater-lake-viewpoint",
+    "name": "Bisoke Crater Lake Viewpoint",
+    "categoryId": "wonders",
+    "city": "Musanze"
+  },
+  {
+    "id": "wonders-camp-kigali-monument",
+    "name": "Camp Kigali Monument",
+    "categoryId": "wonders",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "wonders-dian-fossey-tomb-and-karisoke-trail",
+    "name": "Dian Fossey Tomb and Karisoke Trail",
+    "categoryId": "wonders",
+    "city": "Musanze"
+  },
+  {
+    "id": "wonders-gorilla-guardians-village",
+    "name": "Gorilla Guardians Village",
+    "categoryId": "wonders",
+    "city": "Musanze"
+  },
+  {
+    "id": "wonders-karongi-lakeside-viewpoint",
+    "name": "Karongi Lakeside Viewpoint",
+    "categoryId": "wonders",
+    "city": "Karongi"
+  },
+  {
+    "id": "wonders-kigali-city-tower",
+    "name": "Kigali City Tower",
+    "categoryId": "wonders",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "wonders-kigali-convention-centre-dome",
+    "name": "Kigali Convention Centre Dome",
+    "categoryId": "wonders",
+    "city": "Gasabo"
+  },
+  {
+    "id": "wonders-kigali-convention-centre-gardens",
+    "name": "Kigali Convention Centre Gardens",
+    "categoryId": "wonders",
+    "city": "Gasabo"
+  },
+  {
+    "id": "wonders-mount-kigali-view-park",
+    "name": "Mount Kigali View Park",
+    "categoryId": "wonders",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "wonders-nyanza-royal-monument",
+    "name": "Nyanza Royal Monument",
+    "categoryId": "wonders",
+    "city": "Nyanza"
+  },
+  {
+    "id": "wonders-nyungwe-canopy-walkway",
+    "name": "Nyungwe Canopy Walkway",
+    "categoryId": "wonders",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "wonders-rebero-hill-viewpoint",
+    "name": "Rebero Hill Viewpoint",
+    "categoryId": "wonders",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "wonders-virunga-volcanoes",
+    "name": "Virunga Volcanoes",
+    "categoryId": "wonders",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-adepr-burera",
+    "name": "ADEPR Burera",
+    "categoryId": "worship",
+    "city": "Burera"
+  },
+  {
+    "id": "worship-adepr-gakenke",
+    "name": "ADEPR Gakenke",
+    "categoryId": "worship",
+    "city": "Gakenke"
+  },
+  {
+    "id": "worship-adepr-gatsibo",
+    "name": "ADEPR Gatsibo",
+    "categoryId": "worship",
+    "city": "Gatsibo"
+  },
+  {
+    "id": "worship-adepr-gicumbi",
+    "name": "ADEPR Gicumbi",
+    "categoryId": "worship",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "worship-adepr-gisagara",
+    "name": "ADEPR Gisagara",
+    "categoryId": "worship",
+    "city": "Gisagara"
+  },
+  {
+    "id": "worship-adepr-gisenyi",
+    "name": "ADEPR Gisenyi",
+    "categoryId": "worship",
+    "city": "Rubavu"
+  },
+  {
+    "id": "worship-adepr-gitarama",
+    "name": "ADEPR Gitarama",
+    "categoryId": "worship",
+    "city": "Muhanga"
+  },
+  {
+    "id": "worship-adepr-kagano",
+    "name": "ADEPR Kagano",
+    "categoryId": "worship",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "worship-adepr-kamembe",
+    "name": "ADEPR Kamembe",
+    "categoryId": "worship",
+    "city": "Rusizi"
+  },
+  {
+    "id": "worship-adepr-kamonyi",
+    "name": "ADEPR Kamonyi",
+    "categoryId": "worship",
+    "city": "Kamonyi"
+  },
+  {
+    "id": "worship-adepr-karongi",
+    "name": "ADEPR Karongi",
+    "categoryId": "worship",
+    "city": "Karongi"
+  },
+  {
+    "id": "worship-adepr-kayonza",
+    "name": "ADEPR Kayonza",
+    "categoryId": "worship",
+    "city": "Kayonza"
+  },
+  {
+    "id": "worship-adepr-kicukiro",
+    "name": "ADEPR Kicukiro",
+    "categoryId": "worship",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "worship-adepr-kigabiro",
+    "name": "ADEPR Kigabiro",
+    "categoryId": "worship",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "worship-adepr-muhoza",
+    "name": "ADEPR Muhoza",
+    "categoryId": "worship",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-adepr-mukamira",
+    "name": "ADEPR Mukamira",
+    "categoryId": "worship",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "worship-adepr-ngoma",
+    "name": "ADEPR Ngoma",
+    "categoryId": "worship",
+    "city": "Ngoma"
+  },
+  {
+    "id": "worship-adepr-ngororero",
+    "name": "ADEPR Ngororero",
+    "categoryId": "worship",
+    "city": "Ngororero"
+  },
+  {
+    "id": "worship-adepr-nyagatare",
+    "name": "ADEPR Nyagatare",
+    "categoryId": "worship",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "worship-adepr-nyakarambi",
+    "name": "ADEPR Nyakarambi",
+    "categoryId": "worship",
+    "city": "Kirehe"
+  },
+  {
+    "id": "worship-adepr-nyamagabe",
+    "name": "ADEPR Nyamagabe",
+    "categoryId": "worship",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "worship-adepr-nyamata",
+    "name": "ADEPR Nyamata",
+    "categoryId": "worship",
+    "city": "Bugesera"
+  },
+  {
+    "id": "worship-adepr-nyanza",
+    "name": "ADEPR Nyanza",
+    "categoryId": "worship",
+    "city": "Nyanza"
+  },
+  {
+    "id": "worship-adepr-nyarugenge",
+    "name": "ADEPR Nyarugenge",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-adepr-nyaruguru",
+    "name": "ADEPR Nyaruguru",
+    "categoryId": "worship",
+    "city": "Nyaruguru"
+  },
+  {
+    "id": "worship-adepr-ruhango",
+    "name": "ADEPR Ruhango",
+    "categoryId": "worship",
+    "city": "Ruhango"
+  },
+  {
+    "id": "worship-adepr-rulindo",
+    "name": "ADEPR Rulindo",
+    "categoryId": "worship",
+    "city": "Rulindo"
+  },
+  {
+    "id": "worship-adepr-rutsiro",
+    "name": "ADEPR Rutsiro",
+    "categoryId": "worship",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "worship-adepr-tumba",
+    "name": "ADEPR Tumba",
+    "categoryId": "worship",
+    "city": "Huye"
+  },
+  {
+    "id": "worship-al-baytul-muqaram",
+    "name": "Al Baytul Muqaram",
+    "categoryId": "worship",
+    "city": "Gasabo"
+  },
+  {
+    "id": "worship-al-qudsi-mosque",
+    "name": "Al-Qudsi Mosque",
+    "categoryId": "worship",
+    "city": "Gasabo"
+  },
+  {
+    "id": "worship-bigogwe-parish",
+    "name": "Bigogwe Parish",
+    "categoryId": "worship",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "worship-boneza-parish",
+    "name": "Boneza Parish",
+    "categoryId": "worship",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "worship-busasamana-parish",
+    "name": "Busasamana Parish",
+    "categoryId": "worship",
+    "city": "Nyanza"
+  },
+  {
+    "id": "worship-busogo-church",
+    "name": "Busogo Church",
+    "categoryId": "worship",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-butare-cathedral",
+    "name": "Butare Cathedral",
+    "categoryId": "worship",
+    "city": "Huye"
+  },
+  {
+    "id": "worship-butaro-parish",
+    "name": "Butaro Parish",
+    "categoryId": "worship",
+    "city": "Burera"
+  },
+  {
+    "id": "worship-byimana-parish",
+    "name": "Byimana Parish",
+    "categoryId": "worship",
+    "city": "Ruhango"
+  },
+  {
+    "id": "worship-byumba-cathedral",
+    "name": "Byumba Cathedral",
+    "categoryId": "worship",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "worship-christ-roi-cathedral",
+    "name": "Christ-Roi Cathedral",
+    "categoryId": "worship",
+    "city": "Nyanza"
+  },
+  {
+    "id": "worship-christian-life-assembly",
+    "name": "Christian Life Assembly",
+    "categoryId": "worship",
+    "city": "Gasabo"
+  },
+  {
+    "id": "worship-congo-nil-parish",
+    "name": "Congo-Nil Parish",
+    "categoryId": "worship",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "worship-cyangugu-cathedral",
+    "name": "Cyangugu Cathedral",
+    "categoryId": "worship",
+    "city": "Rusizi"
+  },
+  {
+    "id": "worship-cyanika-parish",
+    "name": "Cyanika Parish",
+    "categoryId": "worship",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "worship-cyeza-parish",
+    "name": "Cyeza Parish",
+    "categoryId": "worship",
+    "city": "Muhanga"
+  },
+  {
+    "id": "worship-ear-byumba",
+    "name": "EAR Byumba",
+    "categoryId": "worship",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "worship-ear-cyangugu",
+    "name": "EAR Cyangugu",
+    "categoryId": "worship",
+    "city": "Rusizi"
+  },
+  {
+    "id": "worship-ear-gakenke",
+    "name": "EAR Gakenke",
+    "categoryId": "worship",
+    "city": "Gakenke"
+  },
+  {
+    "id": "worship-ear-kibungo",
+    "name": "EAR Kibungo",
+    "categoryId": "worship",
+    "city": "Ngoma"
+  },
+  {
+    "id": "worship-ear-nyamasheke",
+    "name": "EAR Nyamasheke",
+    "categoryId": "worship",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "worship-ear-nyaruguru",
+    "name": "EAR Nyaruguru",
+    "categoryId": "worship",
+    "city": "Nyaruguru"
+  },
+  {
+    "id": "worship-ear-remera",
+    "name": "EAR Remera",
+    "categoryId": "worship",
+    "city": "Gasabo"
+  },
+  {
+    "id": "worship-epr-karongi",
+    "name": "EPR Karongi",
+    "categoryId": "worship",
+    "city": "Karongi"
+  },
+  {
+    "id": "worship-gahini-cathedral",
+    "name": "Gahini Cathedral",
+    "categoryId": "worship",
+    "city": "Kayonza"
+  },
+  {
+    "id": "worship-gahunga-parish",
+    "name": "Gahunga Parish",
+    "categoryId": "worship",
+    "city": "Burera"
+  },
+  {
+    "id": "worship-gasarenda-church",
+    "name": "Gasarenda Church",
+    "categoryId": "worship",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "worship-gatsibo-parish",
+    "name": "Gatsibo Parish",
+    "categoryId": "worship",
+    "city": "Gatsibo"
+  },
+  {
+    "id": "worship-gihara-parish",
+    "name": "Gihara Parish",
+    "categoryId": "worship",
+    "city": "Kamonyi"
+  },
+  {
+    "id": "worship-gikongoro-cathedral",
+    "name": "Gikongoro Cathedral",
+    "categoryId": "worship",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "worship-gisagara-parish",
+    "name": "Gisagara Parish",
+    "categoryId": "worship",
+    "city": "Gisagara"
+  },
+  {
+    "id": "worship-gitarama-church",
+    "name": "Gitarama Church",
+    "categoryId": "worship",
+    "city": "Muhanga"
+  },
+  {
+    "id": "worship-gitesi-parish",
+    "name": "Gitesi Parish",
+    "categoryId": "worship",
+    "city": "Karongi"
+  },
+  {
+    "id": "worship-green-mosque",
+    "name": "Green Mosque",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-hanika-parish",
+    "name": "Hanika Parish",
+    "categoryId": "worship",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "worship-janja-parish",
+    "name": "Janja Parish",
+    "categoryId": "worship",
+    "city": "Gakenke"
+  },
+  {
+    "id": "worship-jenda-church",
+    "name": "Jenda Church",
+    "categoryId": "worship",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "worship-kabaya-parish",
+    "name": "Kabaya Parish",
+    "categoryId": "worship",
+    "city": "Ngororero"
+  },
+  {
+    "id": "worship-kabgayi-cathedral",
+    "name": "Kabgayi Cathedral",
+    "categoryId": "worship",
+    "city": "Muhanga"
+  },
+  {
+    "id": "worship-kamonyi-parish",
+    "name": "Kamonyi Parish",
+    "categoryId": "worship",
+    "city": "Kamonyi"
+  },
+  {
+    "id": "worship-karenge-parish",
+    "name": "Karenge Parish",
+    "categoryId": "worship",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "worship-kibeho-shrine",
+    "name": "Kibeho Shrine",
+    "categoryId": "worship",
+    "city": "Nyaruguru"
+  },
+  {
+    "id": "worship-kibungo-cathedral",
+    "name": "Kibungo Cathedral",
+    "categoryId": "worship",
+    "city": "Ngoma"
+  },
+  {
+    "id": "worship-kigali-hindu-mandir",
+    "name": "Kigali Hindu Mandir",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-kigali-islamic-cultural-centre",
+    "name": "Kigali Islamic Cultural Centre",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-kigembe-church",
+    "name": "Kigembe Church",
+    "categoryId": "worship",
+    "city": "Gisagara"
+  },
+  {
+    "id": "worship-kinazi-church",
+    "name": "Kinazi Church",
+    "categoryId": "worship",
+    "city": "Ruhango"
+  },
+  {
+    "id": "worship-kinihira-church",
+    "name": "Kinihira Church",
+    "categoryId": "worship",
+    "city": "Rulindo"
+  },
+  {
+    "id": "worship-kiramuruzi-church",
+    "name": "Kiramuruzi Church",
+    "categoryId": "worship",
+    "city": "Gatsibo"
+  },
+  {
+    "id": "worship-kirehe-parish",
+    "name": "Kirehe Parish",
+    "categoryId": "worship",
+    "city": "Kirehe"
+  },
+  {
+    "id": "worship-kiziguro-parish",
+    "name": "Kiziguro Parish",
+    "categoryId": "worship",
+    "city": "Gatsibo"
+  },
+  {
+    "id": "worship-mahama-church",
+    "name": "Mahama Church",
+    "categoryId": "worship",
+    "city": "Kirehe"
+  },
+  {
+    "id": "worship-mamba-church",
+    "name": "Mamba Church",
+    "categoryId": "worship",
+    "city": "Gisagara"
+  },
+  {
+    "id": "worship-masjid-al-fatah",
+    "name": "Masjid Al-Fatah",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-masjid-al-jumu-ah",
+    "name": "Masjid al-Jumu'ah",
+    "categoryId": "worship",
+    "city": "Rubavu"
+  },
+  {
+    "id": "worship-masjid-at-tawhid",
+    "name": "Masjid At-tawhid",
+    "categoryId": "worship",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "worship-masjid-base",
+    "name": "Masjid Base",
+    "categoryId": "worship",
+    "city": "Rulindo"
+  },
+  {
+    "id": "worship-masjid-bigogwe",
+    "name": "Masjid Bigogwe",
+    "categoryId": "worship",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "worship-masjid-busasamana",
+    "name": "Masjid Busasamana",
+    "categoryId": "worship",
+    "city": "Nyanza"
+  },
+  {
+    "id": "worship-masjid-bwishyura",
+    "name": "Masjid Bwishyura",
+    "categoryId": "worship",
+    "city": "Karongi"
+  },
+  {
+    "id": "worship-masjid-byimana",
+    "name": "Masjid Byimana",
+    "categoryId": "worship",
+    "city": "Ruhango"
+  },
+  {
+    "id": "worship-masjid-byumba",
+    "name": "Masjid Byumba",
+    "categoryId": "worship",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "worship-masjid-cyanika",
+    "name": "Masjid Cyanika",
+    "categoryId": "worship",
+    "city": "Burera"
+  },
+  {
+    "id": "worship-masjid-gakenke",
+    "name": "Masjid Gakenke",
+    "categoryId": "worship",
+    "city": "Gakenke"
+  },
+  {
+    "id": "worship-masjid-gasarenda",
+    "name": "Masjid Gasarenda",
+    "categoryId": "worship",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "worship-masjid-gatumba",
+    "name": "Masjid Gatumba",
+    "categoryId": "worship",
+    "city": "Ngororero"
+  },
+  {
+    "id": "worship-masjid-gatuna",
+    "name": "Masjid Gatuna",
+    "categoryId": "worship",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "worship-masjid-gikondo",
+    "name": "Masjid Gikondo",
+    "categoryId": "worship",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "worship-masjid-gisagara",
+    "name": "Masjid Gisagara",
+    "categoryId": "worship",
+    "city": "Gisagara"
+  },
+  {
+    "id": "worship-masjid-huye-town",
+    "name": "Masjid Huye Town",
+    "categoryId": "worship",
+    "city": "Huye"
+  },
+  {
+    "id": "worship-masjid-kabarondo",
+    "name": "Masjid Kabarondo",
+    "categoryId": "worship",
+    "city": "Kayonza"
+  },
+  {
+    "id": "worship-masjid-kabarore",
+    "name": "Masjid Kabarore",
+    "categoryId": "worship",
+    "city": "Gatsibo"
+  },
+  {
+    "id": "worship-masjid-kamembe",
+    "name": "Masjid Kamembe",
+    "categoryId": "worship",
+    "city": "Rusizi"
+  },
+  {
+    "id": "worship-masjid-kamonyi",
+    "name": "Masjid Kamonyi",
+    "categoryId": "worship",
+    "city": "Kamonyi"
+  },
+  {
+    "id": "worship-masjid-kayonza",
+    "name": "Masjid Kayonza",
+    "categoryId": "worship",
+    "city": "Kayonza"
+  },
+  {
+    "id": "worship-masjid-kayove",
+    "name": "Masjid Kayove",
+    "categoryId": "worship",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "worship-masjid-kibeho",
+    "name": "Masjid Kibeho",
+    "categoryId": "worship",
+    "city": "Nyaruguru"
+  },
+  {
+    "id": "worship-masjid-kibungo",
+    "name": "Masjid Kibungo",
+    "categoryId": "worship",
+    "city": "Ngoma"
+  },
+  {
+    "id": "worship-masjid-kibuye",
+    "name": "Masjid Kibuye",
+    "categoryId": "worship",
+    "city": "Karongi"
+  },
+  {
+    "id": "worship-masjid-kidaho",
+    "name": "Masjid Kidaho",
+    "categoryId": "worship",
+    "city": "Burera"
+  },
+  {
+    "id": "worship-masjid-kinigi",
+    "name": "Masjid Kinigi",
+    "categoryId": "worship",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-masjid-kiramuruzi",
+    "name": "Masjid Kiramuruzi",
+    "categoryId": "worship",
+    "city": "Gatsibo"
+  },
+  {
+    "id": "worship-masjid-kirehe",
+    "name": "Masjid Kirehe",
+    "categoryId": "worship",
+    "city": "Kirehe"
+  },
+  {
+    "id": "worship-masjid-majengo",
+    "name": "Masjid Majengo",
+    "categoryId": "worship",
+    "city": "Rubavu"
+  },
+  {
+    "id": "worship-masjid-matimba",
+    "name": "Masjid Matimba",
+    "categoryId": "worship",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "worship-masjid-matyazo",
+    "name": "Masjid Matyazo",
+    "categoryId": "worship",
+    "city": "Huye"
+  },
+  {
+    "id": "worship-masjid-muhanga",
+    "name": "Masjid Muhanga",
+    "categoryId": "worship",
+    "city": "Muhanga"
+  },
+  {
+    "id": "worship-masjid-mukamira",
+    "name": "Masjid Mukamira",
+    "categoryId": "worship",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "worship-masjid-musanze",
+    "name": "Masjid Musanze",
+    "categoryId": "worship",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-masjid-ndago",
+    "name": "Masjid Ndago",
+    "categoryId": "worship",
+    "city": "Nyaruguru"
+  },
+  {
+    "id": "worship-masjid-ndora",
+    "name": "Masjid Ndora",
+    "categoryId": "worship",
+    "city": "Gisagara"
+  },
+  {
+    "id": "worship-masjid-ngororero",
+    "name": "Masjid Ngororero",
+    "categoryId": "worship",
+    "city": "Ngororero"
+  },
+  {
+    "id": "worship-masjid-nyagatare",
+    "name": "Masjid Nyagatare",
+    "categoryId": "worship",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "worship-masjid-nyamabuye",
+    "name": "Masjid Nyamabuye",
+    "categoryId": "worship",
+    "city": "Muhanga"
+  },
+  {
+    "id": "worship-masjid-nyamagabe",
+    "name": "Masjid Nyamagabe",
+    "categoryId": "worship",
+    "city": "Nyamagabe"
+  },
+  {
+    "id": "worship-masjid-nyamasheke",
+    "name": "Masjid Nyamasheke",
+    "categoryId": "worship",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "worship-masjid-nyamata",
+    "name": "Masjid Nyamata",
+    "categoryId": "worship",
+    "city": "Bugesera"
+  },
+  {
+    "id": "worship-masjid-nyanza",
+    "name": "Masjid Nyanza",
+    "categoryId": "worship",
+    "city": "Nyanza"
+  },
+  {
+    "id": "worship-masjid-nyarubuye",
+    "name": "Masjid Nyarubuye",
+    "categoryId": "worship",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "worship-masjid-ruhango",
+    "name": "Masjid Ruhango",
+    "categoryId": "worship",
+    "city": "Ruhango"
+  },
+  {
+    "id": "worship-masjid-ruhuha",
+    "name": "Masjid Ruhuha",
+    "categoryId": "worship",
+    "city": "Bugesera"
+  },
+  {
+    "id": "worship-masjid-rulindo",
+    "name": "Masjid Rulindo",
+    "categoryId": "worship",
+    "city": "Rulindo"
+  },
+  {
+    "id": "worship-masjid-runda",
+    "name": "Masjid Runda",
+    "categoryId": "worship",
+    "city": "Kamonyi"
+  },
+  {
+    "id": "worship-masjid-rusizi-border",
+    "name": "Masjid Rusizi Border",
+    "categoryId": "worship",
+    "city": "Rusizi"
+  },
+  {
+    "id": "worship-masjid-rusumo",
+    "name": "Masjid Rusumo",
+    "categoryId": "worship",
+    "city": "Kirehe"
+  },
+  {
+    "id": "worship-masjid-rutsiro",
+    "name": "Masjid Rutsiro",
+    "categoryId": "worship",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "worship-masjid-rwamagana",
+    "name": "Masjid Rwamagana",
+    "categoryId": "worship",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "worship-masjid-sake",
+    "name": "Masjid Sake",
+    "categoryId": "worship",
+    "city": "Ngoma"
+  },
+  {
+    "id": "worship-masjid-tyazo",
+    "name": "Masjid Tyazo",
+    "categoryId": "worship",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "worship-mataba-church",
+    "name": "Mataba Church",
+    "categoryId": "worship",
+    "city": "Gakenke"
+  },
+  {
+    "id": "worship-matimba-church",
+    "name": "Matimba Church",
+    "categoryId": "worship",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "worship-mayange-church",
+    "name": "Mayange Church",
+    "categoryId": "worship",
+    "city": "Bugesera"
+  },
+  {
+    "id": "worship-mibirizi-parish",
+    "name": "Mibirizi Parish",
+    "categoryId": "worship",
+    "city": "Rusizi"
+  },
+  {
+    "id": "worship-muhororo-church",
+    "name": "Muhororo Church",
+    "categoryId": "worship",
+    "city": "Ngororero"
+  },
+  {
+    "id": "worship-mukarange-parish",
+    "name": "Mukarange Parish",
+    "categoryId": "worship",
+    "city": "Gicumbi"
+  },
+  {
+    "id": "worship-murunda-church",
+    "name": "Murunda Church",
+    "categoryId": "worship",
+    "city": "Rutsiro"
+  },
+  {
+    "id": "worship-nemba-parish",
+    "name": "Nemba Parish",
+    "categoryId": "worship",
+    "city": "Gakenke"
+  },
+  {
+    "id": "worship-new-life-bible-church",
+    "name": "New Life Bible Church",
+    "categoryId": "worship",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "worship-ngoma-parish",
+    "name": "Ngoma Parish",
+    "categoryId": "worship",
+    "city": "Huye"
+  },
+  {
+    "id": "worship-ngororero-parish",
+    "name": "Ngororero Parish",
+    "categoryId": "worship",
+    "city": "Ngororero"
+  },
+  {
+    "id": "worship-nyagatare-parish",
+    "name": "Nyagatare Parish",
+    "categoryId": "worship",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "worship-nyamasheke-parish",
+    "name": "Nyamasheke Parish",
+    "categoryId": "worship",
+    "city": "Nyamasheke"
+  },
+  {
+    "id": "worship-nyamata-church",
+    "name": "Nyamata Church",
+    "categoryId": "worship",
+    "city": "Bugesera"
+  },
+  {
+    "id": "worship-nyanza-anglican",
+    "name": "Nyanza Anglican",
+    "categoryId": "worship",
+    "city": "Nyanza"
+  },
+  {
+    "id": "worship-nyanza-parish",
+    "name": "Nyanza Parish",
+    "categoryId": "worship",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "worship-nyaruguru-parish",
+    "name": "Nyaruguru Parish",
+    "categoryId": "worship",
+    "city": "Nyaruguru"
+  },
+  {
+    "id": "worship-nyundo-cathedral",
+    "name": "Nyundo Cathedral",
+    "categoryId": "worship",
+    "city": "Rubavu"
+  },
+  {
+    "id": "worship-rambura-parish",
+    "name": "Rambura Parish",
+    "categoryId": "worship",
+    "city": "Nyabihu"
+  },
+  {
+    "id": "worship-regina-pacis",
+    "name": "Regina Pacis",
+    "categoryId": "worship",
+    "city": "Gasabo"
+  },
+  {
+    "id": "worship-rubavu-cathedral",
+    "name": "Rubavu Cathedral",
+    "categoryId": "worship",
+    "city": "Rubavu"
+  },
+  {
+    "id": "worship-rugobagoba-church",
+    "name": "Rugobagoba Church",
+    "categoryId": "worship",
+    "city": "Kamonyi"
+  },
+  {
+    "id": "worship-ruhango-parish",
+    "name": "Ruhango Parish",
+    "categoryId": "worship",
+    "city": "Ruhango"
+  },
+  {
+    "id": "worship-ruhengeri-cathedral",
+    "name": "Ruhengeri Cathedral",
+    "categoryId": "worship",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-ruhuha-parish",
+    "name": "Ruhuha Parish",
+    "categoryId": "worship",
+    "city": "Bugesera"
+  },
+  {
+    "id": "worship-rukara-parish",
+    "name": "Rukara Parish",
+    "categoryId": "worship",
+    "city": "Kayonza"
+  },
+  {
+    "id": "worship-rukomo-parish",
+    "name": "Rukomo Parish",
+    "categoryId": "worship",
+    "city": "Nyagatare"
+  },
+  {
+    "id": "worship-rulindo-parish",
+    "name": "Rulindo Parish",
+    "categoryId": "worship",
+    "city": "Rulindo"
+  },
+  {
+    "id": "worship-rusarabuye-church",
+    "name": "Rusarabuye Church",
+    "categoryId": "worship",
+    "city": "Burera"
+  },
+  {
+    "id": "worship-rusumo-church",
+    "name": "Rusumo Church",
+    "categoryId": "worship",
+    "city": "Kirehe"
+  },
+  {
+    "id": "worship-rwamagana-cathedral",
+    "name": "Rwamagana Cathedral",
+    "categoryId": "worship",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "worship-sainte-famille",
+    "name": "Sainte-Famille",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-shingiro-parish",
+    "name": "Shingiro Parish",
+    "categoryId": "worship",
+    "city": "Musanze"
+  },
+  {
+    "id": "worship-shyorongi-parish",
+    "name": "Shyorongi Parish",
+    "categoryId": "worship",
+    "city": "Rulindo"
+  },
+  {
+    "id": "worship-sikh-gurudwara-kigali",
+    "name": "Sikh Gurudwara Kigali",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-st-andre",
+    "name": "St. Andre",
+    "categoryId": "worship",
+    "city": "Rubavu"
+  },
+  {
+    "id": "worship-st-barthelemy",
+    "name": "St. Barthélemy",
+    "categoryId": "worship",
+    "city": "Huye"
+  },
+  {
+    "id": "worship-st-michel",
+    "name": "St. Michel",
+    "categoryId": "worship",
+    "city": "Nyarugenge"
+  },
+  {
+    "id": "worship-st-patrick-s",
+    "name": "St. Patrick's",
+    "categoryId": "worship",
+    "city": "Kicukiro"
+  },
+  {
+    "id": "worship-st-paul-s",
+    "name": "St. Paul's",
+    "categoryId": "worship",
+    "city": "Rwamagana"
+  },
+  {
+    "id": "worship-st-pierre-kibuye",
+    "name": "St. Pierre (Kibuye)",
+    "categoryId": "worship",
+    "city": "Karongi"
+  },
+  {
+    "id": "worship-women-foundation-ministries-kwa-mignone",
+    "name": "Women Foundation Ministries(Kwa Mignone)",
+    "categoryId": "worship",
+    "city": "Gasabo"
+  },
+  {
+    "id": "worship-zaza-parish",
+    "name": "Zaza Parish",
+    "categoryId": "worship",
+    "city": "Ngoma"
+  }
+]

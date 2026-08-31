@@ -248,32 +248,114 @@
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: var(--t-2);
+  gap: var(--t-3);
   height: var(--t-header-h);
   padding: 0 var(--t-4);
-  background: var(--t-surface);
+  background: color-mix(in srgb, var(--t-surface) 88%, transparent);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--t-border);
 }
 
-.a-topbar__title {
-  flex: none;
-  font-size: var(--t-text-heading);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+/* Where you are: the nav section above, the page below. One word repeated
+   from the heading underneath said nothing; this says something. */
+.a-topbar__where {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.15;
 }
 
-.a-search {
-  flex: 1;
+.a-topbar__section {
+  font-size: var(--t-text-micro);
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-topbar__title {
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-topbar__tools {
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  max-width: 420px;
-  margin-inline: auto;
-  height: 38px;
-  padding: 0 var(--t-3);
-  border-radius: var(--t-r-pill);
+  margin-left: auto;
+}
+
+.a-topbar__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--t-r-md);
+  background: transparent;
+  color: var(--t-ink-2);
+  cursor: pointer;
+}
+
+.a-topbar__icon:hover {
   background: var(--t-surface-2);
+  border-color: var(--t-border);
+  color: var(--t-ink);
+}
+
+/* A count, not a dot. "There is something" is less use than "there are four",
+   and the queue it points at is the one thing this bar is for. */
+.a-topbar__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--t-surface);
+}
+
+.a-topbar__rule {
+  width: 1px;
+  height: 22px;
+  background: var(--t-border);
+  margin: 0 2px;
+}
+
+/* Narrower than it was, and no longer centred: it searches the catalogue, not
+   the application, and should not read as the main event on every screen. */
+.a-search {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  width: 260px;
+  height: 36px;
+  padding: 0 var(--t-3);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  border: 1px solid transparent;
   color: var(--t-ink-3);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.a-search:focus-within {
+  background: var(--t-surface);
+  border-color: var(--t-accent);
 }
 
 .a-search input {
@@ -283,37 +365,154 @@
   background: none;
   color: var(--t-ink);
   font: inherit;
+  font-size: 0.86rem;
   outline: none;
 }
 
-.a-who {
+/* --- account --- */
+.a-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.a-avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+.a-usermenu {
+  position: relative;
+}
+
+.a-usermenu__trigger {
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  margin-left: auto;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--t-r-pill);
+  background: transparent;
+  color: var(--t-ink-3);
+  cursor: pointer;
+  font: inherit;
 }
 
-.a-who__text {
+.a-usermenu__trigger:hover,
+.a-usermenu__trigger[aria-expanded="true"] {
+  background: var(--t-surface-2);
+  border-color: var(--t-border);
+}
+
+.a-usermenu__who {
   display: none;
   flex-direction: column;
   line-height: 1.2;
-  text-align: right;
+  text-align: left;
 }
 
-@media (min-width: 768px) {
-  .a-who__text {
+@media (min-width: 900px) {
+  .a-usermenu__who {
     display: flex;
   }
 }
 
-.a-who__name {
+.a-usermenu__name {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink);
+}
+
+/* The role, not the email address. Which powers you are holding matters every
+   day; the address matters when you check, which is what the menu is for. */
+.a-usermenu__role {
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+.a-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 252px;
+  padding: 6px;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow-raised);
+}
+
+.a-menu__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3);
+  border-bottom: 1px solid var(--t-border);
+  margin-bottom: 6px;
+}
+
+.a-menu__id {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.a-menu__name {
   font-size: var(--t-text-small);
   font-weight: 700;
 }
 
-.a-who__mail {
+.a-menu__mail {
   font-size: var(--t-text-micro);
   color: var(--t-ink-3);
+  overflow-wrap: anywhere;
+}
+
+.a-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  width: 100%;
+  padding: 9px var(--t-3);
+  border: 0;
+  border-radius: var(--t-r-sm);
+  background: transparent;
+  color: var(--t-ink);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.a-menu__item:hover {
+  background: var(--t-surface-2);
+}
+
+.a-menu__foot {
+  border-top: 1px solid var(--t-border);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.a-menu__item--danger {
+  color: var(--t-danger);
+}
+
+.a-menu__item--danger:hover {
+  background: var(--t-danger-soft);
 }
 
 .a-main {
@@ -845,4 +1044,762 @@ a.a-stat:hover {
   background: var(--t-surface);
   border: 1px solid var(--t-border);
   box-shadow: var(--t-shadow-float);
+}
+
+/* A row whose record is present but not in force — a hidden review, an
+   archived listing. Dimmed rather than removed, because the moderator still
+   has to be able to find it and put it back. */
+.a-row--muted {
+  opacity: 0.55;
+}
+
+.a-row--muted:hover {
+  opacity: 1;
+}
+
+/* --- list thumbnails ---
+   A photo is the fastest way to see that a listing is wrong: the name reads
+   fine, the picture is of a different building. Small, square, and with an
+   explicit placeholder so "no photo" is visible at a glance rather than a
+   blank cell that looks like a rendering bug. */
+.a-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--t-r-sm);
+  object-fit: cover;
+  background: var(--t-surface-2);
+  border: 1px solid var(--t-border);
+  display: block;
+}
+
+.a-thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t-ink-3);
+  border-style: dashed;
+}
+
+/* Visible to a screen reader, not to the eye — for a column whose heading is
+   obvious visually but would otherwise be announced as nothing. */
+.a-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- form sections ---
+   Twenty-one fields in one column is a wall. Grouped by the job being done,
+   it is five short ones. */
+.a-formsection {
+  border-top: 1px solid var(--t-border);
+  padding-top: var(--t-4);
+  margin-top: var(--t-4);
+}
+
+.a-formsection:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.a-formsection__head {
+  margin-bottom: var(--t-3);
+}
+
+.a-formsection__title {
+  font-size: 0.95rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.a-formsection__sub {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--t-ink-3);
+}
+
+.a-formsection__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+/* A field whose value was rejected. The border carries the state so it is
+   visible without reading, and the message says what to do about it. */
+.a-field--invalid .a-input,
+.a-field--invalid .a-select,
+.a-field--invalid .a-textarea {
+  border-color: var(--t-danger);
+}
+
+.a-fielderror {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--t-danger);
+}
+
+/* --- map picker ---
+   Sized so the whole of Rwanda is legible on open but the control does not
+   dominate the form it sits in. */
+.a-mapwrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+}
+
+.a-map {
+  height: 340px;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  overflow: hidden;
+  background: var(--t-surface-2);
+}
+
+/* Leaflet's own controls, tinted to sit inside the admin rather than on top
+   of it. */
+.a-map .leaflet-control-attribution {
+  font-size: 0.68rem;
+  background: color-mix(in srgb, var(--t-surface) 88%, transparent);
+  color: var(--t-ink-3);
+}
+
+/* The default marker is an image loaded by relative URL, which does not
+   survive bundling — this is drawn instead. */
+.a-mappin__dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--t-danger);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.4);
+}
+
+/* --- hours editor --- */
+.a-hours__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.a-hours__table th,
+.a-hours__table td {
+  padding: 6px 8px 6px 0;
+  text-align: left;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.a-hours__table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--t-ink-3);
+  font-weight: 600;
+}
+
+.a-hours__table tbody th {
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.a-hours__table .a-input,
+.a-hours__table .a-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.a-hours__table .a-input:disabled {
+  opacity: 0.45;
+}
+
+/* ============================================================ place editor */
+
+/* --- header: what you are editing, how finished it is, and how to save ---
+   Kept above the tabs and out of the scroll, so the save button is always
+   reachable and the preview always reflects what is in the fields. */
+.a-editorhead {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  min-width: 0;
+}
+
+.a-preview__img {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--t-r-md);
+  object-fit: cover;
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+  flex: none;
+}
+
+.a-preview__img--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t-ink-3);
+  border-style: dashed;
+}
+
+.a-preview__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.a-preview__name {
+  font-weight: 650;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-preview__meta {
+  font-size: 0.82rem;
+  color: var(--t-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- completeness ---
+   A listing is "done" when a visitor can see it, find it, reach it and know
+   what it is — not when every column is non-null. */
+.a-complete {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.a-complete__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--t-surface-3);
+  overflow: hidden;
+}
+
+.a-complete__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--t-accent);
+  transition: width 160ms ease-out;
+}
+
+.a-complete__label {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--t-ink-3);
+}
+
+.a-editorhead__actions {
+  display: flex;
+  gap: var(--t-2);
+  margin-left: auto;
+}
+
+/* --- tabs --- */
+.a-tabs {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--t-border);
+  margin: var(--t-4) 0 var(--t-4);
+}
+
+.a-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--t-ink-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--t-r-sm) var(--t-r-sm) 0 0;
+}
+
+.a-tab:hover {
+  color: var(--t-ink);
+  background: var(--t-surface-2);
+}
+
+.a-tab--on {
+  color: var(--t-ink);
+  border-bottom-color: var(--t-accent);
+}
+
+/* A tab holding a rejected field. Without this, an error on a hidden tab is
+   invisible and the form just refuses to save without saying where. */
+.a-tab--bad {
+  color: var(--t-danger);
+}
+
+.a-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--t-danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.a-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-4);
+}
+
+/* `display: flex` above beats the browser's own [hidden] { display: none },
+   so an inactive panel stays on screen without this. The panels are hidden
+   rather than unmounted so their inputs still submit — which means the only
+   thing keeping them out of sight is this rule. */
+.a-tabpanel[hidden] {
+  display: none;
+}
+
+.a-formactions {
+  margin-top: var(--t-5);
+  padding-top: var(--t-4);
+  border-top: 1px solid var(--t-border);
+}
+
+/* --- roomier inputs ---
+   Same visual language, more air. A form somebody spends their working day in
+   should not feel like a tax return. */
+.a-form--roomy .a-input,
+.a-form--roomy .a-select,
+.a-form--roomy .a-textarea {
+  padding: 11px 13px;
+  font-size: 0.95rem;
+}
+
+.a-form--roomy .a-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.a-form--roomy .a-hours__table .a-input,
+.a-form--roomy .a-hours__table .a-select {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+/* A heading over a row of stats. Work waiting on somebody and the size of the
+   catalogue are different questions; putting them under one row makes a
+   number nobody can act on sit beside one that needs doing today. */
+.a-statsgroup {
+  margin: var(--t-5) 0 var(--t-3);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-statsgroup:first-of-type {
+  margin-top: var(--t-4);
+}
+
+/* --- submission diff ---
+   What is proposed, beside what the listing says now. Approving a change you
+   cannot see is not reviewing it. */
+.a-difflist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+.a-diff {
+  display: grid;
+  gap: 2px;
+}
+
+.a-diff__label {
+  font-size: var(--t-text-micro);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-diff__old {
+  font-size: 0.85rem;
+  color: var(--t-ink-3);
+  text-decoration: line-through;
+  overflow-wrap: anywhere;
+}
+
+.a-diff__new {
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.a-diff--changed .a-diff__new {
+  font-weight: 600;
+  color: var(--t-accent);
+}
+
+/* ========================================================= mobile: the app */
+/*
+ * On a phone these dashboards should behave like an app, not like a desktop
+ * page that has been squeezed. That means: no sidebar, a thumb-reachable
+ * bottom bar, a compact header, and content that fills the width.
+ */
+
+.a-bottomnav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .a-bottomnav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 68;
+    display: flex;
+    align-items: stretch;
+    height: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: color-mix(in srgb, var(--t-surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--t-border);
+  }
+
+  .a-bottomnav__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 6px 2px;
+    color: var(--t-ink-3);
+    text-decoration: none;
+  }
+
+  .a-bottomnav__item[aria-current="page"] {
+    color: var(--t-accent);
+  }
+
+  .a-bottomnav__glyph {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .a-bottomnav__badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--t-accent);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 750;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--t-surface);
+  }
+
+  .a-bottomnav__label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* Room for the bar, so the last row of a table is not sitting under it. */
+  .a-main {
+    padding: var(--t-4) var(--t-3)
+      calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom) + var(--t-6));
+  }
+
+  /* A phone header carries where you are and who you are, and nothing else.
+     The catalogue search moves into the page it searches. */
+  .a-topbar {
+    gap: var(--t-2);
+    padding: 0 var(--t-3);
+  }
+
+  /* Several components set their own `display`, at the same specificity as
+     the .t-show-desktop utility — so which one won came down to stylesheet
+     order, and the catalogue search stayed on screen squashing the page
+     title. Anything inside the top bar marked desktop-only is hidden here,
+     whatever it sets for itself. */
+  .a-topbar .t-show-desktop {
+    display: none !important;
+  }
+
+  .a-topbar__title {
+    font-size: 0.98rem;
+  }
+
+  /* Cards and panels go full width rather than sitting in a narrow column. */
+  .a-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .a-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .a-grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Two columns of tiny buttons in a table cell wrap into a mess; stack them. */
+  .a-table__actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  /* Tabs scroll sideways instead of wrapping into four ragged rows. */
+  .a-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .a-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .a-tab {
+    flex: none;
+  }
+
+  /* The editor header stacks: preview, then progress, then the actions as a
+     full-width row so Save is a thumb target rather than a corner. */
+  .a-editorhead {
+    gap: var(--t-3);
+  }
+
+  .a-editorhead__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .a-editorhead__actions .t-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .a-map {
+    height: 260px;
+  }
+}
+
+@media (max-width: 600px) {
+  .a-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- sidebar summary card ---
+   Five nav items left most of a 248px column empty. This is the thing the
+   reader actually wants from that space: where they stand, and what is
+   outstanding. Not decoration. */
+.a-sidecard {
+  margin: var(--t-4) var(--t-3) 0;
+  padding: var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+}
+
+.a-sidecard__title {
+  margin: 0 0 var(--t-2);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-sidecard__rows {
+  margin: 0 0 var(--t-3);
+  display: grid;
+  gap: 7px;
+}
+
+.a-sidecard__rows > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-2);
+}
+
+.a-sidecard__rows dt {
+  font-size: 0.78rem;
+  color: var(--t-ink-3);
+}
+
+.a-sidecard__rows dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+/* Hidden when the rail is collapsed to icons — a card of labels in a 72px
+   column is unreadable. */
+.a-shell[data-rail="collapsed"] .a-sidecard {
+  display: none;
+}
+
+/* --- the grid overflow fix ---
+ * Grid and flex children default to `min-width: auto`, which means a child is
+ * never allowed to be narrower than its content. A table 557px wide therefore
+ * forces its column to 557px, the column forces the page wider than the
+ * screen, and `overflow-x: auto` on the wrapper never gets a chance to engage
+ * — the table does not overflow its parent, the parent grew instead.
+ *
+ * Setting min-width: 0 lets the column shrink to the viewport, at which point
+ * the wrapper scrolls the table as intended. This is the whole reason the
+ * dashboards scrolled sideways on a phone.
+ */
+.a-cols > *,
+.a-panel,
+.a-tablewrap,
+.a-stats > *,
+.a-body {
+  min-width: 0;
+}
+
+.a-tablewrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Nothing should ever scroll the page sideways. If something does, it is a
+   bug, and clipping it is better than shipping a page that slides. */
+@media (max-width: 1023px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* --- form feedback ---
+   A form that refuses has to say how many things are wrong, name them, and
+   let the reader jump to each. One line of red text at the top of a tabbed
+   form leaves them hunting. */
+.a-feedback {
+  display: flex;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  margin-bottom: var(--t-4);
+  border-radius: var(--t-r-md);
+  border: 1px solid;
+  scroll-margin-top: calc(var(--t-header-h) + var(--t-4));
+}
+
+.a-feedback--bad {
+  border-color: var(--t-danger);
+  background: var(--t-danger-soft);
+  color: var(--t-danger);
+}
+
+.a-feedback--ok {
+  border-color: var(--t-accent-ink);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.a-feedback__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 1px;
+}
+
+.a-feedback__body {
+  min-width: 0;
+}
+
+.a-feedback__title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.a-feedback__list {
+  margin: var(--t-2) 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 4px;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* The field name is the actionable part, so it looks like the control it is. */
+.a-feedback__jump {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.a-feedback__jump:hover {
+  text-decoration-thickness: 2px;
+}
+
+.a-feedback__note {
+  margin: var(--t-2) 0 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* A rejected field should be obvious from the label down, not only by its
+   border — someone scanning a long form reads labels, not outlines. */
+.a-field--invalid .a-label {
+  color: var(--t-danger);
+}
+
+.a-field--invalid .a-input:focus,
+.a-field--invalid .a-select:focus,
+.a-field--invalid .a-textarea:focus {
+  outline-color: var(--t-danger);
 }

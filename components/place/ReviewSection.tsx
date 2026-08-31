@@ -61,7 +61,15 @@ export default function ReviewSection({ placeId, reviews, currentUserId }: Props
 
   function remove() {
     startTransition(async () => {
-      await deleteReviewAction(placeId);
+      const res = await deleteReviewAction(placeId);
+      // Clearing the form before knowing the delete succeeded made the review
+      // look gone while it was still published — and the refresh then brought
+      // it back, which reads as the app losing the user's input.
+      if ("error" in res) {
+        setError(res.error);
+        return;
+      }
+      setError(null);
       setRating(0);
       setBody("");
       router.refresh();

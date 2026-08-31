@@ -2,19 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/app/PageHeader";
 import PlaceBrowser from "@/components/browse/PlaceBrowser";
-import { citySummaries, placesInCity } from "@/lib/data/places";
-
-export async function generateStaticParams() {
-  const cities = await citySummaries();
-  return cities.map((c) => ({ city: encodeURIComponent(c.name) }));
-}
+import { placesInCity } from "@/lib/data/places";
 
 /**
- * Every valid param is enumerated above. Without this, Next renders an
- * unlisted param on demand and serves the not-found page with a 200 — the
- * right screen, the wrong status. Refusing unknown params gives a real 404.
+ * Fully dynamic, like /place/[id]. Cities come from admin-editable place data,
+ * so prerendering the list would open a DB connection at build time and leave a
+ * newly added city 404-ing until the next deploy. A city with no places falls
+ * through to notFound() below, which returns a real 404.
  */
-export const dynamicParams = false;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

@@ -1,19 +1,40 @@
+// Run directly by tsx, so nothing has loaded .env for us.
+import "dotenv/config";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { PrismaClient, type Prisma } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
-// One-time migration of the original hardcoded app into the database.
+// One-way migration of the original hardcoded catalog into Postgres.
 //
-// The legacy catalog was assembled in code from per-page datasets. We import
-// that assembly ONCE here to populate the `places` table, along with the
-// taxonomy (categories/subcategories) and the district directory. After this,
-// application code reads everything from Postgres and the admin dashboard is
-// the source of truth — these source files are no longer used at runtime.
+// The legacy catalog was assembled in code from per-page datasets. That
+// assembly is imported ONCE here to populate `places`, along with the taxonomy
+// and the district directory. After this, application code reads everything
+// from Postgres and the admin dashboard is the source of truth.
+//
+// Two safety properties matter more than anything else in this file:
+//
+//   1. Ids must never change. They are derived from source array order (see
+//      lib/places/catalog.ts#assignIds), and they are also public URLs and
+//      foreign keys. prisma/seed-ids.json freezes them; this seed refuses to
+//      run if the catalog no longer matches it.
+//   2. Re-running must never destroy data. The default path only inserts rows
+//      that are missing. Wiping requires SEED_RESET=true and is refused
+//      outright in production.
 import { PLACES, inlineImage } from "../lib/places/catalog";
 import { CATEGORY_GROUPS } from "../lib/places/taxonomy";
 import { DISTRICT_CENTRES, KIGALI_DISTRICTS } from "../lib/places/geo";
 
-const prisma = new PrismaClient();
+// The seed talks to the direct endpoint, not the pooler: it is one long
+// session doing bulk inserts, which is what a transaction-mode pooler handles
+// worst.
+const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("Set DIRECT_URL (or DATABASE_URL) before seeding.");
+}
+const prisma = new PrismaClient({
+  adapter: new PrismaNeon({ connectionString }),
+});
 
 /** Province each district belongs to, for the admin city directory. */
 const PROVINCE: Record<string, string> = {
@@ -49,41 +70,119 @@ const PROVINCE: Record<string, string> = {
   Rutsiro: "Western",
 };
 
-async function wipe() {
+interface ManifestEntry {
+  id: string;
+  name: string;
+  categoryId: string;
+  city: string;
+}
+
+/**
+ * The gate that makes this seed safe to keep in the repo.
+ *
+ * If someone reorders a row in lib/places/sources/*, `assignIds` hands the bare
+ * id to a different place and the "-2" suffix to another. Without this check
+ * that lands in Postgres silently and breaks live URLs and foreign keys. With
+ * it, the seed stops and prints exactly what moved.
+ */
+function assertMatchesManifest(): number {
+  const manifest: ManifestEntry[] = JSON.parse(
+    readFileSync(join(__dirname, "seed-ids.json"), "utf8"),
+  );
+
+  const frozen = new Set(manifest.map((e) => e.id));
+  const current = new Set(PLACES.map((p) => p.id));
+
+  const added = [...current].filter((id) => !frozen.has(id));
+  const removed = [...frozen].filter((id) => !current.has(id));
+
+  if (added.length || removed.length) {
+    const detail = [
+      added.length ? `  new ids not in the manifest:\n    ${added.join("\n    ")}` : "",
+      removed.length
+        ? `  manifest ids the catalog no longer produces:\n    ${removed.join("\n    ")}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    throw new Error(
+      `The catalog no longer matches prisma/seed-ids.json.\n\n${detail}\n\n` +
+        "Place ids are public URLs and foreign keys, so this is never a safe\n" +
+        "difference to ignore. If the change is deliberate AND the database is\n" +
+        "empty, re-run `npm run freeze-ids` and commit the new manifest. If the\n" +
+        "database already holds data, migrate the affected rows by hand instead.",
+    );
+  }
+
+  if (manifest.length !== PLACES.length) {
+    throw new Error(
+      `Manifest has ${manifest.length} places but the catalog produced ${PLACES.length}.`,
+    );
+  }
+
+  return manifest.length;
+}
+
+/**
+ * Destructive, and therefore hedged twice.
+ *
+ * The original version of this seed ran unconditionally and deleted users
+ * along with everything else. That is right for a local bootstrap and
+ * catastrophic anywhere real.
+ */
+async function wipe(): Promise<boolean> {
+  if (process.env.SEED_RESET !== "true") return false;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SEED_RESET is refused when NODE_ENV=production.");
+  }
+
   // Child rows first, then parents.
   await prisma.review.deleteMany();
   await prisma.savedPlace.deleteMany();
   await prisma.visitedPlace.deleteMany();
-  await prisma.booking.deleteMany();
+  await prisma.report.deleteMany();
   await prisma.place.deleteMany();
   await prisma.subcategory.deleteMany();
   await prisma.category.deleteMany();
   await prisma.city.deleteMany();
-  await prisma.user.deleteMany();
+  return true;
 }
 
-async function seedTaxonomy() {
+/**
+ * Upserted rather than created, so re-running picks up an edit to the taxonomy
+ * without touching the places that point at it.
+ */
+async function seedTaxonomy(): Promise<Set<string>> {
   for (let i = 0; i < CATEGORY_GROUPS.length; i++) {
     const g = CATEGORY_GROUPS[i];
-    await prisma.category.create({
-      data: {
-        id: g.id,
-        label: g.label,
-        title: g.title,
-        icon: g.icon,
-        primary: g.primary ?? false,
-        sensitive: g.sensitive ?? false,
-        sortOrder: i,
-        subcategories: {
-          create: g.subcategories.map((name, j) => ({ name, sortOrder: j })),
-        },
-      },
+    const data = {
+      label: g.label,
+      title: g.title,
+      icon: g.icon,
+      primary: g.primary ?? false,
+      sensitive: g.sensitive ?? false,
+      sortOrder: i,
+    };
+    await prisma.category.upsert({
+      where: { id: g.id },
+      create: { id: g.id, ...data },
+      update: data,
     });
+
+    for (let j = 0; j < g.subcategories.length; j++) {
+      const name = g.subcategories[j];
+      await prisma.subcategory.upsert({
+        where: { categoryId_name: { categoryId: g.id, name } },
+        create: { categoryId: g.id, name, sortOrder: j },
+        update: { sortOrder: j },
+      });
+    }
   }
   return new Set(CATEGORY_GROUPS.map((g) => g.id));
 }
 
-async function seedCities() {
+async function seedCities(): Promise<number> {
   const rows: Prisma.CityCreateManyInput[] = Object.entries(DISTRICT_CENTRES).map(
     ([name, c], i) => ({
       name,
@@ -94,7 +193,8 @@ async function seedCities() {
       sortOrder: i,
     }),
   );
-  await prisma.city.createMany({ data: rows });
+  const { count } = await prisma.city.createMany({ data: rows, skipDuplicates: true });
+  return count;
 }
 
 async function seedPlaces(validCategories: Set<string>) {
@@ -108,6 +208,8 @@ async function seedPlaces(validCategories: Set<string>) {
     }
     // Recover the original inline data: URI so it lives in the DB, served by
     // /api/place-image/[id]. `image` keeps the short /api URL in that case.
+    // These move to Cloudinary later via scripts/migrate-inline-images.ts —
+    // deliberately not here, so this one-way seed makes no network calls.
     const imageData = p.image?.startsWith("/api/place-image/")
       ? inlineImage(p.id) ?? null
       : null;
@@ -126,6 +228,11 @@ async function seedPlaces(validCategories: Set<string>) {
       rating: p.rating ?? null,
       image: p.image ?? null,
       imageData,
+      // The original seed silently dropped these three, so a place with extra
+      // photos, a website or a sensitivity flag lost them on the way in.
+      images: p.images ?? [],
+      website: p.website ?? null,
+      sensitive: p.sensitive ?? false,
       description: p.description ?? null,
       hours: p.hours ?? null,
       phone: p.phone ?? null,
@@ -136,78 +243,42 @@ async function seedPlaces(validCategories: Set<string>) {
     });
   }
 
-  await prisma.place.createMany({ data: rows, skipDuplicates: true });
-  return { inserted: rows.length, skipped };
-}
-
-async function seedUsers() {
-  const adminEmail = "admin@tembera.rw";
-
-  // No default password. A shared default is a published password: it survives
-  // into production because nothing forces anyone to change it. Generating one
-  // means the operator must read it from this output, and every install differs.
-  const adminPassword =
-    process.env.SEED_ADMIN_PASSWORD ?? crypto.randomBytes(12).toString("base64url");
-  if (process.env.SEED_ADMIN_PASSWORD && process.env.SEED_ADMIN_PASSWORD.length < 12) {
-    throw new Error("SEED_ADMIN_PASSWORD must be at least 12 characters.");
-  }
-
-  await prisma.user.create({
-    data: {
-      email: adminEmail,
-      handle: "admin",
-      name: "Administrator",
-      passwordHash: await bcrypt.hash(adminPassword, 10),
-      role: "ADMIN",
-      homeCity: "Kigali",
-      bio: "Tembera administrator.",
-    },
-  });
-
-  // The demo account has a published password, so it must never exist in
-  // production. Opt in explicitly for local work.
-  const wantDemo = process.env.SEED_DEMO_USER === "true";
-  if (wantDemo) {
-    await prisma.user.create({
-      data: {
-        email: "demo@tembera.rw",
-        handle: "demo",
-        name: "Demo User",
-        passwordHash: await bcrypt.hash("demo12345", 10),
-        role: "USER",
-        homeCity: "Kigali",
-        bio: "Exploring Rwanda one place at a time.",
-      },
-    });
-  }
-
-  return { adminEmail, adminPassword, wantDemo };
+  const { count } = await prisma.place.createMany({ data: rows, skipDuplicates: true });
+  return { inserted: count, candidates: rows.length, skipped };
 }
 
 async function main() {
-  console.log("Seeding Tembera…");
-  await wipe();
-  const validCategories = await seedTaxonomy();
-  await seedCities();
-  const { inserted, skipped } = await seedPlaces(validCategories);
-  const { adminEmail, adminPassword, wantDemo } = await seedUsers();
+  const expected = assertMatchesManifest();
+  console.log(`Manifest matches the catalog: ${expected} places.`);
 
-  console.log(`  categories: ${CATEGORY_GROUPS.length}`);
-  console.log(`  cities:     ${Object.keys(DISTRICT_CENTRES).length}`);
-  console.log(`  places:     ${inserted} inserted${skipped ? `, ${skipped} skipped` : ""}`);
-  if (wantDemo) console.log(`  demo user:  demo@tembera.rw / demo12345`);
-  console.log("Done.\n");
-  console.log("  ─────────────────────────────────────────────────────────");
-  console.log(`  Admin account: ${adminEmail}`);
-  console.log(`  Password:      ${adminPassword}`);
-  console.log("  This is shown once. Save it now, then change it after login.");
-  console.log("  ─────────────────────────────────────────────────────────");
+  const didWipe = await wipe();
+  if (didWipe) console.log("SEED_RESET=true - catalog tables cleared.");
+
+  const categories = await seedTaxonomy();
+  const cities = await seedCities();
+  const places = await seedPlaces(categories);
+
+  console.log(
+    [
+      `categories : ${categories.size}`,
+      `cities     : +${cities} inserted`,
+      `places     : +${places.inserted} inserted of ${places.candidates} candidates` +
+        (places.skipped ? ` (${places.skipped} skipped: unknown category)` : ""),
+    ].join("\n"),
+  );
+
+  const total = await prisma.place.count();
+  if (total !== expected) {
+    throw new Error(
+      `places table holds ${total} rows but the manifest expects ${expected}.`,
+    );
+  }
+  console.log(`\nDone. places table holds ${total} rows, matching the manifest.`);
 }
 
 main()
-  .then(() => prisma.$disconnect())
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+  .catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());

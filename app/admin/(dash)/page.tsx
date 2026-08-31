@@ -1,31 +1,60 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, Stat, StatusBadge } from "@/components/admin/ui";
+import { PageHead, Panel, Stat } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
-import {
-  ACTIVITY,
-  BUSINESSES,
-  SUBMISSIONS,
-  SUBMISSION_TREND,
-  adminDate,
-} from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/placeholder";
+import { recentAudit } from "@/lib/audit";
+import { getCategories } from "@/lib/data/categories";
+import { getCities } from "@/lib/data/cities";
+import { adminBusinesses, adminSubmissions } from "@/lib/data/business";
+import { openReportCount } from "@/lib/data/moderation";
+import { getAllPlaces } from "@/lib/data/places";
+import { getCurrentUser, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [places, categories, cities, users, pendingBookings, recentBookings] =
+  // Every figure on this screen now comes from the database.
+  const [catalog, taxonomy, cityList, users, openReports, activity, submissions, businesses] =
     await Promise.all([
-      prisma.place.count(),
-      prisma.category.count(),
-      prisma.city.count(),
+      getAllPlaces(),
+      getCategories(),
+      getCities(),
       prisma.user.count(),
-      prisma.booking.count({ where: { status: "pending" } }),
-      prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
+      openReportCount(),
+      recentAudit({ take: 5 }),
+      adminSubmissions(),
+      adminBusinesses(),
     ]);
 
-  const pendingSubmissions = SUBMISSIONS.filter((s) => s.status === "pending");
-  const unverified = BUSINESSES.filter((b) => b.status === "unverified").length;
+  // An EDITOR cannot open Users or Businesses, so they do not get a tile that
+  // only leads to a redirect. The guard is on those screens; this is just not
+  // dangling a door they cannot walk through.
+  const admin = isAdmin(await getCurrentUser());
+
+  const places = catalog.length;
+  const categories = taxonomy.length;
+  const cities = cityList.length;
+  const drafts = catalog.filter((p) => p.status === "draft").length;
+  const missingPhoto = catalog.filter((p) => !p.image).length;
+
+  const pendingSubmissions = submissions.filter((s) => s.status === "pending");
+
+  // Eight buckets of seven days, oldest first. Derived rather than stored: at
+  // this volume counting in memory is cheaper than a grouped query, and a
+  // hardcoded series is a chart that lies.
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const weeklySubmissions = Array.from({ length: 8 }, (_, i) => {
+    const from = now - (8 - i) * WEEK;
+    const to = from + WEEK;
+    return submissions.filter((s) => {
+      const at = s.createdAt.getTime();
+      return at >= from && at < to;
+    }).length;
+  });
+  const unverified = businesses.filter((b) => b.status === "unverified").length;
 
   return (
     <>
@@ -46,7 +75,18 @@ export default async function AdminDashboardPage() {
         }
       />
 
+      {/* Two rows, deliberately. The first is work waiting on somebody; the
+          second is the size and health of the catalogue. Mixing them makes a
+          number nobody can act on sit beside one that needs doing today. */}
+      <h2 className="a-statsgroup">Needs attention</h2>
       <div className="a-stats">
+        <Stat
+          label="Open reports"
+          value={openReports}
+          icon="alert"
+          note="problems visitors sent in"
+          href="/admin/reports"
+        />
         <Stat
           label="Submissions"
           value={pendingSubmissions.length}
@@ -55,28 +95,43 @@ export default async function AdminDashboardPage() {
           href="/admin/submissions"
         />
         <Stat
-          label="Bookings"
-          value={pendingBookings}
-          icon="ticket"
-          note="pending"
-          href="/admin/bookings"
+          label="Drafts"
+          value={drafts}
+          icon="pin"
+          note="not published yet"
+          href="/admin/places?status=draft"
         />
         <Stat
-          label="Businesses"
-          value={BUSINESSES.length}
-          icon="basket"
-          note={`${unverified} unverified`}
-          href="/admin/businesses"
+          label="Missing a photo"
+          value={missingPhoto}
+          icon="image"
+          note="of the whole catalogue"
+          href="/admin/places?gap=no-photo"
         />
-        <Stat label="Places" value={places} icon="pin" note="published" href="/admin/places" />
+      </div>
+
+      <h2 className="a-statsgroup">The catalogue</h2>
+      <div className="a-stats">
+        <Stat label="Places" value={places} icon="pin" note="listed" href="/admin/places" />
         <Stat
           label="Categories"
           value={categories}
           icon="list"
-          note={`${cities} cities`}
+          note={`${cities} districts`}
           href="/admin/categories"
         />
-        <Stat label="Users" value={users} icon="user" note="accounts" href="/admin/users" />
+        {admin && (
+          <Stat label="Users" value={users} icon="user" note="accounts" href="/admin/users" />
+        )}
+        {admin && (
+          <Stat
+            label="Businesses"
+            value={businesses.length}
+            icon="basket"
+            note={`${unverified} unverified`}
+            href="/admin/businesses"
+          />
+        )}
       </div>
 
       <div className="a-cols">
@@ -95,103 +150,78 @@ export default async function AdminDashboardPage() {
               <p className="a-empty">Nothing waiting. The queue is clear.</p>
             ) : (
               <div className="a-queue">
-                {pendingSubmissions.slice(0, 4).map((s) => (
-                  <Link key={s.id} href={`/admin/submissions/${s.id}`} className="a-queue__item">
-                    <span className="a-queue__icon">
-                      <Icon name="mail" size={18} />
-                    </span>
-                    <span className="a-queue__body">
-                      <span className="a-queue__name">{s.placeName}</span>
-                      <span className="a-queue__meta">
-                        {s.businessName} · {s.subcategory} · {s.city} ·{" "}
-                        {adminDate(s.submittedAt)}
+                {pendingSubmissions.slice(0, 4).map((s) => {
+                  const payload = s.payload as { name?: string } | null;
+                  return (
+                    <Link
+                      key={s.id}
+                      href={`/admin/submissions/${s.id}`}
+                      className="a-queue__item"
+                    >
+                      <span className="a-queue__icon">
+                        <Icon name="mail" size={18} />
                       </span>
-                    </span>
-                    <Icon name="chevronRight" size={16} />
-                  </Link>
-                ))}
+                      <span className="a-queue__body">
+                        <span className="a-queue__name">
+                          {s.kind === "create"
+                            ? payload?.name ?? "A new listing"
+                            : `Changes to ${s.placeId ?? "a listing"}`}
+                        </span>
+                        <span className="a-queue__meta">
+                          {s.business.name} · {adminDate(s.createdAt)}
+                        </span>
+                      </span>
+                      <Icon name="chevronRight" size={16} />
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </Panel>
 
-          <Panel title="Recent bookings" flush>
-            <div className="a-tablewrap">
-              <table className="a-table">
-                <thead>
-                  <tr>
-                    <th>Experience</th>
-                    <th>Guest</th>
-                    <th>Preferred</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentBookings.length === 0 ? (
-                    <tr>
-                      <td colSpan={5}>
-                        <p className="a-empty">No bookings yet.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    recentBookings.map((b) => (
-                      <tr key={b.id}>
-                        <td className="a-table__strong">{b.experience}</td>
-                        <td>
-                          {b.fullName}
-                          <span className="a-table__sub">{b.email}</span>
-                        </td>
-                        <td>{adminDate(b.preferredAt)}</td>
-                        <td>${b.totalPrice.toLocaleString()}</td>
-                        <td>
-                          <StatusBadge status={b.status} />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
         </div>
 
         <div>
           <Panel title="Submissions per week">
-            <TrendChart values={SUBMISSION_TREND} />
+            <TrendChart values={weeklySubmissions} />
             <p className="a-hint" style={{ marginTop: "var(--t-2)" }}>
-              Sample series — the last eight weeks.
+              The last eight weeks.
             </p>
           </Panel>
 
-          <Panel title="Recent activity" flush>
-            <div className="a-queue">
-              {ACTIVITY.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="a-queue__item">
-                  <span className="a-queue__icon">
-                    <Icon
-                      name={
-                        entry.kind === "approve"
-                          ? "check"
-                          : entry.kind === "reject"
-                            ? "close"
-                            : entry.kind === "signin"
-                              ? "lock"
-                              : "refresh"
-                      }
-                      size={17}
-                    />
-                  </span>
-                  <span className="a-queue__body">
-                    <span className="a-queue__name">
-                      {entry.actor} {entry.action}
+          <Panel
+            title="Recent activity"
+            action={
+              <Link href="/admin/activity" className="t-btn t-btn--ghost t-btn--sm">
+                See all
+                <Icon name="chevronRight" size={15} />
+              </Link>
+            }
+            flush
+          >
+            {activity.length === 0 ? (
+              <p className="a-empty">
+                Nothing changed yet. Every edit made here is recorded.
+              </p>
+            ) : (
+              <div className="a-queue">
+                {activity.map((event) => (
+                  <div key={event.id} className="a-queue__item">
+                    <span className="a-queue__icon">
+                      <Icon name="refresh" size={17} />
                     </span>
-                    <span className="a-queue__meta">
-                      {entry.target} · {adminDate(entry.at)}
+                    <span className="a-queue__body">
+                      <span className="a-queue__name">
+                        {event.actor?.name ?? "A removed account"} · <code>{event.action}</code>
+                      </span>
+                      <span className="a-queue__meta">
+                        {event.entityId} · {adminDate(event.createdAt)}
+                      </span>
                     </span>
-                  </span>
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Panel>
         </div>
       </div>

@@ -16,6 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import { recordVisitAction, clearVisitedAction } from "@/lib/actions/user";
+import { useToast } from "@/components/ui/Toast";
 
 const KEY = "tembera.visited";
 const MAX = 60;
@@ -82,6 +83,7 @@ export function VisitedProvider({
 }) {
   const [visits, setVisits] = useState<Visit[]>(initialVisits ?? []);
   const [ready, setReady] = useState(authed);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (authed) return;
@@ -108,15 +110,27 @@ export function VisitedProvider({
       setVisits((current) =>
         [{ id, at: Date.now() }, ...current.filter((v) => v.id !== id)].slice(0, MAX),
       );
+      // Deliberately NOT surfaced. A visit is recorded as a side effect of
+      // opening a page nobody asked to log; interrupting the read with an
+      // error about it would be noise. It stays in local state either way, so
+      // the history the user sees is still right for this device.
       if (authed) void recordVisitAction(id);
     },
     [authed],
   );
 
   const clear = useCallback(() => {
+    const previous = visits;
     setVisits([]);
     if (authed) {
-      void clearVisitedAction();
+      // Clearing IS deliberate, so a failure has to be reported — otherwise
+      // the list empties on screen and quietly comes back on reload.
+      void clearVisitedAction().then((result) => {
+        if (result.error) {
+          setVisits(previous);
+          toast(result.error);
+        }
+      });
     } else {
       try {
         window.localStorage.removeItem(KEY);
@@ -124,7 +138,7 @@ export function VisitedProvider({
         // ignore
       }
     }
-  }, [authed]);
+  }, [visits, authed, toast]);
 
   const value = useMemo<VisitedValue>(
     () => ({ visits, ready, record, clear }),

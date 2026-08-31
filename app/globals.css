@@ -40,6 +40,12 @@
   --t-danger: #a3352a;
   --t-danger-soft: #fbeceb;
 
+  /* "Open now". Distinct from --t-accent on purpose: the brand green means
+     "Tembera", this one means "you can go there right now", and a reader
+     must not have to tell two greens apart to answer that. */
+  --t-open: #1f7a3d;
+  --t-open-soft: #e4f4e9;
+
   /* Kwibuka's commemoration colour — used only for the memorial calendar tag. */
   --t-violet: #5b4b8a;
   --t-violet-soft: #efeaf7;
@@ -79,6 +85,9 @@
 
   --t-danger: #e5695e;
   --t-danger-soft: #2f2020;
+
+  --t-open: #56c07d;
+  --t-open-soft: #17291d;
 
   --t-violet: #a99ad6;
   --t-violet-soft: #262231;

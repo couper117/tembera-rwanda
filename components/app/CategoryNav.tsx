@@ -6,7 +6,7 @@ import { useState } from "react";
 import Icon from "@/components/Icon";
 import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
 import { useCategories } from "@/lib/client/categories";
-import type { GroupSummary } from "@/lib/places/catalog";
+import type { GroupSummary } from "@/lib/places/engine";
 
 interface Props {
   /** Counts computed on the server — the client never loads the catalog. */

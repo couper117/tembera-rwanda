@@ -1,22 +1,36 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
+import { signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  createSession,
-  destroySession,
-  getCurrentUser,
-  hashPassword,
-  revokeAllSessions,
-  verifyPassword,
-} from "@/lib/auth";
+import { getCurrentUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { PLACES_TAG } from "@/lib/data/places";
+import { isSensitivePlace } from "@/lib/places/engine";
 import { reviewSchema } from "@/lib/validation/review";
 
-/* ------------------------------------------------------------ saved */
+/**
+ * Everything a signed-in person does to their own data.
+ *
+ * Every action here begins by resolving the user server-side and acting only
+ * on that id. None of them accept a user id from the client: a server action is
+ * a POST endpoint that anyone can call with any body, so trusting an id in the
+ * payload would let one account edit another's.
+ */
+
+/**
+ * Bump the token version, which invalidates every JWT already issued for this
+ * account — see the note in lib/auth.ts. There is no session table to sweep;
+ * the cookie carries the version it was minted at and stops matching.
+ */
+async function revokeAllSessions(userId: number): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { tokenVersion: { increment: 1 } },
+  });
+}
+
+/* ------------------------------------------------------------------ saved */
 
 export async function toggleSaveAction(
   placeId: string,
@@ -31,10 +45,11 @@ export async function toggleSaveAction(
   if (existing) {
     await prisma.savedPlace.delete({ where: { id: existing.id } });
   } else {
-    // Ignore a race / bad id gracefully.
-    await prisma.savedPlace
+    // A bad or archived place id must not 500 the save button.
+    const created = await prisma.savedPlace
       .create({ data: { userId: user.id, placeId } })
-      .catch(() => {});
+      .catch(() => null);
+    if (!created) return { error: "That place could not be saved." };
   }
 
   revalidatePath("/saved");
@@ -42,36 +57,42 @@ export async function toggleSaveAction(
   return { saved: !existing };
 }
 
-export async function clearSavedAction(): Promise<void> {
+export async function clearSavedAction(): Promise<{ error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return;
+  if (!user) return { error: "Not signed in." };
   await prisma.savedPlace.deleteMany({ where: { userId: user.id } });
   revalidatePath("/saved");
   revalidatePath("/profile");
+  return {};
 }
 
-/* ----------------------------------------------------------- visited */
+/* ---------------------------------------------------------------- visited */
 
-export async function recordVisitAction(placeId: string): Promise<void> {
+export async function recordVisitAction(placeId: string): Promise<{ error?: string }> {
   const user = await getCurrentUser();
-  if (!user || !placeId) return;
-  await prisma.visitedPlace
+  if (!user || !placeId) return { error: "Not signed in." };
+
+  // Upsert, not create: opening a place again updates when you were last
+  // there rather than adding a second row.
+  const ok = await prisma.visitedPlace
     .upsert({
       where: { userId_placeId: { userId: user.id, placeId } },
       create: { userId: user.id, placeId },
       update: { visitedAt: new Date() },
     })
-    .catch(() => {});
+    .catch(() => null);
+  return ok ? {} : { error: "That visit could not be recorded." };
 }
 
-export async function clearVisitedAction(): Promise<void> {
+export async function clearVisitedAction(): Promise<{ error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return;
+  if (!user) return { error: "Not signed in." };
   await prisma.visitedPlace.deleteMany({ where: { userId: user.id } });
   revalidatePath("/profile");
+  return {};
 }
 
-/* ----------------------------------------------------------- profile */
+/* ---------------------------------------------------------------- profile */
 
 const profileSchema = z.object({
   name: z.string().trim().min(1).max(80),
@@ -97,7 +118,6 @@ export async function updateProfileAction(
   }
   const data = parsed.data;
 
-  // Uniqueness on the changed handle/email.
   if (data.handle !== user.handle) {
     const taken = await prisma.user.findUnique({ where: { handle: data.handle } });
     if (taken) return { error: "That handle is taken." };
@@ -113,7 +133,7 @@ export async function updateProfileAction(
   return { ok: true };
 }
 
-/* ---------------------------------------------------------- password */
+/* --------------------------------------------------------------- password */
 
 const passwordSchema = z.object({
   current: z.string().min(1, "Enter your current password."),
@@ -135,11 +155,19 @@ export async function changePasswordAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid password." };
   }
 
+  // The hash is never on the session object, so read it here rather than
+  // widening what getCurrentUser() hands to every screen.
+  const row = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { passwordHash: true },
+  });
+  if (!row) return { error: "Not signed in." };
+
   // Proving knowledge of the current password is what stops someone who has
   // walked up to an unlocked browser from locking the real owner out.
-  const ok = await verifyPassword(parsed.data.current, user.passwordHash);
-  if (!ok) return { error: "Current password is incorrect." };
-
+  if (!(await verifyPassword(parsed.data.current, row.passwordHash))) {
+    return { error: "Current password is incorrect." };
+  }
   if (parsed.data.next === parsed.data.current) {
     return { error: "New password must be different from the current one." };
   }
@@ -149,38 +177,42 @@ export async function changePasswordAction(
     data: { passwordHash: await hashPassword(parsed.data.next) },
   });
 
-  // Changing a password is how someone responds to a session they think was
-  // stolen, so it has to end that session. This invalidates every cookie
-  // issued so far — including this browser's — and then re-issues one, so the
-  // person who just proved they know the password stays signed in and
-  // everybody else does not.
+  // Changing a password is how someone responds to a session they believe was
+  // stolen, so it has to end that session. Revoking invalidates every token
+  // issued so far — including this browser's — and signing back in immediately
+  // re-issues one, so the person who just proved they know the password stays
+  // put and everybody else is out.
   await revokeAllSessions(user.id);
-  await createSession(user.id);
+  await signIn("credentials", {
+    email: user.email,
+    password: parsed.data.next,
+    redirect: false,
+  });
 
   return { ok: true };
 }
 
 /**
- * Sign out everywhere, including here. Useful when a device is lost and the
- * password itself is not believed to be compromised.
+ * Sign out everywhere, including here. For a lost device, where the password
+ * itself is not believed to be compromised.
  */
 export async function signOutEverywhereAction(): Promise<{ error?: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Not signed in." };
 
   await revokeAllSessions(user.id);
-  await destroySession();
-  redirect("/login");
+  await signOut({ redirectTo: "/login" });
+  return {};
 }
 
-/* ------------------------------------------------- data rights (GDPR-style) */
+/* ---------------------------------------------------------- data rights */
 
 /**
  * Everything Tembera holds about the signed-in user, as a plain object.
  *
  * Required in substance by Rwanda's Law No. 058/2021 (the data subject's right
  * of access). The password hash is deliberately excluded — it is our record,
- * not their data, and returning it only creates a cracking target.
+ * not their data, and returning it only creates something worth cracking.
  */
 export async function exportMyDataAction(): Promise<
   { ok: true; data: unknown } | { error: string }
@@ -188,7 +220,7 @@ export async function exportMyDataAction(): Promise<
   const user = await getCurrentUser();
   if (!user) return { error: "Not signed in." };
 
-  const [saves, visits, reviews, bookings] = await Promise.all([
+  const [saves, visits, reviews] = await Promise.all([
     prisma.savedPlace.findMany({
       where: { userId: user.id },
       select: { placeId: true, createdAt: true, place: { select: { name: true } } },
@@ -200,19 +232,6 @@ export async function exportMyDataAction(): Promise<
     prisma.review.findMany({
       where: { userId: user.id },
       select: { placeId: true, rating: true, body: true, createdAt: true },
-    }),
-    prisma.booking.findMany({
-      where: { userId: user.id },
-      select: {
-        experience: true,
-        preferredAt: true,
-        guests: true,
-        fullName: true,
-        email: true,
-        totalPrice: true,
-        status: true,
-        createdAt: true,
-      },
     }),
   ]);
 
@@ -240,17 +259,13 @@ export async function exportMyDataAction(): Promise<
         visitedAt: v.visitedAt,
       })),
       reviews,
-      bookings,
     },
   };
 }
 
 /**
- * Erase the account and everything attached to it.
- *
- * Saves, visits and reviews cascade from the schema. Bookings deliberately do
- * not: they are a commercial record the business may be required to keep, so
- * `userId` is set to null and the row survives without pointing at a person.
+ * Erase the account and everything attached to it. Saves, visits and reviews
+ * cascade from the schema.
  */
 export async function deleteMyAccountAction(
   _prev: { error?: string },
@@ -263,11 +278,17 @@ export async function deleteMyAccountAction(
   const confirm = String(formData.get("confirm") ?? "").trim();
 
   if (confirm !== "DELETE") {
-    return { error: 'Type DELETE in the confirmation box to continue.' };
+    return { error: "Type DELETE in the confirmation box to continue." };
   }
 
-  const ok = await verifyPassword(password, user.passwordHash);
-  if (!ok) return { error: "Password is incorrect." };
+  const row = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { passwordHash: true },
+  });
+  if (!row) return { error: "Not signed in." };
+  if (!(await verifyPassword(password, row.passwordHash))) {
+    return { error: "Password is incorrect." };
+  }
 
   // An admin deleting themselves could leave the dashboard unreachable.
   if (user.role === "ADMIN") {
@@ -280,18 +301,31 @@ export async function deleteMyAccountAction(
     }
   }
 
-  await prisma.booking.updateMany({
-    where: { userId: user.id },
-    data: { userId: null },
-  });
   await prisma.user.delete({ where: { id: user.id } });
 
-  await destroySession();
   revalidateTag(PLACES_TAG); // their reviews fed place ratings
-  redirect("/?deleted=1");
+  await signOut({ redirectTo: "/?deleted=1" });
+  return {};
 }
 
-/* ----------------------------------------------------------- reviews */
+/* ---------------------------------------------------------------- reviews */
+
+/**
+ * Recompute a place's displayed rating from its reviews.
+ *
+ * A place with no reviews left goes back to null rather than keeping the last
+ * average, which would be a number with nothing behind it.
+ */
+async function recomputeRating(placeId: string): Promise<void> {
+  const agg = await prisma.review.aggregate({
+    where: { placeId },
+    _avg: { rating: true },
+  });
+  await prisma.place.update({
+    where: { id: placeId },
+    data: { rating: agg._avg.rating ? Math.round(agg._avg.rating * 10) / 10 : null },
+  });
+}
 
 export async function submitReviewAction(
   input: unknown,
@@ -305,24 +339,27 @@ export async function submitReviewAction(
   }
   const { placeId, rating, body } = parsed.data;
 
+  // The other half of the sensitive-category rule. Reads strip ratings and
+  // reviews from memorial sites at source, but that only stops them being
+  // shown — a hand-crafted POST could still write one. Rating a place of
+  // remembrance out of five is not a display bug to be hidden; it must not be
+  // storable at all.
+  const place = await prisma.place.findUnique({
+    where: { id: placeId },
+    select: { categoryId: true, sensitive: true, category: { select: { sensitive: true } } },
+  });
+  if (!place) return { error: "That place no longer exists." };
+  if (isSensitivePlace(place) || place.category.sensitive) {
+    return { error: "This is a place of remembrance. It is not reviewed or rated." };
+  }
+
   await prisma.review.upsert({
     where: { userId_placeId: { userId: user.id, placeId } },
     create: { userId: user.id, placeId, rating, body },
     update: { rating, body },
   });
 
-  // A place's displayed rating becomes the average of its reviews.
-  const agg = await prisma.review.aggregate({
-    where: { placeId },
-    _avg: { rating: true },
-  });
-  if (agg._avg.rating !== null) {
-    await prisma.place.update({
-      where: { id: placeId },
-      data: { rating: Math.round(agg._avg.rating * 10) / 10 },
-    });
-  }
-
+  await recomputeRating(placeId);
   revalidateTag(PLACES_TAG);
   revalidatePath(`/place/${placeId}`);
   return { ok: true };
@@ -331,22 +368,13 @@ export async function submitReviewAction(
 export async function deleteReviewAction(
   placeId: string,
 ): Promise<{ ok: true } | { error: string }> {
-  const user = await getCurrentUser();
-  if (!user) return { error: "Not signed in." };
+  const user = await requireUser();
 
   await prisma.review
     .delete({ where: { userId_placeId: { userId: user.id, placeId } } })
     .catch(() => {});
 
-  const agg = await prisma.review.aggregate({
-    where: { placeId },
-    _avg: { rating: true },
-  });
-  await prisma.place.update({
-    where: { id: placeId },
-    data: { rating: agg._avg.rating ? Math.round(agg._avg.rating * 10) / 10 : null },
-  });
-
+  await recomputeRating(placeId);
   revalidateTag(PLACES_TAG);
   revalidatePath(`/place/${placeId}`);
   return { ok: true };

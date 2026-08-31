@@ -73,10 +73,15 @@ const TONES: Record<string, Tone> = {
   pending: "warn",
   unverified: "warn",
   open: "warn",
+  draft: "warn",
   rejected: "bad",
   cancelled: "bad",
   suspended: "bad",
   dismissed: "bad",
+  // Neutral on purpose: an archived listing is a decision that was taken, not
+  // a problem to be fixed. Colouring it red would put a row of alarms in front
+  // of an editor who is doing nothing wrong.
+  archived: "neutral",
 };
 
 export function StatusBadge({ status }: { status: string }) {

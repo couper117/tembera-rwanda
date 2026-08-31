@@ -114,7 +114,7 @@ export interface CitySummary {
  * city" and the /explore "Cities & districts" grid; anything not yet covered
  * here still falls back to a listing's own image below.
  */
-const CITY_IMAGES: Record<string, string> = {
+export const CITY_IMAGES: Record<string, string> = {
   Kigali: "https://images.unsplash.com/photo-1687986261123-b17f08f2796c?auto=format&fit=crop&w=800&q=80",
   Musanze: "/assets/images/wonder_volcanoes_national_park.jpg",
   Huye: "/assets/images/historic_ethnographic_museum.jpg",
