@@ -2,9 +2,7 @@ import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
 import CalendarNotice from "@/components/app/CalendarNotice";
 import Icon from "@/components/Icon";
-import NearYou from "@/components/home/NearYou";
-import CategoryTile from "@/components/ui/CategoryTile";
-import PlaceCard from "@/components/ui/PlaceCard";
+import HomeFeed from "@/components/home/HomeFeed";
 import PlaceImage from "@/components/ui/PlaceImage";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { getCategories } from "@/lib/data/categories";
@@ -18,26 +16,41 @@ import {
 } from "@/lib/data/places";
 import { KIGALI } from "@/lib/places/geo";
 import { getCollections } from "@/lib/collections";
+import type { Place } from "@/lib/places/types";
 
 // The curated-collections row reads from Postgres.
 export const dynamic = "force-dynamic";
 
 /**
- * Home is a discovery dashboard, not a landing page. Above the fold you get
- * the question, the search box and the categories — the three things that let
- * someone actually use Tembera. Photography appears further down as content,
- * never as a hero.
+ * Cards per row. One full row on a desktop grid, so "Near you" and "Top rated"
+ * both land above the fold on a laptop instead of one of them being a rumour.
+ */
+const ROW = 5;
+
+/**
+ * Home is a discovery dashboard, not a landing page. Above the fold you get the
+ * headline, the search box, the category chips and two rows of photographs —
+ * and nothing that only describes what is already visible.
  */
 export default async function HomePage() {
   const counts = await countByCategory();
   const categories = await getCategories();
-  const primary = categories.filter((group) => group.primary);
   const collections = await getCollections();
 
-  // Default "near you" list, measured from Kigali. The client swaps this for a
-  // real one if the user shares their location.
-  const nearbyDefault = await nearest(KIGALI, { limit: 12 });
-  const rated = await topRated(10);
+  // Each chip's row is ranked here rather than by filtering one long list in
+  // the browser: "nearest five restaurants" and "the restaurants that happen
+  // to be in the nearest fifty places" are different answers, and only the
+  // first one is the one being asked for. Only the primary categories get a
+  // chip, so this is six extra rankings over an already-cached catalog.
+  const filterable = categories.filter((group) => group.primary).map((g) => g.id);
+
+  const nearby = await rowsByCategory(filterable, (categoryId) =>
+    nearest(KIGALI, { limit: ROW, categoryId }),
+  );
+  const rated = await rowsByCategory(filterable, (categoryId) =>
+    topRated(ROW, categoryId),
+  );
+
   const cities = (await citySummaries()).slice(0, 8);
   const destinations = await featured(8);
 
@@ -69,39 +82,13 @@ export default async function HomePage() {
             </Link>
           </section>
 
-          {/* -------------------------------------------- categories ---- */}
-          <section className="t-section">
-            <SectionHeader
-              title="Explore"
-              subtitle={`${categories.length} categories, from restaurants to hospitals`}
-              actionLabel="All categories"
-              actionHref="/explore"
-            />
-            <div className="t-catgrid">
-              {primary.map((category) => (
-                <CategoryTile
-                  key={category.id}
-                  category={category}
-                  count={counts[category.id]}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* ----------------------------------------------- near you --- */}
-          <NearYou initial={nearbyDefault} />
-
-          {/* ---------------------------------------------- top rated --- */}
-          {rated.length > 0 && (
-            <section className="t-section">
-              <SectionHeader title="Top rated" />
-              <div className="t-scroller">
-                {rated.map((place) => (
-                  <PlaceCard key={place.id} place={place} />
-                ))}
-              </div>
-            </section>
-          )}
+          {/* --------------------------- chips, near you, top rated ---- */}
+          {/* The "Explore" section used to sit here: a heading, a subtitle, a
+              link and six tiles that between them said "places" six times.
+              The chips inside HomeFeed carry the same information in a row,
+              and they filter the two rows under them instead of navigating
+              away. */}
+          <HomeFeed nearby={nearby} rated={rated} limit={ROW} />
 
           {/* -------------------------------------------------- cities -- */}
           <section className="t-section">
@@ -209,6 +196,21 @@ export default async function HomePage() {
       </main>
     </>
   );
+}
+
+/**
+ * Runs a ranking once unfiltered and once per filterable category, keyed for
+ * the client. "all" is the key the chips use when nothing is selected.
+ */
+async function rowsByCategory(
+  categoryIds: string[],
+  rank: (categoryId?: string) => Promise<Place[]>,
+): Promise<Record<string, Place[]>> {
+  const entries = await Promise.all([
+    rank().then((places) => ["all", places] as const),
+    ...categoryIds.map((id) => rank(id).then((places) => [id, places] as const)),
+  ]);
+  return Object.fromEntries(entries);
 }
 
 /** "495 places" — the honest scale of the guide, stated once, in the search

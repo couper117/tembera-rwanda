@@ -41,6 +41,17 @@ export function SkeletonRail({ count = 4 }: { count?: number }) {
   );
 }
 
+/** Placeholders for the landing page's photo tiles. */
+export function SkeletonTiles({ count = 5 }: { count?: number }) {
+  return (
+    <div className="t-tilegrid" aria-busy="true" aria-label="Loading places">
+      {Array.from({ length: count }, (_, i) => (
+        <SkeletonPlaceCard key={i} variant="grid" />
+      ))}
+    </div>
+  );
+}
+
 export function SkeletonGrid({ count = 8 }: { count?: number }) {
   return (
     <div className="t-grid" aria-busy="true" aria-label="Loading places">

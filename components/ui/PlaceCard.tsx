@@ -10,8 +10,12 @@ import type { Place } from "@/lib/places/types";
 
 interface Props {
   place: Place;
-  /** Grid cards stretch to their column; rail cards keep a fixed width. */
-  variant?: "rail" | "grid";
+  /**
+   * Rail cards keep a fixed width; grid cards stretch to their column; tile
+   * cards are the landing page's photo-led form, where the caption sits over
+   * the image instead of under it.
+   */
+  variant?: "rail" | "grid" | "tile";
   /** Hide distance where it would be noise (e.g. a city-scoped list). */
   showDistance?: boolean;
 }
@@ -42,7 +46,7 @@ export default function PlaceCard({
   return (
     <Link
       href={`/place/${place.id}`}
-      className={`t-place${variant === "grid" ? " t-place--grid" : ""}`}
+      className={`t-place${variant === "rail" ? "" : " t-place--grid"}`}
     >
       <div className="t-place__media">
         <PlaceImage

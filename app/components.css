@@ -1033,6 +1033,47 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* -- Category chips (landing page) --------------------------------------
+   These replaced a six-tile "Explore" grid. They carry the same icon, label
+   and count, and they filter the rows below rather than navigating away. */
+
+.t-catchips {
+  margin-top: var(--t-4);
+  /* Runs to the screen edge like a rail, so it reads as scrollable on a phone
+     instead of looking like a row that happens to be cut off. */
+  margin-inline: calc(var(--t-gutter) * -1);
+  padding-inline: var(--t-gutter);
+  scroll-padding-inline: var(--t-gutter);
+  overscroll-behavior-x: contain;
+}
+
+.t-catchip {
+  padding-left: 6px;
+  gap: var(--t-2);
+}
+
+.t-catchip__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+}
+
+/* The default pressed chip inverts to solid ink, which fights the coloured
+   icon tile. Accent-on-soft keeps the tile readable and still reads as on. */
+.t-catchip[aria-pressed="true"] {
+  background: var(--t-accent-soft);
+  border-color: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.t-catchip--ghost {
+  padding-left: var(--t-3);
+  border-style: dashed;
+  color: var(--t-ink-3);
+}
+
 /* Second-level filter row — visually subordinate to the subcategory chips. */
 .t-chip--sm {
   height: 32px;
@@ -1260,32 +1301,10 @@
   color: var(--t-ink-3);
 }
 
-/* -- Category tile ------------------------------------------------------ */
-
-.t-cattile {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--t-4);
-  min-height: 96px;
-  padding: var(--t-3);
-  background: var(--t-surface);
-  border: 1px solid var(--t-border);
-  border-radius: var(--t-r-md);
-  box-shadow: var(--t-shadow-card);
-  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-base) var(--t-ease),
-    transform var(--t-fast) var(--t-ease);
-}
-
-.t-cattile:hover {
-  border-color: var(--t-border-strong);
-  box-shadow: var(--t-shadow-raised);
-}
-
-.t-cattile:active {
-  transform: scale(0.97);
-}
+/* -- Category icon tile -------------------------------------------------
+   The six-tile category grid this belonged to is gone from the landing page;
+   the icon chip survives because the category pages still head themselves
+   with one. */
 
 .t-cattile__icon {
   display: grid;
@@ -1295,41 +1314,6 @@
   border-radius: var(--t-r-sm);
   background: var(--t-accent-soft);
   color: var(--t-accent-ink);
-}
-
-.t-cattile__label {
-  display: block;
-  font-size: var(--t-text-small);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  line-height: 1.25;
-}
-
-.t-cattile__count {
-  display: block;
-  font-size: var(--t-text-micro);
-  color: var(--t-ink-3);
-  font-weight: 600;
-  margin-top: 1px;
-}
-
-.t-catgrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--t-2);
-}
-
-@media (min-width: 560px) {
-  .t-catgrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--t-3);
-  }
-}
-
-@media (min-width: 900px) {
-  .t-catgrid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
 }
 
 /* -- Category card (explore screen: a group plus its subcategories) -----
@@ -2031,6 +2015,21 @@
   display: grid;
   gap: var(--t-4) var(--t-3);
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The landing page's photo rows. auto-fill rather than a fixed column count so
+   the same rule gives five across a desktop and two on a phone; the narrow
+   minimum below 560px is what keeps it at two instead of dropping to one. */
+.t-tilegrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+  gap: 17px;
+}
+
+@media (min-width: 560px) {
+  .t-tilegrid {
+    grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  }
 }
 
 @media (min-width: 720px) {
