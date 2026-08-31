@@ -68,10 +68,26 @@ title stays readable. **The theme switch was removed from `PageHeader`
 entirely** — it is a setting, not a page action, and it still lives in
 `AppHeader` (the main tabs) and in Settings.
 
-On a phone each `.t-detail__main > .t-section` is a card, so the page reads as
-a screen rather than one long document; the hero's Directions button is hidden
-there because the sticky action bar already carries it, which stops Call and
+On a phone the sections are plain — whitespace and headings only. Boxing each
+one was tried and rejected: it read as a stack of unrelated widgets. The
+quick-facts strip (location / phone / website / price) stays a card because it
+is reference data rather than prose. The hero's Directions button is hidden on
+a phone because the sticky action bar already carries it, which stops Call and
 Website wrapping to a second row.
+
+`ReadMore` clamps the About text to six lines with a Read more / Show less
+toggle. It measures `scrollHeight` against `clientHeight` rather than counting
+characters, because a four-line description at 390px is two lines at 1280px,
+and re-measures on resize.
+
+**"Directions" no longer leaves the product.** All three entry points (hero,
+sticky bar, desktop panel) go to `/navigate/[id]`, via `lib/places/directions.ts`.
+That screen routes on OSRM and needs no API key, so it gives real turn-by-turn
+steps today. `/map` was the obvious-looking target and is the wrong one: it
+draws its canvas with the Google Maps JS API, and with
+`NEXT_PUBLIC_GOOGLE_MAPS_KEY` unset — which it is — it renders no map at all.
+The external Google link survives only for a listing with no coordinates but a
+`mapLink` from the source data.
 
 Gotchas found while building it:
 - `place.images` includes the hero shot on most rows, so the gallery showed the

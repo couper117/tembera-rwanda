@@ -6,6 +6,7 @@ import PlaceActions from "@/components/place/PlaceActions";
 import PlaceHero from "@/components/place/PlaceHero";
 import PlaceMap from "@/components/place/PlaceMap";
 import OpeningHours from "@/components/place/OpeningHours";
+import ReadMore from "@/components/place/ReadMore";
 import WhyVisit from "@/components/place/WhyVisit";
 import VisitRecorder from "@/components/place/VisitRecorder";
 import CalendarNotice from "@/components/app/CalendarNotice";
@@ -183,12 +184,9 @@ export default async function PlaceDetailPage({
                 {place.description && (
                   <section className="t-section" id="about">
                     <h2 className="t-heading">About</h2>
-                    <p
-                      className="t-body"
-                      style={{ marginTop: "var(--t-2)", lineHeight: 1.7 }}
-                    >
-                      {place.description}
-                    </p>
+                    {/* Descriptions run from one line to twelve; the long ones
+                        were pushing the hours and the map a screen down. */}
+                    <ReadMore>{place.description}</ReadMore>
                   </section>
                 )}
 

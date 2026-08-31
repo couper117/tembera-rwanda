@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import PlaceImage from "@/components/ui/PlaceImage";
+import { directionsFor } from "@/lib/places/directions";
 import type { Place } from "@/lib/places/types";
 
 /**
@@ -30,13 +31,7 @@ export default function PlaceHero({
   openLabel: string | null;
   isOpen: boolean | null;
 }) {
-  const directions = place.mapLink
-    ? place.mapLink
-    : place.lat !== undefined && place.lng !== undefined
-      ? `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`
-      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          `${place.name}, ${place.city}, Rwanda`,
-        )}`;
+  const directions = directionsFor(place);
 
   return (
     <header className={`t-hero${isSensitive ? " t-hero--quiet" : ""}`}>
@@ -103,15 +98,26 @@ export default function PlaceHero({
             {/* Hidden on a phone: the sticky action bar carries Directions
                 there, and two of the same button on one screen pushed Call
                 and Website onto a second row for nothing. */}
-            <a
-              href={directions}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="t-btn t-btn--primary t-hero__act--dup"
-            >
-              <Icon name="navigate" size={16} />
-              Directions
-            </a>
+            {directions &&
+              (directions.external ? (
+                <a
+                  href={directions.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="t-btn t-btn--primary t-hero__act--dup"
+                >
+                  <Icon name="navigate" size={16} />
+                  Directions
+                </a>
+              ) : (
+                <Link
+                  href={directions.href}
+                  className="t-btn t-btn--primary t-hero__act--dup"
+                >
+                  <Icon name="navigate" size={16} />
+                  Directions
+                </Link>
+              ))}
             {place.phone && (
               <a
                 href={`tel:${place.phone.replace(/\s/g, "")}`}

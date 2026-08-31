@@ -4008,21 +4008,16 @@ button.t-profile__stat:active {
 /* =============================================== place page, on a phone == */
 
 @media (max-width: 767px) {
-  /* Sections read as a flat, undifferentiated scroll when they are only
-     separated by whitespace. Giving each its own card is what makes the page
-     feel like a screen in an app rather than a document. */
-  .t-detail__main > .t-section {
-    margin-top: var(--t-4);
-    padding: var(--t-4);
-    border: 1px solid var(--t-border);
-    border-radius: var(--t-r-lg);
-    background: var(--t-surface);
-  }
+  /* Sections are plain, with only whitespace and their headings to separate
+     them. Boxing each one made the page read as a stack of unrelated widgets;
+     the quick-facts strip stays a card because it genuinely is a distinct
+     block of reference data, not prose.
 
-  /* A horizontal strip of photos should still run to the edge of its card. */
-  .t-detail__main > .t-section > .t-scroller {
-    margin-inline: calc(var(--t-4) * -1);
-    padding-inline: var(--t-4);
+     Sections still need room to breathe once the borders are gone: whitespace
+     is now the only thing separating them, so it has to be generous.
+     (The scale has no --t-7; using one silently computed to 0.) */
+  .t-detail__main > .t-section {
+    margin-top: var(--t-10);
   }
 
   .t-hero__act--dup {
@@ -4045,4 +4040,40 @@ button.t-profile__stat:active {
   .t-hero__body {
     padding-bottom: calc(var(--t-gutter) + 24px);
   }
+}
+
+/* ------------------------------------------------------------ read more -- */
+
+/* Line-clamp rather than max-height: cutting on a line boundary never leaves
+   half a row of text, and it adapts to whatever the type size ends up being. */
+.t-readmore {
+  line-height: 1.7;
+  margin-top: var(--t-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.t-readmore[data-open] {
+  display: block;
+  overflow: visible;
+}
+
+.t-readmore__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--t-2);
+  padding: 4px 0;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-accent);
+}
+
+.t-readmore__toggle:hover {
+  text-decoration: underline;
+}
+
+.t-readmore__toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
 }
