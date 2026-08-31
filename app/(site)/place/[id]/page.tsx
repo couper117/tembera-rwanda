@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import PlaceActions from "@/components/place/PlaceActions";
 import VisitRecorder from "@/components/place/VisitRecorder";
 import CalendarNotice from "@/components/app/CalendarNotice";
+import ClaimListing from "@/components/place/ClaimListing";
 import ReportProblem from "@/components/place/ReportProblem";
 import ReviewSection from "@/components/place/ReviewSection";
 import PlaceImage from "@/components/ui/PlaceImage";
@@ -302,6 +303,9 @@ export default async function PlaceDetailPage({
                 />
               </section>
             )}
+
+            {/* ----------------------------------------------- claim --- */}
+            <ClaimListing placeId={place.id} placeName={place.name} />
 
             {/* ---------------------------------------------- report --- */}
             <ReportProblem placeId={place.id} placeName={place.name} />
