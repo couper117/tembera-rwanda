@@ -12,6 +12,7 @@ import {
 } from "react";
 import Icon from "@/components/Icon";
 import UserMenu from "@/components/admin/UserMenu";
+import DashboardBottomNav from "@/components/admin/DashboardBottomNav";
 import { useTheme } from "@/lib/client/theme";
 import { ADMIN_NAV, adminPageTitle, adminSectionTitle } from "./adminNav";
 
@@ -226,6 +227,25 @@ export default function AdminShell({ email, name, role, counts, children }: Prop
 
           <main className="a-main">{children}</main>
         </div>
+
+        {/*
+          The drawer still holds all twelve screens. This is the handful that
+          staff move between constantly, put where a thumb can reach them.
+        */}
+        <DashboardBottomNav
+          items={[
+            { href: "/admin", label: "Home", icon: "grid" },
+            { href: "/admin/places", label: "Places", icon: "pin" },
+            {
+              href: "/admin/submissions",
+              label: "Queue",
+              icon: "mail",
+              badge: counts.submissions,
+            },
+            { href: "/admin/reports", label: "Reports", icon: "alert", badge: counts.reports },
+            { href: "/admin/categories", label: "Types", icon: "list" },
+          ]}
+        />
       </div>
     </ShellContext.Provider>
   );

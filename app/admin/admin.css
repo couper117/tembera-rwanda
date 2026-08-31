@@ -1468,3 +1468,252 @@ a.a-stat:hover {
   font-weight: 600;
   color: var(--t-accent);
 }
+
+/* ========================================================= mobile: the app */
+/*
+ * On a phone these dashboards should behave like an app, not like a desktop
+ * page that has been squeezed. That means: no sidebar, a thumb-reachable
+ * bottom bar, a compact header, and content that fills the width.
+ */
+
+.a-bottomnav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .a-bottomnav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 68;
+    display: flex;
+    align-items: stretch;
+    height: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: color-mix(in srgb, var(--t-surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--t-border);
+  }
+
+  .a-bottomnav__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 6px 2px;
+    color: var(--t-ink-3);
+    text-decoration: none;
+  }
+
+  .a-bottomnav__item[aria-current="page"] {
+    color: var(--t-accent);
+  }
+
+  .a-bottomnav__glyph {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .a-bottomnav__badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--t-accent);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 750;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--t-surface);
+  }
+
+  .a-bottomnav__label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* Room for the bar, so the last row of a table is not sitting under it. */
+  .a-main {
+    padding: var(--t-4) var(--t-3)
+      calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom) + var(--t-6));
+  }
+
+  /* A phone header carries where you are and who you are, and nothing else.
+     The catalogue search moves into the page it searches. */
+  .a-topbar {
+    gap: var(--t-2);
+    padding: 0 var(--t-3);
+  }
+
+  /* Several components set their own `display`, at the same specificity as
+     the .t-show-desktop utility — so which one won came down to stylesheet
+     order, and the catalogue search stayed on screen squashing the page
+     title. Anything inside the top bar marked desktop-only is hidden here,
+     whatever it sets for itself. */
+  .a-topbar .t-show-desktop {
+    display: none !important;
+  }
+
+  .a-topbar__title {
+    font-size: 0.98rem;
+  }
+
+  /* Cards and panels go full width rather than sitting in a narrow column. */
+  .a-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .a-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .a-grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Two columns of tiny buttons in a table cell wrap into a mess; stack them. */
+  .a-table__actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  /* Tabs scroll sideways instead of wrapping into four ragged rows. */
+  .a-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .a-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .a-tab {
+    flex: none;
+  }
+
+  /* The editor header stacks: preview, then progress, then the actions as a
+     full-width row so Save is a thumb target rather than a corner. */
+  .a-editorhead {
+    gap: var(--t-3);
+  }
+
+  .a-editorhead__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .a-editorhead__actions .t-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .a-map {
+    height: 260px;
+  }
+}
+
+@media (max-width: 600px) {
+  .a-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- sidebar summary card ---
+   Five nav items left most of a 248px column empty. This is the thing the
+   reader actually wants from that space: where they stand, and what is
+   outstanding. Not decoration. */
+.a-sidecard {
+  margin: var(--t-4) var(--t-3) 0;
+  padding: var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+}
+
+.a-sidecard__title {
+  margin: 0 0 var(--t-2);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-sidecard__rows {
+  margin: 0 0 var(--t-3);
+  display: grid;
+  gap: 7px;
+}
+
+.a-sidecard__rows > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-2);
+}
+
+.a-sidecard__rows dt {
+  font-size: 0.78rem;
+  color: var(--t-ink-3);
+}
+
+.a-sidecard__rows dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+/* Hidden when the rail is collapsed to icons — a card of labels in a 72px
+   column is unreadable. */
+.a-shell[data-rail="collapsed"] .a-sidecard {
+  display: none;
+}
+
+/* --- the grid overflow fix ---
+ * Grid and flex children default to `min-width: auto`, which means a child is
+ * never allowed to be narrower than its content. A table 557px wide therefore
+ * forces its column to 557px, the column forces the page wider than the
+ * screen, and `overflow-x: auto` on the wrapper never gets a chance to engage
+ * — the table does not overflow its parent, the parent grew instead.
+ *
+ * Setting min-width: 0 lets the column shrink to the viewport, at which point
+ * the wrapper scrolls the table as intended. This is the whole reason the
+ * dashboards scrolled sideways on a phone.
+ */
+.a-cols > *,
+.a-panel,
+.a-tablewrap,
+.a-stats > *,
+.a-body {
+  min-width: 0;
+}
+
+.a-tablewrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Nothing should ever scroll the page sideways. If something does, it is a
+   bug, and clipping it is better than shipping a page that slides. */
+@media (max-width: 1023px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}

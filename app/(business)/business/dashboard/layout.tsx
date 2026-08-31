@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import BusinessShell from "@/components/business/BusinessShell";
 import { ThemeProvider } from "@/lib/client/theme";
 import { requireBusiness } from "@/lib/auth";
-import { getMyBusiness } from "@/lib/data/business";
+import { getMyBusiness, getMyPlaces, getMySubmissions } from "@/lib/data/business";
 import "../../../admin/admin.css";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +24,21 @@ export default async function BusinessDashboardLayout({
   // rather than rendering a dashboard with nothing in it.
   if (!business) redirect(user.role === "ADMIN" ? "/admin/businesses" : "/business");
 
+  // Read once here for the sidebar summary, so every screen shows the same
+  // figures without each fetching them again.
+  const [places, submissions] = await Promise.all([
+    getMyPlaces(business.id),
+    getMySubmissions(business.id),
+  ]);
+
   return (
     <ThemeProvider>
       <BusinessShell
         businessName={business.name}
         status={business.status}
+        plan={business.plan}
+        listings={places.length}
+        pending={submissions.filter((s) => s.status === "pending").length}
         name={user.name}
         email={user.email}
         role={user.role}

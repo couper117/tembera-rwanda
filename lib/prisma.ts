@@ -13,6 +13,15 @@ import { PrismaNeon } from "@prisma/adapter-neon";
  * DATABASE_URL points at Neon's pooled endpoint. The direct endpoint is
  * DIRECT_URL and is only used by the CLI for migrations — see prisma.config.ts.
  */
+
+// NOTE: the Neon WebSocket connection drops occasionally under repeated load,
+// surfacing as a bare `prisma:error undefined` and an opaque
+// `[object ErrorEvent]` — which says nothing about the database and reads like
+// an application bug. Setting neonConfig.webSocketConstructor = ws is the
+// documented Node fix, but importing `ws` here broke the production build
+// ("Cannot find module for page"), so it is left for a focused change rather
+// than bundled into a UI commit. Node 24 supplies a global WebSocket, which is
+// why it works at all.
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error(

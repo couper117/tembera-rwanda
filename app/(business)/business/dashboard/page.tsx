@@ -34,15 +34,6 @@ export default async function BusinessOverviewPage() {
       <PageHead
         title={`Welcome, ${user.name.split(" ")[0]}`}
         sub="Your listings on Tembera, and anything waiting on us."
-        actions={
-          <Link
-            href="/business/dashboard/listings/new"
-            className="t-btn t-btn--primary t-btn--sm"
-          >
-            <Icon name="plus" size={15} />
-            Propose a listing
-          </Link>
-        }
       />
 
       {/*
