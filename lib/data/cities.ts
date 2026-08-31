@@ -1,4 +1,9 @@
-import { citySummaries } from "@/lib/places/catalog";
+import "server-only";
+import { unstable_cache } from "next/cache";
+import { prisma } from "@/lib/prisma";
+import { CITY_IMAGES } from "@/lib/places/engine";
+
+export const CITIES_TAG = "cities";
 
 export interface CityRecord {
   id: number;
@@ -12,23 +17,23 @@ export interface CityRecord {
 }
 
 /**
- * The city/district directory, derived from the places catalog.
+ * The admin-managed city/district directory.
  *
- * There is no city table any more, so a city exists exactly as long as
- * something in the catalog sits in it. `id` and `sortOrder` are positional:
- * they keep the admin table's shape without pretending to be stable keys.
- * Province is unknown from the catalog alone and is left null rather than
- * guessed.
+ * `image` falls back to the curated table in lib/places/engine.ts, which is
+ * what the public city cards actually render. Without this the admin screen
+ * would report a district as having no photo while the site was displaying
+ * one — the editor needs to see what the visitor sees.
  */
-export async function getCities(): Promise<CityRecord[]> {
-  return citySummaries().map((city, index) => ({
-    id: index + 1,
-    name: city.name,
-    group: null,
-    province: null,
-    lat: null,
-    lng: null,
-    image: city.image ?? null,
-    sortOrder: index,
-  }));
-}
+export const getCities = unstable_cache(
+  async (): Promise<CityRecord[]> => {
+    const rows = await prisma.city.findMany({
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    });
+    return rows.map((row) => ({
+      ...row,
+      image: row.image ?? CITY_IMAGES[row.name] ?? null,
+    }));
+  },
+  ["cities-list"],
+  { tags: [CITIES_TAG] },
+);

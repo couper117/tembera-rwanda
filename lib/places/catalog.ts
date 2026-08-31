@@ -1,21 +1,25 @@
 // Builds the single Tembera catalog from the legacy per-page datasets plus the
 // curated directory that covers the categories those datasets never had.
 //
+// SEED-ONLY. Since the catalog was migrated into Postgres this module is input
+// to prisma/seed.ts and scripts/freeze-ids.ts, and nothing else. Application
+// code reads lib/data/*, which reads the database; the query and ranking
+// helpers that used to live down here were stale copies of the tested ones in
+// lib/places/engine.ts and have been removed so nothing can accidentally read
+// the frozen catalog at runtime.
+//
+// Do not reorder the source arrays. Place ids are derived from their order in
+// assignIds() below, and those ids are live primary keys, public URLs and
+// foreign keys. prisma/seed-ids.json freezes them and the seed enforces it.
+//
 // Nothing here invents a rating or a coordinate. Fields absent from a source
 // stay absent, and the UI is written to render without them. The one derived
 // value is position: records that carried only a district or neighbourhood
 // name get that district's centre, flagged `coordsPrecision: "district"` so
 // distances can be shown as approximate.
 
-import type { Coords, Place, PlaceWithDistance } from "./types";
-import {
-  DISTRICT_CENTRES,
-  KIGALI_DISTRICTS,
-  distanceKm,
-  resolveDistrict,
-} from "./geo";
-import { CATEGORY_GROUPS } from "./taxonomy";
-import { searchPlaces } from "./search";
+import type { Coords, Place } from "./types";
+import { DISTRICT_CENTRES, resolveDistrict } from "./geo";
 
 import { CHURCH_ROWS } from "./sources/churches";
 import { DIRECTORY_ROWS } from "./sources/directory";
@@ -426,206 +430,3 @@ export const PLACES: Place[] = build();
 export const PLACES_BY_ID: Map<string, Place> = new Map(
   PLACES.map((p) => [p.id, p]),
 );
-
-export function getPlace(id: string): Place | undefined {
-  return PLACES_BY_ID.get(id);
-}
-
-export function placesInCategory(categoryId: string): Place[] {
-  return PLACES.filter((p) => p.categoryId === categoryId);
-}
-
-export function countByCategory(): Record<string, number> {
-  const counts: Record<string, number> = {};
-  for (const place of PLACES) {
-    counts[place.categoryId] = (counts[place.categoryId] ?? 0) + 1;
-  }
-  return counts;
-}
-
-/** How many places sit under each "group/subcategory" pair. */
-export function countBySubcategory(): Record<string, number> {
-  const counts: Record<string, number> = {};
-  for (const place of PLACES) {
-    const key = `${place.categoryId}/${place.subcategory}`;
-    counts[key] = (counts[key] ?? 0) + 1;
-  }
-  return counts;
-}
-
-/** Group counts plus their subcategory counts, for the sidebar and explorer. */
-export interface GroupSummary {
-  id: string;
-  total: number;
-  subcategories: { name: string; count: number }[];
-}
-
-export function groupSummaries(): GroupSummary[] {
-  const byCategory = countByCategory();
-  const bySub = countBySubcategory();
-
-  return CATEGORY_GROUPS.map((group) => ({
-    id: group.id,
-    total: byCategory[group.id] ?? 0,
-    subcategories: group.subcategories.map((name) => ({
-      name,
-      count: bySub[`${group.id}/${name}`] ?? 0,
-    })),
-  }));
-}
-
-/* -------------------------------------------------------------- geography */
-
-/** Kigali's three districts read as one city to a user. */
-export function cityGroup(place: Place): string {
-  return KIGALI_DISTRICTS.includes(place.city) ? "Kigali" : place.city;
-}
-
-export interface CitySummary {
-  name: string;
-  count: number;
-  /** A representative image drawn from the city's own listings. */
-  image?: string;
-}
-
-export function citySummaries(): CitySummary[] {
-  const map = new Map<string, CitySummary>();
-  for (const place of PLACES) {
-    const name = cityGroup(place);
-    const entry = map.get(name) ?? { name, count: 0 };
-    entry.count += 1;
-    if (!entry.image && isRenderableImage(place.image)) entry.image = place.image;
-    map.set(name, entry);
-  }
-  return [...map.values()].sort((a, b) => b.count - a.count);
-}
-
-export function placesInCity(city: string): Place[] {
-  return PLACES.filter((p) => cityGroup(p) === city);
-}
-
-/**
- * A few legacy image URLs are known-dead (a removed Flickr upload, some
- * `googleusercontent.com/image_collection/...` links that never resolved).
- * Skip them when *choosing* a hero image; cards still attempt them and fall
- * back visually if they 404.
- */
-export function isRenderableImage(url: string | undefined): url is string {
-  if (!url) return false;
-  if (url.includes("googleusercontent.com/image_collection")) return false;
-  if (url.includes("live.staticflickr.com/65535/48598424266")) return false;
-  if (url.startsWith("https://mail.google.com/")) return false;
-  return true;
-}
-
-/* --------------------------------------------------------------- ranking */
-
-/**
- * Places sorted by distance from `origin`. Records without coordinates are
- * dropped — a "Near You" row cannot honestly include them.
- */
-export function nearest(
-  origin: Coords,
-  options: { limit?: number; categoryId?: string; maxKm?: number } = {},
-): PlaceWithDistance[] {
-  const { limit = 12, categoryId, maxKm } = options;
-  const out: PlaceWithDistance[] = [];
-
-  for (const place of PLACES) {
-    if (categoryId && place.categoryId !== categoryId) continue;
-    if (place.lat === undefined || place.lng === undefined) continue;
-    const km = distanceKm(origin, { lat: place.lat, lng: place.lng });
-    if (maxKm !== undefined && km > maxKm) continue;
-    out.push({ ...place, distanceKm: km });
-  }
-
-  out.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
-  return out.slice(0, limit);
-}
-
-/**
- * "Popular" with no analytics behind it would be a lie. What we do have is
- * ratings and imagery, so this is explicitly *top rated* — and it is labelled
- * that way in the UI. Round-robins across categories so one category can't
- * fill the row.
- */
-export function topRated(limit = 10, categoryId?: string): Place[] {
-  const eligible = PLACES.filter(
-    (p) =>
-      p.rating !== undefined &&
-      isRenderableImage(p.image) &&
-      (!categoryId || p.categoryId === categoryId),
-  ).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-
-  if (categoryId) return eligible.slice(0, limit);
-
-  const queues = new Map<string, Place[]>();
-  for (const place of eligible) {
-    const queue = queues.get(place.categoryId) ?? [];
-    queue.push(place);
-    queues.set(place.categoryId, queue);
-  }
-
-  const out: Place[] = [];
-  while (out.length < limit) {
-    let added = false;
-    for (const queue of queues.values()) {
-      if (out.length >= limit) break;
-      const next = queue.shift();
-      if (next) {
-        out.push(next);
-        added = true;
-      }
-    }
-    if (!added) break;
-  }
-  return out;
-}
-
-/**
- * Editorial row: Rwanda's recognisable destinations. Nature, wonders and
- * heritage only, and only records whose image will actually load.
- */
-export function featured(limit = 8): Place[] {
-  const wanted = ["nature", "wonders", "memorials", "arts"];
-  return PLACES.filter(
-    (p) => wanted.includes(p.categoryId) && isRenderableImage(p.image),
-  ).slice(0, limit);
-}
-
-/* ----------------------------------------------------------- search index */
-
-/**
- * A trimmed copy of the catalog for the search screen to filter in the browser.
- *
- * Descriptions are dropped (they are the heaviest field and the weakest search
- * signal) but keywords are kept, so "coffee" still finds Question Coffee.
- * Images are already short URLs by this point. The result is a few tens of
- * kilobytes — small enough to hand to the client so search feels instant, with
- * no request per keystroke.
- */
-export function buildSearchIndex(): Place[] {
-  return PLACES.map((place) => ({
-    id: place.id,
-    name: place.name,
-    categoryId: place.categoryId,
-    subcategory: place.subcategory,
-    subtype: place.subtype,
-    city: place.city,
-    area: place.area,
-    lat: place.lat,
-    lng: place.lng,
-    coordsPrecision: place.coordsPrecision,
-    rating: place.rating,
-    image: place.image,
-    keywords: place.keywords,
-  }));
-}
-
-/** Server-side convenience wrapper around the pure search function. */
-export function searchCatalog(
-  query: string,
-  options: Parameters<typeof searchPlaces>[2] = {},
-) {
-  return searchPlaces(PLACES, query, options);
-}

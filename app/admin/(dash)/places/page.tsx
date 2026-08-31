@@ -3,7 +3,7 @@ import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
 import { getCategories } from "@/lib/data/categories";
-import { getPlaces } from "@/lib/data/places";
+import { getAllPlaces } from "@/lib/data/places";
 import { deletePlace } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export default async function PlacesPage({
   // few thousand rows, so a query planner would be doing less work than the
   // round trip it replaces.
   const needle = search.toLowerCase();
-  const matches = (await getPlaces()).filter((p) => {
+  const matches = (await getAllPlaces()).filter((p) => {
     if (categoryFilter && p.categoryId !== categoryFilter) return false;
     if (!needle) return true;
     return (

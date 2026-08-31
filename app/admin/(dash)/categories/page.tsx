@@ -3,7 +3,7 @@ import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { PageHead, Panel, SampleNotice } from "@/components/admin/ui";
 import { adminCategories } from "@/lib/data/categories";
-import { countByCategory } from "@/lib/data/places";
+import { countByCategoryAllStatuses } from "@/lib/data/places";
 import CategoryForm from "./CategoryForm";
 import {
   deleteCategory,
@@ -23,7 +23,7 @@ export default async function CategoriesPage({
 
   const [categories, counts] = await Promise.all([
     adminCategories(),
-    countByCategory(),
+    countByCategoryAllStatuses(),
   ]);
 
   const placeCount = new Map(Object.entries(counts));

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { PageHead, Panel } from "@/components/admin/ui";
 import { getCategories } from "@/lib/data/categories";
-import { getPlace } from "@/lib/data/places";
+import { getAnyPlace } from "@/lib/data/places";
 import PlaceForm, { type CategoryOption, type PlaceFormValues } from "../PlaceForm";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export default async function EditPlacePage({
 }) {
   const { id } = await params;
 
-  const place = await getPlace(id);
+  const place = await getAnyPlace(id);
   if (!place) notFound();
 
   const categories: CategoryOption[] = (await getCategories()).map((c) => ({

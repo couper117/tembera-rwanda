@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { inlineImage } from "@/lib/places/catalog";
+import { getPlaceImageData } from "@/lib/data/places";
 
 /**
  * Serves the photos that the legacy data carried as inline `data:` URIs.
@@ -14,7 +14,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const dataUri = inlineImage(id);
+  const dataUri = await getPlaceImageData(id);
   if (!dataUri) {
     return new NextResponse("No inline image for this place", { status: 404 });
   }

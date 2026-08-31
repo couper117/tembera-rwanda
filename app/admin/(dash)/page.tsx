@@ -12,7 +12,7 @@ import {
 } from "@/lib/admin/placeholder";
 import { getCategories } from "@/lib/data/categories";
 import { getCities } from "@/lib/data/cities";
-import { getPlaces } from "@/lib/data/places";
+import { getAllPlaces } from "@/lib/data/places";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
   // Users have no source in this build, so that tile counts the sample rows —
   // the <SampleNotice> below says which figures are which.
   const [catalog, taxonomy, cityList] = await Promise.all([
-    getPlaces(),
+    getAllPlaces(),
     getCategories(),
     getCities(),
   ]);
