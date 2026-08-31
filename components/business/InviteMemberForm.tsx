@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Field } from "@/components/admin/Field";
+import FormFeedback from "@/components/admin/FormFeedback";
 import { inviteMemberAction, type BusinessState } from "@/lib/actions/business";
 
 const initial: BusinessState = {};
@@ -11,16 +12,12 @@ export default function InviteMemberForm() {
 
   return (
     <form action={formAction} className="a-form a-form--roomy">
-      {state.error && (
-        <p className="a-error" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state.ok && (
-        <p className="a-success" role="status">
-          Added. They can sign in with their own account now.
-        </p>
-      )}
+      <FormFeedback
+        fields={state.fields}
+        error={state.error}
+        success={state.ok ? "Added. They can sign in with their own account now." : undefined}
+        labels={{ email: "Email address" }}
+      />
 
       <Field
         name="email"

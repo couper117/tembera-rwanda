@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Field } from "@/components/admin/Field";
+import FormFeedback from "@/components/admin/FormFeedback";
 import { PLANS } from "@/lib/business/plans";
 import { registerBusinessAction, type BusinessState } from "@/lib/actions/business";
 
@@ -21,11 +22,18 @@ export default function RegisterBusinessForm({ cities }: { cities: string[] }) {
 
   return (
     <form action={formAction} className="a-form a-form--roomy">
-      {state.error && (
-        <p className="a-error" role="alert">
-          {state.error}
-        </p>
-      )}
+      <FormFeedback
+        fields={state.fields}
+        error={state.error}
+        labels={{
+          businessName: "Business name",
+          contactName: "Your name",
+          email: "Email",
+          phone: "Phone",
+          city: "District",
+          password: "Password",
+        }}
+      />
 
       <Field name="businessName" label="Business name" required error={state.fields?.businessName}>
         <input id="businessName" name="businessName" className="a-input" required />

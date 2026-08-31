@@ -1717,3 +1717,89 @@ a.a-stat:hover {
     overflow-x: hidden;
   }
 }
+
+/* --- form feedback ---
+   A form that refuses has to say how many things are wrong, name them, and
+   let the reader jump to each. One line of red text at the top of a tabbed
+   form leaves them hunting. */
+.a-feedback {
+  display: flex;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  margin-bottom: var(--t-4);
+  border-radius: var(--t-r-md);
+  border: 1px solid;
+  scroll-margin-top: calc(var(--t-header-h) + var(--t-4));
+}
+
+.a-feedback--bad {
+  border-color: var(--t-danger);
+  background: var(--t-danger-soft);
+  color: var(--t-danger);
+}
+
+.a-feedback--ok {
+  border-color: var(--t-accent-ink);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.a-feedback__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 1px;
+}
+
+.a-feedback__body {
+  min-width: 0;
+}
+
+.a-feedback__title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.a-feedback__list {
+  margin: var(--t-2) 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 4px;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* The field name is the actionable part, so it looks like the control it is. */
+.a-feedback__jump {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.a-feedback__jump:hover {
+  text-decoration-thickness: 2px;
+}
+
+.a-feedback__note {
+  margin: var(--t-2) 0 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* A rejected field should be obvious from the label down, not only by its
+   border — someone scanning a long form reads labels, not outlines. */
+.a-field--invalid .a-label {
+  color: var(--t-danger);
+}
+
+.a-field--invalid .a-input:focus,
+.a-field--invalid .a-select:focus,
+.a-field--invalid .a-textarea:focus {
+  outline-color: var(--t-danger);
+}

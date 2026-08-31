@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { Field } from "@/components/admin/Field";
+import FormFeedback from "@/components/admin/FormFeedback";
 import HoursEditor from "@/components/admin/HoursEditor";
 import MapPicker from "@/components/admin/MapPicker";
 import Icon from "@/components/Icon";
@@ -48,6 +49,33 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+/** So the summary reads "District" rather than "city". */
+const FIELD_LABELS: Record<string, string> = {
+  name: "Name",
+  categoryId: "Category",
+  subcategory: "Subcategory",
+  subtype: "Speciality",
+  description: "Description",
+  city: "District",
+  area: "Area",
+  lat: "Latitude",
+  lng: "Longitude",
+  mapLink: "Map link",
+  phone: "Phone",
+  website: "Website",
+  hours: "Opening hours",
+  image: "Main photo",
+  images: "More photos",
+  highlights: "Highlights",
+  keywords: "Search words",
+  priceFrom: "Price from",
+};
+
+/** The tab a field lives on, for jumping to it from the summary. */
+function tabForField(field: string): TabId | undefined {
+  return TABS.find((t) => (t.fields as readonly string[]).includes(field))?.id;
+}
 
 /**
  * The listing form a business sees.
@@ -116,16 +144,16 @@ export default function BusinessPlaceForm({
       */}
       {mode === "edit" && <input type="hidden" name="placeId" value={values.placeId} />}
 
-      {state?.error && (
-        <p className="a-error" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state?.ok && (
-        <p className="a-success" role="status">
-          {state.notice ?? "Saved."}
-        </p>
-      )}
+      <FormFeedback
+        fields={state?.fields}
+        error={state?.error}
+        success={state?.ok ? state.notice ?? "Saved." : undefined}
+        labels={FIELD_LABELS}
+        onGoToField={(field) => {
+          const target = tabForField(field);
+          if (target) setTab(target);
+        }}
+      />
 
       {!verified && mode === "edit" && (
         <div className="t-notice" style={{ marginBottom: "var(--t-3)" }}>

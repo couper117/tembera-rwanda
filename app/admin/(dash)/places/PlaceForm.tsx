@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Field } from "@/components/admin/Field";
+import FormFeedback from "@/components/admin/FormFeedback";
 import HoursEditor from "@/components/admin/HoursEditor";
 import MapPicker from "@/components/admin/MapPicker";
 import Icon from "@/components/Icon";
@@ -62,6 +63,37 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+/** So the summary reads "District" rather than "city". */
+const FIELD_LABELS: Record<string, string> = {
+  name: "Name",
+  categoryId: "Category",
+  subcategory: "Subcategory",
+  subtype: "Subtype",
+  city: "District",
+  area: "Area",
+  lat: "Latitude",
+  lng: "Longitude",
+  coordsPrecision: "Location accuracy",
+  mapLink: "Map link",
+  phone: "Phone",
+  website: "Website",
+  hours: "Free-text hours",
+  hoursJson: "Opening hours",
+  description: "Description",
+  highlights: "Highlights",
+  keywords: "Search keywords",
+  image: "Main photo",
+  images: "More photos",
+  status: "Status",
+  rating: "Editorial rating",
+  priceFrom: "Price from",
+  sensitive: "Place of remembrance",
+};
+
+function tabForField(field: string): TabId | undefined {
+  return TABS.find((t) => (t.fields as readonly string[]).includes(field))?.id;
+}
 
 /**
  * What "finished" means for a listing.
@@ -216,16 +248,16 @@ export default function PlaceForm({
         </div>
       </div>
 
-      {state?.error && (
-        <p className="a-error" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state?.ok && (
-        <p className="a-success" role="status">
-          Saved.
-        </p>
-      )}
+      <FormFeedback
+        fields={state?.fields}
+        error={state?.error}
+        success={state?.ok ? "Saved." : undefined}
+        labels={FIELD_LABELS}
+        onGoToField={(field) => {
+          const target = tabForField(field);
+          if (target) setTab(target);
+        }}
+      />
 
       {/* ------------------------------------------------------------ tabs */}
       <div className="a-tabs" role="tablist" aria-label="Listing details">

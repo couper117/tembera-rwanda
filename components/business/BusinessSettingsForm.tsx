@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Field } from "@/components/admin/Field";
+import FormFeedback from "@/components/admin/FormFeedback";
 import {
   updateBusinessProfileAction,
   type BusinessState,
@@ -29,16 +30,19 @@ export default function BusinessSettingsForm({
 
   return (
     <form action={formAction} className="a-form a-form--roomy">
-      {state.error && (
-        <p className="a-error" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state.ok && (
-        <p className="a-success" role="status">
-          Saved.
-        </p>
-      )}
+      <FormFeedback
+        fields={state.fields}
+        error={state.error}
+        success={state.ok ? "Saved." : undefined}
+        labels={{
+          name: "Business name",
+          contactName: "Contact person",
+          email: "Email",
+          phone: "Phone",
+          city: "District",
+          tin: "RRA taxpayer number",
+        }}
+      />
 
       <Field name="name" label="Business name" required error={state.fields?.name}>
         <input
