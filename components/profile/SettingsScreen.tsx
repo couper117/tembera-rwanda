@@ -240,6 +240,21 @@ export default function SettingsScreen() {
             </h2>
             <div className="t-card">
               <Link
+                href="/business"
+                className="t-fact"
+                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
+              >
+                <span className="t-fact__icon">
+                  <Icon name="basket" size={17} />
+                </span>
+                <span className="t-row__name" style={{ flex: 1 }}>
+                  For business
+                </span>
+                <span className="t-row__chev">
+                  <Icon name="chevronRight" size={18} />
+                </span>
+              </Link>
+              <Link
                 href="/privacy"
                 className="t-fact"
                 style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
