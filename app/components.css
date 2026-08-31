@@ -85,6 +85,12 @@
   display: none;
 }
 
+/* Stands in for the search field on the landing page, where the hero owns the
+   only search box. Same job as its `margin-right: auto`. */
+.t-header__gap {
+  display: none;
+}
+
 @media (min-width: 1024px) {
   /* The rail is fixed and paints above the header, so the header's content has
      to start clear of it — otherwise the search field slides underneath. */
@@ -94,6 +100,11 @@
 
   .t-app:has(.t-auth-container) .t-header {
     padding-left: var(--t-gutter) !important;
+  }
+
+  .t-header__gap {
+    display: block;
+    flex: 1;
   }
 
   .t-header__search {
@@ -383,8 +394,7 @@
   /* Labels collapse by animating their width away rather than being switched
      off — display:none popped, which is what made the toggle feel cheap. */
   .t-railrow__label,
-  .t-rail__brandtext,
-  .t-railpromo__body {
+  .t-rail__brandtext {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -397,8 +407,7 @@
     max-width: 200px;
   }
 
-  .t-rail__brandtext,
-  .t-railpromo__body {
+  .t-rail__brandtext {
     max-width: 200px;
   }
 
@@ -421,13 +430,6 @@
     flex-direction: column;
     gap: 1px;
     padding: 0 var(--t-3) var(--t-2);
-  }
-
-  .t-rail__sectionlabel {
-    flex: none;
-    padding: var(--t-3) var(--t-3) 6px 15px;
-    white-space: nowrap;
-    overflow: hidden;
   }
 
   .t-rail__sep {
@@ -461,46 +463,6 @@
   .t-railmore__chev {
     flex: none;
     margin-left: auto;
-  }
-
-  /* -- Promo card --------------------------------------------------------- */
-
-  .t-railpromo {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: var(--t-3);
-    margin: var(--t-2) var(--t-3) 0;
-    padding: 10px;
-    border-radius: var(--t-r-md);
-    background: var(--t-surface-2);
-    transition: background var(--t-fast) var(--t-ease), gap var(--t-rail-anim);
-  }
-
-  .t-railpromo:hover {
-    background: var(--t-surface-3);
-  }
-
-  .t-railpromo__art {
-    flex: none;
-  }
-
-  .t-railpromo__title {
-    display: block;
-    font-size: var(--t-text-small);
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    color: var(--t-ink);
-    white-space: nowrap;
-  }
-
-  .t-railpromo__text {
-    display: block;
-    font-size: 12px;
-    color: var(--t-ink-3);
-    line-height: 1.35;
-    margin-top: 1px;
-    white-space: nowrap;
   }
 
   /* -- Pinned footer ------------------------------------------------------ */
@@ -544,26 +506,13 @@
 
   .t-app[data-rail="collapsed"] .t-railrow__label,
   .t-app[data-rail="collapsed"] .t-rail__brandtext,
-  .t-app[data-rail="collapsed"] .t-railpromo__body,
   .t-app[data-rail="collapsed"] .t-railrow__count {
     max-width: 0;
     opacity: 0;
   }
 
-  .t-app[data-rail="collapsed"] .t-railmore__chev,
-  .t-app[data-rail="collapsed"] .t-rail__sectionlabel {
+  .t-app[data-rail="collapsed"] .t-railmore__chev {
     display: none;
-  }
-
-  .t-app[data-rail="collapsed"] .t-railpromo {
-    justify-content: center;
-    padding: 8px;
-    gap: 0;
-  }
-
-  .t-app[data-rail="collapsed"] .t-railpromo__art svg {
-    width: 34px;
-    height: 28px;
   }
 
   /* ==================================== fit-to-height category trimming == */
@@ -650,10 +599,6 @@
       display: none;
     }
 
-    .t-rail__sectionlabel {
-      display: none;
-    }
-
     .t-railrow {
       height: 36px;
     }
@@ -664,10 +609,9 @@
     }
   }
 
-  /* Last resort on a very short window: the promo and More go too — Explore
-     in the primary nav still reaches the full list. */
+  /* Last resort on a very short window: More goes too — Explore in the
+     primary nav still reaches the full list. */
   @media (max-height: 470px) {
-    .t-railpromo,
     .t-railmore,
     .t-rail__sep {
       display: none;

@@ -53,18 +53,18 @@ export default async function HomePage() {
 
           {/* ------------------------------------------------ search ---- */}
           <section className="t-section">
-            <h1 className="t-display">What are you looking for?</h1>
-            <p className="t-small t-muted" style={{ marginTop: 4 }}>
-              {placeCountLabel(counts)} across Rwanda
-            </p>
+            <h1 className="t-display">Where to?</h1>
 
+            {/* The scale of the guide used to sit in a subtitle under the
+                headline, restating what the search box is for. It says more
+                inside the placeholder, where it doubles as a prompt. */}
             <Link
               href="/search"
               className="t-searchlink"
               style={{ marginTop: "var(--t-4)" }}
             >
               <Icon name="search" size={20} />
-              <span>Search places, restaurants, hotels…</span>
+              <span>Search {placeCountLabel(counts)} across Rwanda</span>
               <span className="t-searchlink__hint">/</span>
             </Link>
           </section>
@@ -94,10 +94,7 @@ export default async function HomePage() {
           {/* ---------------------------------------------- top rated --- */}
           {rated.length > 0 && (
             <section className="t-section">
-              <SectionHeader
-                title="Top rated"
-                subtitle="Highest rated places in the guide"
-              />
+              <SectionHeader title="Top rated" />
               <div className="t-scroller">
                 {rated.map((place) => (
                   <PlaceCard key={place.id} place={place} />
@@ -214,7 +211,8 @@ export default async function HomePage() {
   );
 }
 
-/** "298 places" — the honest scale of the guide, stated once. */
+/** "495 places" — the honest scale of the guide, stated once, in the search
+ *  placeholder. Counted from the catalog, never written down. */
 function placeCountLabel(counts: Record<string, number>): string {
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
   return `${total.toLocaleString()} places`;

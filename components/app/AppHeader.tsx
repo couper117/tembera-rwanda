@@ -29,6 +29,7 @@ export default function AppHeader() {
   const { theme, toggleTheme } = useTheme();
 
   const savedCount = ready ? ids.length : 0;
+  const isLanding = pathname === "/";
 
   // Close on route change rather than on click. Unmounting the sheet in the
   // same tick as the click tears the anchor out mid-navigation, which cancels
@@ -46,12 +47,19 @@ export default function AppHeader() {
         </Link>
 
         {/* Desktop gets a real search field here — the rail already carries
-            the brand, so this is the most useful thing to put in the space. */}
-        <Link href="/search" className="t-header__search t-show-desktop">
-          <Icon name="search" size={18} />
-          <span>Search places, restaurants, hotels…</span>
-          <span className="t-searchlink__hint">/</span>
-        </Link>
+            the brand, so this is the most useful thing to put in the space.
+            Except on the landing page, which has its own search under the
+            headline: two identical boxes on one screen is one too many. The
+            slot stays, holding a spacer, so the actions still sit right. */}
+        {isLanding ? (
+          <span className="t-header__gap t-show-desktop" aria-hidden="true" />
+        ) : (
+          <Link href="/search" className="t-header__search t-show-desktop">
+            <Icon name="search" size={18} />
+            <span>Search places, restaurants, hotels…</span>
+            <span className="t-searchlink__hint">/</span>
+          </Link>
+        )}
 
         <div className="t-header__actions">
           <span className="t-show-desktop">

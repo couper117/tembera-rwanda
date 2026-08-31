@@ -47,18 +47,12 @@ export default function NearYou({ initial }: Props) {
     return () => controller.abort();
   }, [coords]);
 
-  const subtitle = coords
-    ? "Closest to you right now"
-    : `Around ${originLabel} · distances are from the city centre`;
-
   return (
     <section className="t-section">
-      <SectionHeader
-        title="Near you"
-        subtitle={subtitle}
-        actionLabel="See all"
-        actionHref="/map"
-      />
+      {/* No subtitle: it used to name the origin and explain that distances
+          were measured from a city centre, both of which every card already
+          shows in its own caption. */}
+      <SectionHeader title="Near you" actionLabel="See all" actionHref="/map" />
 
       {/* Offered, never auto-triggered. Once the browser has blocked us there
           is nothing a button can do, so say what would actually fix it. */}
@@ -82,7 +76,7 @@ export default function NearYou({ initial }: Props) {
           style={{ marginBottom: "var(--t-3)" }}
         >
           <Icon name="navigate" size={16} />
-          Use my location
+          Locate me
         </button>
       )}
 

@@ -93,9 +93,9 @@ export default function DesktopRail() {
         })}
       </nav>
 
+      {/* The divider is the whole label. A row of coloured category chips
+          under a rule does not need to be told it is a list of categories. */}
       <div className="t-rail__sep" />
-
-      <p className="t-label t-rail__sectionlabel">Browse categories</p>
 
       <div className="t-rail__cats">
         {categories.slice(0, MAX_ROWS).map((group) => {
@@ -124,31 +124,17 @@ export default function DesktopRail() {
         <Link
           href="/explore"
           className="t-railrow t-railmore"
-          title={collapsed ? "More categories" : undefined}
+          title={collapsed ? "More" : undefined}
         >
           <span className="t-railrow__glyph">
             <Icon name="plusDashed" size={18} />
           </span>
-          <span className="t-railrow__label">More categories</span>
+          <span className="t-railrow__label">More</span>
           <span className="t-railmore__chev">
             <Icon name="chevronRight" size={15} />
           </span>
         </Link>
       </div>
-
-      <Link
-        href="/map"
-        className="t-railpromo"
-        title={collapsed ? "Discover amazing places" : undefined}
-      >
-        <span className="t-railpromo__art">
-          <MapArt />
-        </span>
-        <span className="t-railpromo__body" style={{ minWidth: 0 }}>
-          <span className="t-railpromo__title">Discover amazing places</span>
-          <span className="t-railpromo__text">Top-rated locations near you.</span>
-        </span>
-      </Link>
 
       <span className="t-rail__gap" />
 
@@ -205,25 +191,5 @@ export default function DesktopRail() {
         )}
       </div>
     </aside>
-  );
-}
-
-/** Small folded-map illustration for the promo card. */
-function MapArt() {
-  return (
-    <svg width="44" height="34" viewBox="0 0 52 42" fill="none" aria-hidden="true">
-      <path d="M2 9.5 18 4v29L2 38.5z" fill="#dcece1" />
-      <path d="M18 4l16 5.5v29L18 33z" fill="#c9e2d2" />
-      <path d="M34 9.5 50 4v29l-16 5.5z" fill="#dcece1" />
-      <g stroke="#ffffff" strokeWidth="1.2" opacity="0.9">
-        <path d="M9 6.5v29M26 6.5v29M42 6.5v29" />
-        <path d="M2.5 20h47" />
-      </g>
-      <path
-        d="M26 9.5c-4 0-7.2 3.2-7.2 7.2 0 5.4 7.2 12.3 7.2 12.3s7.2-6.9 7.2-12.3c0-4-3.2-7.2-7.2-7.2z"
-        fill="#11694a"
-      />
-      <circle cx="26" cy="16.6" r="2.6" fill="#fff" />
-    </svg>
   );
 }
