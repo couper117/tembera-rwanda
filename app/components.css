@@ -2157,35 +2157,6 @@ a.t-notice:hover {
 
 /* ======================================================= place detail == */
 
-.t-detail__hero {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: var(--t-surface-3);
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .t-detail__hero {
-    aspect-ratio: 21 / 9;
-    border-radius: var(--t-r-xl);
-    margin-top: var(--t-4);
-  }
-}
-
-.t-detail__hero img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.t-detail__floaters {
-  position: absolute;
-  inset: var(--t-3) var(--t-3) auto;
-  display: flex;
-  justify-content: space-between;
-  gap: var(--t-2);
-}
-
 .t-detail__body {
   position: relative;
   background: var(--t-bg);
@@ -2200,16 +2171,6 @@ a.t-notice:hover {
     padding-inline: 0;
     border-radius: 0;
   }
-}
-
-.t-detail__metarow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-2);
-  margin-top: var(--t-2);
-  font-size: var(--t-text-small);
-  color: var(--t-ink-2);
 }
 
 /* Two-column detail layout on desktop: content + sticky action panel. */
@@ -3557,4 +3518,380 @@ button.t-profile__stat:active {
     transform: none;
     bottom: var(--t-4);
   }
+}
+
+
+/* ==================================================== place hero (v2) ==
+
+   The old detail hero was a letterboxed strip with the name in the body
+   below it, so the fold showed a photo and nothing else. This one carries
+   the name, rating, open-state and the three actions a visitor arrives
+   wanting: directions, phone, website.
+
+   Full-bleed on a phone (it is the cover of the page), inset and rounded
+   from tablet up where the page has margins to sit inside. */
+
+/* The hero sizes itself from its own content, not from the photo's aspect
+   ratio. A fixed ratio looked right until a long name wrapped to three lines
+   and the title block overflowed off the top of the image; growing the box
+   instead means no name can ever break the layout. The photo fills whatever
+   height results. */
+.t-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(320px, 56vh, 480px);
+  overflow: hidden;
+  background: var(--t-surface-3);
+
+  /* Full-bleed on a phone: this is the cover of the page, and the page
+     gutter around it made it read as just another card. */
+  margin-inline: calc(var(--t-gutter) * -1);
+}
+
+.t-hero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.t-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The scrim exists so white text over an unknown photo is always legible.
+   Two stops rather than one: a light wash at the top keeps the back button
+   readable, the heavy foot carries the title block. */
+.t-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0) 30%),
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.66) 26%,
+      rgba(0, 0, 0, 0.3) 52%,
+      rgba(0, 0, 0, 0) 78%
+    );
+  pointer-events: none;
+}
+
+/* Top-right, clear of the sticky header's own buttons — the bottom-right
+   corner belongs to the title block. */
+.t-hero__count {
+  position: absolute;
+  right: var(--t-3);
+  top: calc(var(--t-header-h) + var(--t-2));
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--t-r-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+}
+
+.t-hero__count:hover {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+/* On a phone the title block sits on the photo; there is no room to give it
+   its own band without pushing the facts below the fold. */
+.t-hero__body {
+  position: relative;
+  padding: var(--t-gutter);
+  padding-top: var(--t-6);
+  color: #fff;
+}
+
+.t-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  margin-bottom: var(--t-2);
+}
+
+/* Badges default to a light surface, which vanishes on a photo. */
+.t-hero__body .t-badge {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+.t-hero__body .t-badge--accent {
+  background: var(--t-accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.t-hero__name {
+  font-size: clamp(1.65rem, 6vw, 2.6rem);
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
+}
+
+.t-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-2) var(--t-3);
+  margin-top: var(--t-2);
+  font-size: var(--t-text-small);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.t-hero__meta .t-rating {
+  color: #fff;
+}
+
+.t-hero__where {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.t-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  margin-top: var(--t-4);
+}
+
+.t-hero__actions .t-btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+  justify-content: center;
+}
+
+/* Secondary buttons are designed for a page background, not a photograph. */
+.t-hero__actions .t-btn--secondary {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+.t-hero__actions .t-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* A memorial gets a calmer cover: no actions bar, a shorter crop, and a
+   darker scrim so the photograph reads as a record rather than a poster. */
+.t-hero--quiet {
+  min-height: clamp(260px, 40vh, 380px);
+}
+
+.t-hero--quiet .t-hero__scrim {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.45) 60%, rgba(0, 0, 0, 0.2));
+}
+
+@media (min-width: 768px) {
+  /* Full-width buttons are a phone convention: with 900px of hero they read
+     as three banners rather than three actions. */
+  .t-hero__actions .t-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding-inline: var(--t-5);
+  }
+
+  .t-hero {
+    margin-top: var(--t-4);
+    margin-inline: 0;
+    min-height: clamp(360px, 52vh, 520px);
+    border-radius: var(--t-r-xl);
+  }
+
+  .t-hero__body {
+    padding: var(--t-6);
+  }
+}
+
+/* -------------------------------------------------------- open state -- */
+
+/* Grey by default and green only when actually open: the pill is read at a
+   glance, so colour has to carry the answer, not just decorate it. */
+.t-openstate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+}
+
+.t-openstate__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.t-openstate--on {
+  background: var(--t-open-soft);
+  color: var(--t-open);
+}
+
+/* On the photo the neutral pill needs its own surface. */
+.t-hero__meta .t-openstate {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+.t-hero__meta .t-openstate--on {
+  background: var(--t-open);
+  color: #fff;
+}
+
+.t-rating--lg {
+  font-size: var(--t-text-body);
+}
+
+/* ---------------------------------------------------- opening hours -- */
+
+.t-hours__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-2);
+  margin-bottom: var(--t-3);
+}
+
+.t-hours {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-text-body);
+}
+
+.t-hours th,
+.t-hours td {
+  padding: var(--t-2) 0;
+  text-align: left;
+  border-bottom: 1px solid var(--t-border);
+  font-weight: 400;
+  color: var(--t-ink-2);
+}
+
+.t-hours td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.t-hours tr:last-child th,
+.t-hours tr:last-child td {
+  border-bottom: none;
+}
+
+.t-hours__today th,
+.t-hours__today td {
+  color: var(--t-ink);
+  font-weight: 700;
+}
+
+.t-hours__mark {
+  color: var(--t-accent-ink);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- map --- */
+
+.t-placemap {
+  height: 300px;
+  border-radius: var(--t-r-lg);
+  overflow: hidden;
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+/* Leaflet paints its own controls with a hard z-index; keep it under the
+   sticky header and the mobile action bar. */
+.t-placemap .leaflet-pane,
+.t-placemap .leaflet-control {
+  z-index: 1;
+}
+
+/* Leaflet's divIcon ships with a white box and a border unless overridden. */
+.t-mappin {
+  background: none;
+  border: none;
+}
+
+.t-mappin__dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--t-accent);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* -------------------------------------------------------- why visit -- */
+
+.t-why {
+  display: grid;
+  gap: var(--t-2);
+  margin-top: var(--t-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .t-why {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.t-why__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  min-width: 0;
+  padding: var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  font-size: var(--t-text-body);
+  color: var(--t-ink);
+}
+
+.t-why__icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+/* The quick-facts strip sits directly under the hero, so it carries a card
+   rather than floating as a bare list. */
+.t-facts--quick {
+  padding: 0 var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+}
+
+/* Grid and flex children default to min-width:auto, so a long URL in a fact
+   row can force the whole column wider than the viewport. */
+.t-detail__main {
+  min-width: 0;
 }

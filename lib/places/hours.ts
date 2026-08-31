@@ -175,3 +175,68 @@ export function toMinutes(value: string): number {
 export function weekHoursOf(place: Pick<Place, "hoursJson">): WeekHours {
   return parseWeekHours(place.hoursJson);
 }
+
+/* ------------------------------------------------------------- open now */
+
+/** Monday-first index, matching WEEKDAYS. */
+function weekdayOf(date: Date): Weekday {
+  // getUTCDay() is 0=Sunday; Kigali is UTC+2 with no DST, so shifting the
+  // clock forward two hours and reading UTC parts gives the local day without
+  // pulling in a timezone library.
+  const kigali = new Date(date.getTime() + 2 * 60 * 60 * 1000);
+  const sundayFirst = kigali.getUTCDay();
+  return WEEKDAYS[(sundayFirst + 6) % 7];
+}
+
+function minutesOf(date: Date): number {
+  const kigali = new Date(date.getTime() + 2 * 60 * 60 * 1000);
+  return kigali.getUTCHours() * 60 + kigali.getUTCMinutes();
+}
+
+export interface OpenState {
+  /** null when the day was never filled in — "we do not know" is not "closed". */
+  open: boolean | null;
+  /** "Open until 10pm", "Closed · opens 8am tomorrow", or null. */
+  label: string | null;
+  today: Weekday;
+}
+
+/**
+ * Whether a place is open at this moment, in Kigali.
+ *
+ * Answers with a sentence rather than a boolean, because "Open" on its own
+ * leaves the reader checking the table underneath anyway. Returns null when
+ * the hours were never recorded, so the page can say nothing rather than
+ * guess — telling somebody a place is shut when nobody checked sends them
+ * somewhere else for no reason.
+ */
+export function openStateNow(hours: WeekHours, now = new Date()): OpenState {
+  const today = weekdayOf(now);
+  const minutes = minutesOf(now);
+  const open = isOpenAt(hours, today, minutes);
+
+  if (open === null) return { open: null, label: null, today };
+
+  const day = hours[today];
+  if (open && day?.close) {
+    return { open: true, label: `Open until ${formatTime(day.close)}`, today };
+  }
+
+  // Closed. The useful thing is when it opens again, which may be later today
+  // or on the next day that has hours at all.
+  if (day?.open && minutes < toMinutes(day.open)) {
+    return { open: false, label: `Closed · opens ${formatTime(day.open)}`, today };
+  }
+
+  const todayIndex = WEEKDAYS.indexOf(today);
+  for (let step = 1; step <= 7; step++) {
+    const next = WEEKDAYS[(todayIndex + step) % 7];
+    const entry = hours[next];
+    if (entry?.open) {
+      const when = step === 1 ? "tomorrow" : WEEKDAY_LABEL[next];
+      return { open: false, label: `Closed · opens ${formatTime(entry.open)} ${when}`, today };
+    }
+  }
+
+  return { open: false, label: "Closed", today };
+}

@@ -1,33 +1,82 @@
 # HANDOFF
 
 ## Current Task
-Rebuilding the backend on Neon Postgres, on branch `backend-rebuild`. Ten
-phases; see `~/.claude/plans/good-now-that-we-virtual-locket.md` for the full
-plan. Phases 0–2 are done.
+Building the **Place Profile Engine** on branch `backend-rebuild`: category-aware
+listing forms, semantic pricing, a real public place page, and a tabbed admin
+review workspace. This sits on top of the finished Neon backend rebuild
+(`~/.claude/plans/good-now-that-we-virtual-locket.md`, phases 0–6 done).
 
 ## Status
-**In progress — Phase 3 (Auth.js v5) is next.**
-
-The catalog is live in Neon and the whole public site reads it. No screen was
-changed to get there: `lib/data/*` kept its signatures, which is what that seam
-was built for.
-
-**⚠ `/admin` is still completely unauthenticated.** The guard came out with the
-sessions and goes back in Phase 3, in `app/admin/(dash)/layout.tsx`. Do not
-deploy before that lands.
+**In progress.** `/place/[id]` has been rebuilt as a full profile — that piece
+is done and verified in a browser at both 390px and 1280px. The category
+configuration system and the admin review workspace are not started.
 
 ## Progress
-- [x] **Phase 0** — Neon linked (project `soft-butterfly-15369979`, `dev` +
-      `production` branches). Bookings and experiences deleted entirely.
-- [x] **Phase 1** — Schema, Prisma 7 + Neon WS adapter, one-way seed.
-      495 places, 16 categories, 71 subcategories, 30 districts.
-- [x] **Phase 2** — `lib/data/*` reads Postgres. `catalog.ts` is seed-only.
-- [ ] **Phase 3** — Auth.js v5, four roles, close the admin door, rewrite the
-      legal pages.
-- [ ] Phases 4–9 — public writes, admin CMS writes, business dashboard, the
-      richer place page, email, analytics and data quality.
+- [x] Backend phases 0–6: Neon + Prisma, `lib/data/*` on Postgres, Auth.js v5
+      with four roles, public writes, admin CMS writes with an audit trail,
+      business accounts and the submissions pipeline.
+- [x] Mobile app-style chrome on every dashboard; admin top bar; business
+      sidebar and header.
+- [x] Dead submit button on the tabbed listing forms (`required` on a hidden
+      tab silently blocks submit — the browser cannot show its bubble).
+- [x] `FormFeedback` — names each bad field as a button that switches tab and
+      focuses the input; rejected forms keep what was typed.
+- [x] **Semantic pricing** (`lib/places/pricing.ts`) — replaces the universal
+      "From $12,000 per night". Categories where a price is not a real concept
+      never show one, whatever is stored.
+- [x] **`/place/[id]` rebuilt** — see below.
+- [ ] Category configuration system: `categoryFields.ts` + `Place.details Json`
+      + a dynamic form renderer + category-determined page sections.
+- [ ] Structured menu items for restaurants.
+- [ ] `/admin/submissions/[id]` as a tabbed review workspace
+      (Overview · Details · Media · Category Data · Location · History).
+- [ ] Phases 7–9: richer business page fields, Resend email and password
+      reset, analytics and `/admin/quality`.
 
 ## Working Notes
+
+### The place page rebuild (just finished)
+`app/(site)/place/[id]/page.tsx` now composes four new components. Order:
+hero → quick facts → closure notice → About → Why visit → Things to do →
+Photos → Opening hours → Where it is → Reviews → Nearby → Report.
+
+- `components/place/PlaceHero.tsx` — the cover. Full-bleed on a phone, rounded
+  from 768px. Carries the name, rating, open-state pill and the three actions
+  a visitor arrives wanting (Directions / Call / Website). **The hero sizes
+  itself from its content, not from an aspect ratio** — a fixed ratio broke the
+  moment a long name wrapped and pushed the title block off the top of the
+  photo. `min-height` sets the floor, the photo fills whatever height results.
+- `components/place/OpeningHours.tsx` — the week, today marked. A day that was
+  never filled in reads "Not known", never "Closed": sending somebody away from
+  an open restaurant is the worse error. Falls back to the free-text `hours`
+  line, which is all 495 imported rows have.
+- `components/place/PlaceMap.tsx` — read-only Leaflet on OpenStreetMap tiles,
+  no key. **Draws a 2.5km circle rather than a pin when the coordinates are
+  only a district centre**, which is true of 478 of 495 listings. A pin there
+  would be a precise claim the data cannot support.
+- `components/place/WhyVisit.tsx` — reasons derived *only* from fields somebody
+  filled in; returns null below three of them rather than padding.
+- `openStateNow()` in `lib/places/hours.ts` — "Open until 10pm" /
+  "Closed · opens 8am tomorrow", Kigali UTC+2, no DST, no timezone library.
+  Returns `open: null` when the day was never recorded so the UI can say
+  nothing instead of guessing.
+
+Gotchas found while building it:
+- `place.images` includes the hero shot on most rows, so the gallery showed the
+  same photograph twice and claimed "2 photos" for one. It is filtered now.
+- New tokens `--t-open` / `--t-open-soft` (light + dark). Deliberately not
+  `--t-accent`: brand green means "Tembera", this green means "you can go there
+  right now", and a reader must not have to tell two greens apart.
+- `.t-detail__hero`, `.t-detail__floaters` and `.t-detail__metarow` were deleted
+  — superseded by `.t-hero*`.
+- Many source photos are blown-out interiors, so the scrim carries the text
+  contrast on its own; its bottom stop is 0.9 black for that reason.
+
+**Verified:** typecheck, lint and 132 tests pass; production build serves;
+no horizontal overflow at 390px or 1280px; the memorial page renders zero
+ratings in the hero or body (the five on it are nearby *other* places) and no
+reviews section.
+
 
 ### Where things stand
 - `.env` points at the **dev** Neon branch, which holds the whole catalog.
@@ -99,6 +148,12 @@ deploy before that lands.
   column; its relation lands with the `Business` model in Phase 6.
 
 ## Recently Completed
+- `/place/[id]` rebuilt as a full profile: hero, hours, map, why-visit.
+- Semantic per-category pricing; the universal "$12,000 per night" is gone.
+- Form feedback that names the bad fields and keeps what was typed.
+- Business accounts, submissions and the third dashboard.
+- Admin CMS writes with an audit trail; archive instead of delete.
+- Auth.js v5, four roles, and the admin door closed.
 - Catalog reads from Postgres; `catalog.ts` demoted to seed-only input.
 - Schema, Neon client and the guarded one-way seed; 495 ids frozen.
 - Bookings and experiences removed from the product entirely.
