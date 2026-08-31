@@ -1,3 +1,5 @@
+// Run directly by tsx, so nothing has loaded .env for us.
+import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PrismaClient, type Prisma } from "@prisma/client";

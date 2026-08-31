@@ -1,3 +1,6 @@
+// Prisma 7 evaluates this config before it reads .env, so load it ourselves —
+// otherwise DIRECT_URL is undefined here even when it is set in .env.
+import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
 /**
