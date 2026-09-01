@@ -1,3 +1,6 @@
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /**
@@ -16,6 +19,18 @@ const nextConfig = {
    * cannot touch a dev server's `.next`.
    */
   distDir: process.env.NEXT_DIST_DIR || ".next",
+
+  /**
+   * This project is the workspace root.
+   *
+   * There is a stray package-lock.json in the user home directory, and Next
+   * walks upward looking for one — so it was inferring that as the root and
+   * warning about it on every start. Not only noise: output file tracing
+   * follows that root when working out which files a serverless function
+   * needs, and a wrong one gives you a deploy that is either missing files or
+   * absurdly large.
+   */
+  outputFileTracingRoot: dirname(fileURLToPath(import.meta.url)),
 
   // Legacy PHP kept for reference only — never build it.
   eslint: { ignoreDuringBuilds: false },

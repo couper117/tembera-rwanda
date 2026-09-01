@@ -269,6 +269,28 @@ This also settles the long-standing "the Google Maps key is in git history and
 must be revoked" item: the key is no longer used by anything, so revoking it
 now costs nothing. **It still has to be revoked.**
 
+### Only ever run ONE server against `.next`
+Two `next dev` instances, or a dev server plus a production build, cannot share
+`.next`. The second one fails with
+
+    EINVAL: invalid argument, readlink '...\.next\server\interception-route-rewrite-manifest.js'
+
+`scripts/serve.sh` is safe now (it uses `.next-serve`), but two dev servers
+still collide. If a dev server will not start: check for a stray `next dev`
+first, kill it, `rm -rf .next`, and start once.
+
+**This project lives inside OneDrive**, which is worth knowing when `.next`
+misbehaves: OneDrive can dehydrate files into cloud placeholders, and
+`readlink` on a placeholder returns exactly that EINVAL. Excluding `.next` and
+`node_modules` from sync (right-click → Always keep on this device, or move the
+project out of OneDrive) removes a whole class of intermittent build failure.
+
+`outputFileTracingRoot` is pinned to this directory in `next.config.mjs`. A
+stray `package-lock.json` in the home directory was making Next infer the wrong
+workspace root — noisy on every start, and output file tracing follows that
+root when deciding which files a serverless function needs, so a wrong one
+deploys something missing files or absurdly large.
+
 ### Never build into `.next` while a dev server is up
 `scripts/serve.sh` builds into **`.next-serve`** (`NEXT_DIST_DIR`, read by
 `next.config.mjs`). It used to share `.next` with `npm run dev`, which broke a
