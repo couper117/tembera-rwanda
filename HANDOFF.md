@@ -35,6 +35,48 @@ configuration system and the admin review workspace are not started.
 
 ## Working Notes
 
+### Header menus, settings and collection covers (just finished)
+Four related bits of the shell:
+
+0. **Every header icon that holds a list is now a dropdown.** The bell was a
+   bottom sheet — the right shape for something you must deal with, the wrong
+   one for three dates you are glancing at; the bookmark was a link, so "did I
+   save this?" cost a page load and a trip back. Both are `Popover`s now
+   (`components/app/NotificationsMenu.tsx`, `SavedMenu.tsx`), matching the
+   account menu. The saved names come from `GET /api/places/summary?ids=…`,
+   fetched when the menu opens: the header knows the ids but nothing about the
+   places, and handing all ~494 rows to every visitor through a context to fill
+   a list of six is not a trade worth making.
+
+1. **`/settings` is two panes.** `components/profile/SettingsNav.tsx` is the
+   category rail (`SETTINGS_SECTIONS`: account, appearance, region, location,
+   notifications, privacy, about); `SettingsScreen.tsx` renders the rail plus
+   one pane. Sections are **state, not routes** — they are panes of one screen,
+   and a URL per switch is browser history nobody wants. Below 900px the rail
+   becomes a horizontal chip row so the settings start at the top of the phone
+   screen instead of below a seven-item menu.
+   Language, currency, distance and email preferences moved in from the old
+   `/profile/preferences`, which now `permanentRedirect`s to `/settings`;
+   `PreferencesScreen.tsx` is deleted. Preferences save on change (every control
+   is a single independent choice, so a Save button is only a second thing to
+   remember). New CSS lives at the end of `app/components.css`: `.t-settings*`,
+   `.t-setnav*`, `.t-setrow*`, `.t-menu*`.
+
+2. **Sign out exists again.** It had no button anywhere in the product. It is
+   now in the account dropdown under the header avatar and at the bottom of the
+   Account list on `/profile`, both as a real `<form action="/logout"
+   method="post">` so it works without JavaScript and cannot be fired by a link
+   somebody else planted. The avatar opens an anchored `Popover`, not a centred
+   sheet.
+
+3. **Collection covers are deduped.** `coverImage()` in `lib/collections.ts`
+   takes the set of covers already on the row and skips down to the next-best
+   photo. "Where to eat in Kigali" and "Coffee & cafés" are both dining and were
+   leading with the same picture. Verified: 12 collections, 12 distinct covers.
+
+Verified in Chrome at 1440px and 390px, signed in as `visitor@tembera.rw`; no
+page errors; typecheck, lint and 165 unit tests clean.
+
 ### The place page rebuild (just finished)
 `app/(site)/place/[id]/page.tsx` now composes four new components. Order:
 hero → quick facts → closure notice → About → Why visit → Things to do →
@@ -471,6 +513,8 @@ the package: `ws`, `@prisma/adapter-neon` and `@neondatabase/serverless` are in
   column; its relation lands with the `Business` model in Phase 6.
 
 ## Recently Completed
+- Settings rebuilt as a real settings screen (category rail + pane), sign out
+  restored to the header menu and the profile, collection covers deduped.
 - `/place/[id]` rebuilt as a full profile: hero, hours, map, why-visit.
 - Semantic per-category pricing; the universal "$12,000 per night" is gone.
 - Form feedback that names the bad fields and keeps what was typed.

@@ -1,21 +1,13 @@
-import type { Metadata } from "next";
-import PreferencesScreen from "@/components/profile/PreferencesScreen";
-import { getCurrentUser } from "@/lib/auth";
-import { getProfileOverview } from "@/lib/data/user";
-import { cleanInterests } from "@/lib/profile/interests";
-import { DEFAULT_PREFERENCES, parsePreferences } from "@/lib/profile/preferences";
+import { permanentRedirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Preferences" };
-export const dynamic = "force-dynamic";
-
-export default async function PreferencesPage() {
-  const user = await getCurrentUser();
-  const overview = user ? await getProfileOverview(user.id) : null;
-
-  return (
-    <PreferencesScreen
-      initial={overview ? parsePreferences(overview.preferences) : DEFAULT_PREFERENCES}
-      initialInterests={cleanInterests(overview?.interests)}
-    />
-  );
+/**
+ * Preferences moved into Settings.
+ *
+ * Language, currency, distance and email are settings, and having them on
+ * their own screen under Profile meant two places to look for a switch — with
+ * the notification toggles duplicated across both. Settings has a category
+ * rail now and a section for each, so this URL keeps working and goes there.
+ */
+export default function PreferencesPage() {
+  permanentRedirect("/settings");
 }

@@ -120,13 +120,19 @@ const CURATED: Recipe[] = [
  * one somebody has actually vouched for, and its photo is usually the one
  * worth putting on the front.
  */
-function coverImage(found: Place[]): string | undefined {
-  const withPhoto = found.filter((p) => isRenderableImage(p.image));
-  if (withPhoto.length === 0) return undefined;
-  const best = withPhoto
+function coverImage(found: Place[], taken: ReadonlySet<string>): string | undefined {
+  const withPhoto = found
+    .filter((p) => isRenderableImage(p.image))
     .slice()
-    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0];
-  return best.image;
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+
+  // The best photo not already on the row. Collections overlap by design —
+  // "Where to eat in Kigali" and "Coffee & cafés" are both dining, and the
+  // single highest-rated listing is a café, so both led with the same picture
+  // and the row looked duplicated. Skipping down to the next-best is a worse
+  // photo and a better row.
+  const fresh = withPhoto.find((p) => !taken.has(p.image!));
+  return (fresh ?? withPhoto[0])?.image;
 }
 
 function matches(place: Place, recipe: Recipe): boolean {
@@ -154,6 +160,8 @@ export async function getCollections(): Promise<Collection[]> {
 
     const out: Collection[] = [];
     const used = new Set<string>();
+    /** Cover photos already on the row, so no two collections share one. */
+    const covers = new Set<string>();
 
     for (const recipe of CURATED) {
       if (recipe.categoryId && sensitive.has(recipe.categoryId)) continue;
@@ -162,10 +170,11 @@ export async function getCollections(): Promise<Collection[]> {
       // A collection of two is a list, not a collection.
       if (found.length < 3) continue;
 
-      const image = coverImage(found);
+      const image = coverImage(found, covers);
       if (!image) continue;
 
       used.add(recipe.link);
+      covers.add(image);
       out.push({
         title: recipe.title,
         description: `${recipe.blurb} · ${found.length} places`,
@@ -182,10 +191,11 @@ export async function getCollections(): Promise<Collection[]> {
       if (used.has(link) || sensitive.has(group.id)) continue;
 
       const inCategory = places.filter((p) => p.categoryId === group.id);
-      const image = coverImage(inCategory);
+      const image = coverImage(inCategory, covers);
       if (!image) continue;
 
       used.add(link);
+      covers.add(image);
       out.push({
         title: group.title,
         description: `${inCategory.length} place${inCategory.length === 1 ? "" : "s"} to explore`,

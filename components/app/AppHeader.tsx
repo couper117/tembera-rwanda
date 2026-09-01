@@ -10,16 +10,11 @@ import { useAccount } from "@/lib/client/account";
 import { useGroupSummaries } from "@/lib/client/catalogMeta";
 import { useSaved } from "@/lib/client/saved";
 import { useTheme } from "@/lib/client/theme";
-import {
-  EVENT_KIND_META,
-  daysBetween,
-  formatShortDate,
-  getCalendarEvents,
-  kindStyleVars,
-  nowInKigali,
-} from "@/lib/rwanda/events";
+import { daysBetween, getCalendarEvents, nowInKigali } from "@/lib/rwanda/events";
 import CategoryNav from "./CategoryNav";
 import CityPicker from "./CityPicker";
+import NotificationsMenu from "./NotificationsMenu";
+import SavedMenu from "./SavedMenu";
 
 /**
  * Compact app bar for top-level screens.
@@ -33,8 +28,13 @@ export default function AppHeader() {
   const pathname = usePathname();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [catPopoverOpen, setCatPopoverOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
   const catButtonRef = useRef<HTMLButtonElement>(null);
+  const accountButtonRef = useRef<HTMLButtonElement>(null);
+  const savedButtonRef = useRef<HTMLButtonElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
   const summaries = useGroupSummaries();
   const { ids, ready } = useSaved();
   const { authed, isAdmin } = useAccount();
@@ -69,6 +69,8 @@ export default function AppHeader() {
     setCategoriesOpen(false);
     setCatPopoverOpen(false);
     setNotificationsOpen(false);
+    setAccountOpen(false);
+    setSavedOpen(false);
   }, [pathname]);
 
   return (
@@ -154,22 +156,31 @@ export default function AppHeader() {
             <Icon name="map" size={21} />
           </Link>
 
-          <Link
-            href="/saved"
+          {/* A menu rather than a link: "did I save this place?" used to cost a
+              page load and a trip back. The full screen is still one click in. */}
+          <button
+            ref={savedButtonRef}
+            type="button"
             className="t-iconbtn t-show-desktop"
             aria-label={savedCount > 0 ? `Saved (${savedCount})` : "Saved"}
+            aria-haspopup="menu"
+            aria-expanded={savedOpen}
+            title="Saved"
             style={{ position: "relative" }}
+            onClick={() => setSavedOpen((v) => !v)}
           >
             <Icon name="bookmark" size={21} />
             {savedCount > 0 && <span className="t-dot" />}
-          </Link>
+          </button>
 
           <button
+            ref={bellButtonRef}
             type="button"
             className="t-iconbtn"
             aria-label="Notifications"
-            aria-haspopup="dialog"
-            onClick={() => setNotificationsOpen(true)}
+            aria-haspopup="menu"
+            aria-expanded={notificationsOpen}
+            onClick={() => setNotificationsOpen((v) => !v)}
             title="Notifications"
             style={{ position: "relative" }}
           >
@@ -189,9 +200,20 @@ export default function AppHeader() {
           )}
 
           {authed ? (
-            <Link href="/profile" className="t-iconbtn" aria-label="Profile">
+            /* A menu rather than a link straight to the profile: signing out
+               had no button anywhere in the product, and the one place people
+               look for it is under their own avatar. */
+            <button
+              ref={accountButtonRef}
+              type="button"
+              className="t-iconbtn"
+              aria-label="Your account"
+              aria-haspopup="menu"
+              aria-expanded={accountOpen}
+              onClick={() => setAccountOpen((v) => !v)}
+            >
               <Icon name="user" size={20} />
-            </Link>
+            </button>
           ) : (
             <Link href="/login" className="t-btn t-btn--secondary t-btn--sm">
               Sign in
@@ -199,6 +221,39 @@ export default function AppHeader() {
           )}
         </div>
       </header>
+
+      {/* Anchored under the avatar, not a centred modal — a sheet in the
+          middle of the screen for four links reads as an interruption. */}
+      <Popover
+        open={accountOpen}
+        anchorRef={accountButtonRef}
+        onClose={() => setAccountOpen(false)}
+        width={248}
+      >
+        <div className="t-menu" role="menu">
+          <Link href="/profile" className="t-menu__item" role="menuitem" onClick={() => setAccountOpen(false)}>
+            <Icon name="user" size={17} />
+            Your profile
+          </Link>
+          <Link href="/saved" className="t-menu__item" role="menuitem" onClick={() => setAccountOpen(false)}>
+            <Icon name="bookmark" size={17} />
+            Saved places
+          </Link>
+          <Link href="/settings" className="t-menu__item" role="menuitem" onClick={() => setAccountOpen(false)}>
+            <Icon name="settings" size={17} />
+            Settings
+          </Link>
+
+          {/* A real form post, so signing out works without JavaScript and
+              cannot be triggered by a link somebody else planted. */}
+          <form action="/logout" method="post" className="t-menu__foot">
+            <button type="submit" className="t-menu__item t-menu__item--quiet" role="menuitem">
+              <Icon name="external" size={17} />
+              Sign out
+            </button>
+          </form>
+        </div>
+      </Popover>
 
       <Popover open={catPopoverOpen} anchorRef={catButtonRef} onClose={() => setCatPopoverOpen(false)} width={340}>
         <p className="t-label" style={{ marginBottom: "var(--t-3)" }}>
@@ -221,50 +276,27 @@ export default function AppHeader() {
         <CategoryNav summaries={summaries} />
       </BottomSheet>
 
-      <BottomSheet
+      <Popover
         open={notificationsOpen}
-        title="Notifications"
+        anchorRef={bellButtonRef}
         onClose={() => setNotificationsOpen(false)}
+        width={340}
       >
-        {upcoming.length === 0 ? (
-          <div className="t-state" style={{ padding: "var(--t-6) 0" }}>
-            <span className="t-state__icon">
-              <Icon name="bell" size={22} />
-            </span>
-            <div className="t-state__title">You&apos;re all caught up</div>
-            <div className="t-state__text">Nothing left on the calendar this year.</div>
-          </div>
-        ) : (
-          <>
-            <p className="t-small t-muted" style={{ marginBottom: "var(--t-2)" }}>
-              From the Rwanda calendar
-            </p>
-            <div>
-              {upcoming.map((e) => (
-                <Link
-                  key={e.id}
-                  href="/calendar"
-                  className="t-cal-event"
-                  style={kindStyleVars(e.kind)}
-                >
-                  <span className="t-cal-event__icon">
-                    <Icon name={EVENT_KIND_META[e.kind].icon} size={17} />
-                  </span>
-                  <span style={{ minWidth: 0, flex: 1 }}>
-                    <span className="t-row__name">{e.title}</span>
-                    <div className="t-small t-muted" style={{ marginTop: 2 }}>
-                      {formatShortDate(e.date)} · {e.summary}
-                    </div>
-                  </span>
-                  <span className="t-badge" style={{ flex: "none" }}>
-                    {e.date === today.iso ? "Today" : `${daysBetween(today.iso, e.date)}d`}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </>
-        )}
-      </BottomSheet>
+        <NotificationsMenu
+          events={upcoming}
+          todayIso={today.iso}
+          onNavigate={() => setNotificationsOpen(false)}
+        />
+      </Popover>
+
+      <Popover
+        open={savedOpen}
+        anchorRef={savedButtonRef}
+        onClose={() => setSavedOpen(false)}
+        width={320}
+      >
+        <SavedMenu onNavigate={() => setSavedOpen(false)} />
+      </Popover>
     </>
   );
 }

@@ -4697,6 +4697,17 @@ button.t-pill:hover {
   flex: none;
 }
 
+/* Sign out is a button, not a link: it needs the row's full width, and it
+   carries no chevron because it goes nowhere. */
+button.t-proflink {
+  width: 100%;
+  text-align: left;
+}
+
+.t-proflink--quiet .t-proflink__title {
+  color: var(--t-ink-2);
+}
+
 /* ---------------------------------------------------------- empty states -- */
 
 /* Deliberate, not broken. Left-aligned with the section it belongs to rather
@@ -5074,4 +5085,468 @@ button.t-pill:hover {
 .t-welcome__skip:hover {
   color: var(--t-ink-2);
   text-decoration: underline;
+}
+
+/* ================================================= settings & the menu ==
+ *
+ * A settings screen rather than a column of cards. The old one was six
+ * stacked cards in a 760px column, so finding one switch meant scrolling and
+ * scanning while two thirds of a desktop screen sat empty. The rail on the
+ * left picks the area; the pane shows the handful of switches in it.
+ */
+
+.t-settings {
+  display: grid;
+  gap: var(--t-6);
+  padding: var(--t-5) 0 var(--t-10);
+}
+
+@media (min-width: 900px) {
+  .t-settings {
+    grid-template-columns: 288px minmax(0, 1fr);
+    gap: var(--t-8);
+    align-items: start;
+  }
+
+  .t-settings__rail {
+    position: sticky;
+    top: calc(var(--t-header-h) + var(--t-4));
+  }
+
+  .t-settings__pane {
+    padding-left: var(--t-8);
+    border-left: 1px solid var(--t-border);
+    min-height: 62vh;
+  }
+}
+
+.t-settings__h1 {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--t-4);
+}
+
+.t-settings__panehead {
+  margin-bottom: var(--t-4);
+  padding-bottom: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-settings__title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.t-settings__note {
+  margin-top: 3px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-settings__lede {
+  margin-bottom: var(--t-2);
+  font-size: var(--t-text-small);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+  max-width: 62ch;
+}
+
+.t-settings__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--t-4);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-settings__hint--bad {
+  color: var(--t-danger);
+}
+
+/* -------------------------------------------------------- the rail -- */
+
+.t-setnav {
+  display: grid;
+  gap: 2px;
+}
+
+.t-setnav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  width: 100%;
+  padding: var(--t-3);
+  border-radius: var(--t-r-md);
+  text-align: left;
+  color: var(--t-ink-2);
+  transition:
+    background var(--t-fast) var(--t-ease),
+    color var(--t-fast) var(--t-ease);
+}
+
+.t-setnav__item:hover {
+  background: var(--t-surface-2);
+}
+
+.t-setnav__item--on {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-setnav__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-setnav__item--on .t-setnav__icon {
+  background: var(--t-surface);
+  color: var(--t-accent);
+}
+
+.t-setnav__body {
+  min-width: 0;
+}
+
+.t-setnav__label {
+  display: block;
+  font-weight: 650;
+}
+
+.t-setnav__note {
+  display: block;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+@media (max-width: 899px) {
+  /* On a phone the rail cannot be a rail — seven stacked rows means scrolling
+     past the whole menu to reach the one pane you asked for. So it becomes a
+     row of chips: the categories stay visible, and the settings start at the
+     top of the screen where they belong. */
+  .t-setnav {
+    display: flex;
+    gap: var(--t-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(var(--t-4) * -1);
+    padding-inline: var(--t-4);
+  }
+
+  .t-setnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .t-setnav__item {
+    flex: none;
+    width: auto;
+    gap: var(--t-2);
+    padding: 7px var(--t-3);
+    border: 1px solid var(--t-border);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .t-setnav__item--on {
+    border-color: transparent;
+  }
+
+  .t-setnav__icon {
+    width: 20px;
+    height: 20px;
+    background: none;
+  }
+
+  .t-setnav__item--on .t-setnav__icon {
+    background: none;
+  }
+
+  .t-setnav__note {
+    display: none;
+  }
+
+  .t-settings__h1 {
+    font-size: 1.6rem;
+    margin-bottom: var(--t-3);
+  }
+}
+
+/* --------------------------------------------------------- one row -- */
+
+.t-setrow {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-4) 0;
+}
+
+.t-setrow + .t-setrow {
+  border-top: 1px solid var(--t-border);
+}
+
+.t-setrow__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-setrow__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-setrow__title {
+  display: block;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.t-setrow__note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  line-height: 1.5;
+  color: var(--t-ink-3);
+}
+
+.t-setrow__action {
+  flex: none;
+}
+
+.t-setrow__select {
+  /* Fixed rather than content-sized: three selects of three different widths
+     down the right edge of the pane read as a layout mistake. */
+  width: 16rem;
+}
+
+/* The signed-in-only forms (password, export, delete) keep their cards — they
+   are forms, not switches — but a password field 760px wide is nobody's idea
+   of a settings screen. */
+.t-settings__pane .t-section {
+  max-width: 720px;
+}
+
+@media (max-width: 560px) {
+  /* Narrow enough that a label and a select cannot share a line without one
+     of them being unreadable, so the control drops under its label. */
+  .t-setrow {
+    flex-wrap: wrap;
+  }
+
+  .t-setrow__action {
+    flex: 1 0 100%;
+  }
+
+  /* Line the control up under the title, but only in rows that have an
+     icon — a Choice row has none and would be indented against nothing. */
+  .t-setrow__icon ~ .t-setrow__action {
+    padding-left: calc(38px + var(--t-3));
+  }
+
+  .t-setrow__select {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------- account menu -- */
+
+.t-menu {
+  display: grid;
+  gap: 2px;
+}
+
+/* A grid item's default `min-width: auto` refuses to shrink below its content,
+   so one long event summary pushed the whole row past the panel edge and took
+   the day badge with it. The ellipsis rules below only work once this is set. */
+.t-menu > * {
+  min-width: 0;
+}
+
+.t-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  width: 100%;
+  padding: 10px var(--t-3);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink);
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-menu__item:hover {
+  background: var(--t-surface-2);
+}
+
+.t-menu__item svg {
+  flex: none;
+  color: var(--t-ink-3);
+}
+
+/* Signing out sits below a rule: it is the one item here you do not want to
+   hit on the way to Settings. */
+.t-menu__foot {
+  margin-top: var(--t-2);
+  padding-top: var(--t-2);
+  border-top: 1px solid var(--t-border);
+}
+
+.t-menu__item--quiet {
+  color: var(--t-ink-2);
+  font-weight: 550;
+}
+
+/* A menu can carry a title when it is a list of things rather than a list of
+   destinations — "Saved places · 6" is the answer to why you opened it. */
+.t-menu__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--t-2);
+  padding: var(--t-2) var(--t-3) var(--t-3);
+  margin-bottom: var(--t-2);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-menu__headtitle {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.t-menu__headnote {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  text-align: right;
+}
+
+.t-menu__empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--t-2);
+  padding: var(--t-5) var(--t-4);
+  text-align: center;
+}
+
+.t-menu__emptyicon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+}
+
+.t-menu__emptytext {
+  font-size: var(--t-text-small);
+  line-height: 1.5;
+  color: var(--t-ink-3);
+  max-width: 30ch;
+}
+
+.t-menu__hint {
+  padding: var(--t-2) var(--t-3) 0;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+/* ------------------------------------------------ a place in a menu -- */
+
+.t-menuplace {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-2);
+  border-radius: var(--t-r-md);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-menuplace:hover {
+  background: var(--t-surface-2);
+}
+
+.t-menuplace__img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--t-r-md);
+  object-fit: cover;
+}
+
+.t-menuplace__body {
+  min-width: 0;
+}
+
+.t-menuplace__name,
+.t-menuevent__name {
+  display: block;
+  font-weight: 620;
+  color: var(--t-ink);
+  /* One long name must not widen the panel — the popover is a fixed width. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.t-menuplace__note,
+.t-menuevent__note {
+  display: block;
+  margin-top: 1px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------ an event in a menu -- */
+
+.t-menuevent {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-2);
+  border-radius: var(--t-r-md);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-menuevent:hover {
+  background: var(--t-surface-2);
+}
+
+.t-menuevent__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--t-r-md);
+  /* --tag / --tag-soft come from kindStyleVars(), the same pair the calendar
+     screen uses, so an Umuganda here is the colour it is there. */
+  background: var(--tag-soft, var(--t-surface-2));
+  color: var(--tag, var(--t-ink-2));
+}
+
+.t-menuevent__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-menuevent__when {
+  flex: none;
 }

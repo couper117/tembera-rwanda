@@ -358,17 +358,33 @@ export default function ProfileOverview({
             <h2 className="t-prof__h2">Account</h2>
             <ul className="t-prof__links">
               <ProfileLink
-                href="/profile/preferences"
+                href="/settings"
                 icon="settings"
-                title="Preferences"
-                note="Language, currency, distance and email"
+                title="Settings"
+                note="Language, location, notifications and appearance"
               />
               <ProfileLink
                 href="/settings"
                 icon="lock"
-                title="Account & security"
-                note="Email, password, privacy and your data"
+                title="Privacy & your data"
+                note="Export, sign out everywhere, delete account"
               />
+              {/* Signing out had no button anywhere in the product. It belongs
+                  at the bottom of the account list — the last thing you do on
+                  the screen, and not next to anything you might mean instead. */}
+              <li>
+                <form action="/logout" method="post">
+                  <button type="submit" className="t-proflink t-proflink--quiet">
+                    <span className="t-proflink__icon">
+                      <Icon name="external" size={18} />
+                    </span>
+                    <span className="t-proflink__body">
+                      <span className="t-proflink__title">Sign out</span>
+                      <span className="t-proflink__note">Ends this session on this device</span>
+                    </span>
+                  </button>
+                </form>
+              </li>
             </ul>
           </section>
         </div>
