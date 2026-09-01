@@ -4122,3 +4122,32 @@ button.t-profile__stat:active {
   white-space: nowrap;
   border: 0;
 }
+
+/* Paid placement, disclosed. Quiet on purpose: it is a label, not a prize —
+   it tells a reader how the listing got here, which is all it should do. */
+.t-tile__ad {
+  position: absolute;
+  left: var(--t-2);
+  top: var(--t-2);
+  padding: 3px 8px;
+  border-radius: var(--t-r-pill);
+  background: rgba(0, 0, 0, 0.58);
+  color: #fff;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(6px);
+}
+
+/* The list-row twin of .t-tile__ad — inline, because a row has no media to
+   float a badge over. */
+.t-row__ad {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  vertical-align: 1px;
+}

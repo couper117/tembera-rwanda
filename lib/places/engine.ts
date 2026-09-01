@@ -343,5 +343,11 @@ export function buildSearchIndex(places: Place[]): Place[] {
     // fall back to the category check alone and would show a rating on a
     // memorial that an admin flagged sensitive from outside that category.
     sensitive: place.sensitive,
+    // Two more booleans-worth. Search runs in the browser off this index, so
+    // without them the search screen is the one place in the product that
+    // cannot see who is verified or who is paying — results would come back
+    // unranked and unlabelled while every other screen showed both.
+    verified: place.verified,
+    plan: place.plan,
   }));
 }

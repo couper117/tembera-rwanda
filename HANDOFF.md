@@ -132,6 +132,32 @@ reviews section.
   `app/components.css` (auto-merged cleanly). The redesigned landing page
   needed no changes to read Postgres — the `lib/data` seam did its job.
 
+### What the paid tiers actually change
+`lib/places/ranking.ts` holds the rules, and they are rules rather than
+preferences because this is where money touches the answers:
+
+1. Promotion never invents relevance — a promoted listing rises only among
+   results that already match.
+2. Promotion never beats a materially better match. The search boost is
+   **banded** (`RELEVANCE_BAND`), not added to the score: adding points lets a
+   weak paid match overtake a strong free one.
+3. Promotion never fakes quality. **"Top rated" is still purely by rating** —
+   paid listings get their own "Featured businesses" row, labelled sponsored,
+   because putting them under a "Top rated" heading would make the heading
+   false. This is the one place the brief was not followed literally, and the
+   comment in ranking.ts says why.
+4. Promotion is always disclosed, and never in a sensitive category — `plan` is
+   stripped from those at the source alongside `rating` and `verified`.
+
+Only **Top** buys placement. **Checked** buys the verified tick, not ordering.
+Both require the owning business to be `verified`.
+
+Surfaces: a Featured row on the home page; promoted-first in category browse
+(applied *after* whichever sort the reader chose, never by altering distance or
+rating); banded promotion in search; a "Sponsored" label on all three card
+layouts. `buildSearchIndex` carries `plan` and `verified` — search runs in the
+browser, so without them it was the one screen that could see neither.
+
 ### Test-mode checkouts settle themselves — and why they have to
 **RwandaPay's hosted checkout never confirms anything in test mode.** Its own
 page branches on it:

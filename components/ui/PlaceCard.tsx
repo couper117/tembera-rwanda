@@ -6,6 +6,7 @@ import PlaceImage from "@/components/ui/PlaceImage";
 import SaveButton from "@/components/ui/SaveButton";
 import { useLocation } from "@/lib/client/location";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
+import { isPromoted } from "@/lib/places/ranking";
 import type { Place } from "@/lib/places/types";
 
 interface Props {
@@ -77,6 +78,11 @@ export default function PlaceCard({
           </span>
         )}
 
+        {/* Paid placement is always disclosed. A directory that quietly sells
+            its ordering is worth less to everyone, including the businesses
+            paying for it. See lib/places/ranking.ts. */}
+        {isPromoted(place) && <span className="t-tile__ad">Sponsored</span>}
+
         <SaveButton placeId={place.id} placeName={place.name} />
 
         <span className="t-tile__caption">
@@ -103,6 +109,9 @@ export default function PlaceCard({
           sizes="(min-width: 1100px) 240px, (min-width: 720px) 33vw, 45vw"
         />
         <SaveButton placeId={place.id} placeName={place.name} />
+        {/* Same disclosure as the tile — a label that only shows in one of
+            three layouts is one the reader learns to stop believing. */}
+        {isPromoted(place) && <span className="t-tile__ad">Sponsored</span>}
       </div>
 
       <div className="t-place__body">

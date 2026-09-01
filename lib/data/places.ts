@@ -154,7 +154,12 @@ export async function getPlace(id: string): Promise<Place | undefined> {
 }
 
 export async function placesInCategory(categoryId: string): Promise<Place[]> {
-  return engine.placesInCategory(await getPlaces(), categoryId);
+  // Promoted listings lead a browse list. There is no relevance score to band
+  // against here — the reader asked for the category, so everything in it is
+  // equally what they asked for and only the order is in question.
+  return engine.withPromotedFirst(
+    engine.placesInCategory(await getPlaces(), categoryId),
+  );
 }
 
 export async function placesInCity(city: string): Promise<Place[]> {
@@ -196,6 +201,16 @@ export async function nearest(
 export async function topRated(limit = 10, categoryId?: string): Promise<Place[]> {
   const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
   return engine.topRated(places, limit, categoryId, sensitive);
+}
+
+/**
+ * Listings whose owners pay for placement. Its own row, so it can be labelled.
+ *
+ * See lib/places/ranking.ts for why this is not folded into "Top rated".
+ */
+export async function sponsored(limit = 8, categoryId?: string): Promise<Place[]> {
+  const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
+  return engine.sponsored(places, limit, sensitive, categoryId);
 }
 
 export async function featured(limit = 8): Promise<Place[]> {

@@ -8,6 +8,7 @@ import PlaceCard from "@/components/ui/PlaceCard";
 import PlaceRow from "@/components/ui/PlaceRow";
 import { useLocation } from "@/lib/client/location";
 import { distanceKm } from "@/lib/places/geo";
+import { withPromotedFirst } from "@/lib/places/engine";
 import type { Place } from "@/lib/places/types";
 
 type SortKey = "distance" | "rating" | "name";
@@ -127,7 +128,12 @@ export default function PlaceBrowser({
     } else {
       sorted.sort((a, b) => a.name.localeCompare(b.name));
     }
-    return sorted;
+    // Promoted listings lead, whichever sort is showing — but as a partition
+    // applied afterwards, never by touching the sort itself. Distance and
+    // rating are claims about the world; paying must not change what they say,
+    // only which of two comparable listings is seen first. On "distance" the
+    // reader is asking what is nearest and gets exactly that within each half.
+    return withPromotedFirst(sorted);
   }, [places, subcategory, subtype, sort, origin]);
 
   function chooseSubcategory(next: string | null) {

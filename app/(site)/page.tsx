@@ -4,6 +4,7 @@ import CalendarNotice from "@/components/app/CalendarNotice";
 import Icon from "@/components/Icon";
 import HomeFeed from "@/components/home/HomeFeed";
 import PlaceImage from "@/components/ui/PlaceImage";
+import PlaceCard from "@/components/ui/PlaceCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { getCategories } from "@/lib/data/categories";
 import {
@@ -11,6 +12,7 @@ import {
   citySummaries,
   countByCategory,
   featured,
+  sponsored,
   nearest,
   topRated,
 } from "@/lib/data/places";
@@ -62,6 +64,10 @@ export default async function HomePage() {
 
   const cities = (await citySummaries()).slice(0, 8);
   const destinations = await featured(8);
+
+  // Paid placement. Its own row with its own label — never mixed into
+  // "Top rated", which is a claim about ratings. See lib/places/ranking.ts.
+  const promoted = await sponsored(6);
 
   return (
     <>
@@ -159,6 +165,21 @@ export default async function HomePage() {
                       </span>
                     </span>
                   </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ---------------------------------------------- sponsored -- */}
+          {promoted.length > 0 && (
+            <section className="t-section">
+              <SectionHeader
+                title="Featured businesses"
+                subtitle="Places on Tembera's Top plan · sponsored"
+              />
+              <div className="t-tilegrid">
+                {promoted.map((place) => (
+                  <PlaceCard key={place.id} place={place} variant="tile" />
                 ))}
               </div>
             </section>
