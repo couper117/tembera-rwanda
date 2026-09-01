@@ -356,11 +356,21 @@ Two `next dev` instances, or a dev server plus a production build, cannot share
 still collide. If a dev server will not start: check for a stray `next dev`
 first, kill it, `rm -rf .next`, and start once.
 
-**This project lives inside OneDrive**, which is worth knowing when `.next`
-misbehaves: OneDrive can dehydrate files into cloud placeholders, and
-`readlink` on a placeholder returns exactly that EINVAL. Excluding `.next` and
-`node_modules` from sync (right-click → Always keep on this device, or move the
-project out of OneDrive) removes a whole class of intermittent build failure.
+**This project lives inside OneDrive, and that is the other cause of the same
+EINVAL.** OneDrive dehydrates files into cloud placeholders; a placeholder is a
+reparse point and `readlink` on one returns EINVAL, so `next dev` dies naming a
+webpack hot-update file and looking like a bundler bug. Confirmed by counting:
+34 files under `.next` had the ReparsePoint/Offline attributes set.
+
+`npm run dev` now runs `scripts/pin-build-dir.mjs` first (a `predev` hook). It
+sets `attrib +P` — OneDrive's own "Always keep on this device" — on the build
+directory before the dev server fills it, so nothing in there is ever
+dehydrated, and it deletes a build directory that already contains
+placeholders rather than waiting for OneDrive to fetch them back. `distDir`
+cannot be pointed outside the project: Next joins it onto the project path, so
+an absolute path becomes `<project>\C:\...`.
+
+Moving the project out of OneDrive entirely would still be the better answer.
 
 `outputFileTracingRoot` is pinned to this directory in `next.config.mjs`. A
 stray `package-lock.json` in the home directory was making Next infer the wrong

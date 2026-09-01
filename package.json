@@ -4,6 +4,7 @@
   "private": true,
   "description": "Visit Rwanda / Tembera tourism guide — Next.js + Prisma + Neon Postgres",
   "scripts": {
+    "predev": "node scripts/pin-build-dir.mjs",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
