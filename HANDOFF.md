@@ -251,6 +251,27 @@ This also settles the long-standing "the Google Maps key is in git history and
 must be revoked" item: the key is no longer used by anything, so revoking it
 now costs nothing. **It still has to be revoked.**
 
+### Never build into `.next` while a dev server is up
+`scripts/serve.sh` builds into **`.next-serve`** (`NEXT_DIST_DIR`, read by
+`next.config.mjs`). It used to share `.next` with `npm run dev`, which broke a
+running dev server in a way that looks nothing like a build problem: the dev
+server keeps its old routing manifest and server-action ids in memory while
+serving freshly built client chunks off disk, so the browser reports
+
+  - `Server Action "60de…" was not found on the server`
+  - a 404 on a route that plainly exists
+  - `Failed to read a RSC payload created by a development version of React on
+    the server while using a production version on the client`
+
+Three errors, all of which read as application bugs, none of which are. If you
+see any of them, check whether two servers are sharing a build directory before
+touching the code.
+
+Its process cleanup also silently did nothing: `wmic` no longer ships on
+current Windows and a `tr -d ''` typo was a no-op, so every run leaked a server.
+Thirty-two had accumulated. It uses PowerShell now and matches only its own
+processes.
+
 ### Traps found the hard way
 - **The `prisma` CLI publishes an RC to its `latest` tag.** A plain
   `npm install prisma` gives 8.0.0-rc.12 against a stable 7.10.0 client — a

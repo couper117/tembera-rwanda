@@ -1,5 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  /**
+   * Where the build goes.
+   *
+   * `next dev` and `next build` both write `.next` by default, so a production
+   * build run while a dev server is up rips the ground out from under it: the
+   * running server keeps its old routing manifest and server-action ids in
+   * memory while serving freshly built client chunks off disk. What the browser
+   * then reports is "Server Action was not found on the server", a 404 on a
+   * route that exists, and "RSC payload created by a development version of
+   * React ... while using a production version on the client" — three errors
+   * that all look like application bugs and none of which are.
+   *
+   * scripts/serve.sh sets this so its builds land somewhere else entirely and
+   * cannot touch a dev server's `.next`.
+   */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
   // Legacy PHP kept for reference only — never build it.
   eslint: { ignoreDuringBuilds: false },
   images: {
