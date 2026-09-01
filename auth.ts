@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { withDbRetry } from "@/lib/db-retry";
 import { clearRateLimit } from "@/lib/rate-limit-core";
 import type { Role } from "@prisma/client";
 
@@ -77,7 +78,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = String(credentials?.password ?? "");
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        // Retried, and NOT swallowed. Neon's socket drops on its own schedule
+        // and comes back as `read ECONNRESET`; Auth.js turns anything thrown
+        // in here into CredentialsSignin, so without this a dead connection
+        // tells the reader their password is wrong. Letting it throw after the
+        // retries is deliberate — signInWith can then say what actually
+        // happened instead of blaming them.
+        const user = await withDbRetry(() =>
+          prisma.user.findUnique({ where: { email } }),
+        );
         // Always compare, even when the account does not exist — see
         // timingSafeDummyHash below.
         const hash = user?.passwordHash ?? timingSafeDummyHash();

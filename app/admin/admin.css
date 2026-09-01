@@ -2489,3 +2489,83 @@ a.a-count:hover .a-count__label {
 .b-success__test {
   text-align: left;
 }
+
+/* -------------------------------------------- submission review sections -- */
+
+/* Grouped fields. Eighteen equal rows is a record dump; a reviewer reads in
+   an order, and the headings are what give it one. */
+.a-subsection + .a-subsection {
+  margin-top: var(--t-5);
+}
+
+.a-subsection__title {
+  margin-bottom: var(--t-2);
+  font-size: var(--t-text-small);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--t-ink);
+}
+
+/* Proposed photos, shown rather than linked: a reviewer is deciding whether
+   the picture is of the place, and a URL cannot answer that. */
+.a-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+}
+
+.a-shot {
+  width: 108px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+.a-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.a-chip {
+  padding: 2px 9px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+}
+
+/* A description is prose and wants to wrap like prose, not sit on one line. */
+.a-diff__prose {
+  display: block;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.a-shotwrap {
+  display: block;
+  width: 108px;
+}
+
+/* The address under the thumbnail: a dead link is a reason to reject, and a
+   blank grey box does not say whether the photo is wrong or just missing. */
+.a-shot__src {
+  display: block;
+  max-width: 108px;
+  margin-top: 4px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+.a-shot,
+.a-shotwrap .t-imgfallback {
+  display: block;
+  width: 108px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}

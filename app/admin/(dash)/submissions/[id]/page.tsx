@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import Icon from "@/components/Icon";
 import { PageHead, Panel, StatusBadge } from "@/components/admin/ui";
 import { adminDate } from "@/lib/admin/placeholder";
+import { parseWeekHours, summariseWeek } from "@/lib/places/hours";
+import PlaceImage from "@/components/ui/PlaceImage";
 import { requireStaff } from "@/lib/auth";
 import { adminSubmission } from "@/lib/data/business";
 import { getAnyPlace } from "@/lib/data/places";
@@ -11,34 +13,112 @@ import { approveSubmissionAction, rejectSubmissionAction } from "../actions";
 export const dynamic = "force-dynamic";
 
 /** One proposed field, beside what the listing says today. */
+type Kind = "text" | "long" | "chips" | "photo" | "photos" | "hours" | "link" | "coords";
+
+/**
+ * One field of a proposal, rendered as the thing it actually is.
+ *
+ * The old version put every value through String(), so structured hours
+ * arrived as a wall of JSON, a photo as a URL, and a list of highlights as one
+ * comma-spliced line. A reviewer had to decode the record before they could
+ * judge it, which is the opposite of what a review screen is for.
+ */
 function Row({
   label,
+  kind,
   proposed,
   current,
 }: {
   label: string;
+  kind: Kind;
   proposed: unknown;
   current?: unknown;
 }) {
   const show = (v: unknown) => {
     if (v === null || v === undefined || v === "") return null;
-    if (Array.isArray(v)) return v.length ? v.join(", ") : null;
-    if (typeof v === "object") return JSON.stringify(v);
-    return String(v);
+    if (Array.isArray(v)) return v.length ? v : null;
+    return v;
   };
 
   const next = show(proposed);
   const now = show(current);
   if (next === null && now === null) return null;
-  const changed = current !== undefined && next !== now;
+
+  // Compared as text so an array or an hours object does not read as changed
+  // every time purely because it is a different object.
+  const changed = current !== undefined && JSON.stringify(next) !== JSON.stringify(now);
 
   return (
     <div className={`a-diff${changed ? " a-diff--changed" : ""}`}>
       <span className="a-diff__label">{label}</span>
-      {changed && now !== null && <span className="a-diff__old">{now}</span>}
-      <span className="a-diff__new">{next ?? <em>empty</em>}</span>
+      {changed && now !== null && (
+        <span className="a-diff__old">
+          <Value kind={kind} value={now} muted />
+        </span>
+      )}
+      <span className="a-diff__new">
+        {next === null ? <em>empty</em> : <Value kind={kind} value={next} />}
+      </span>
     </div>
   );
+}
+
+function Value({ kind, value, muted }: { kind: Kind; value: unknown; muted?: boolean }) {
+  const list = Array.isArray(value) ? value.map(String) : [];
+
+  if (kind === "photo" || kind === "photos") {
+    const urls = kind === "photo" ? [String(value)] : list;
+    if (muted) return <>{urls.length} photo{urls.length === 1 ? "" : "s"}</>;
+    return (
+      <span className="a-shots">
+        {urls.map((url) => (
+          // A reviewer is judging whether the photo is of the place. A URL
+          // cannot answer that; the photo can. The address stays underneath,
+          // because a dead link is itself a reason to reject and a blank grey
+          // box does not say which of the two it is.
+          <span key={url} className="a-shotwrap">
+            <PlaceImage src={url} alt="" className="a-shot" />
+            <span className="a-shot__src t-truncate" title={url}>
+              {url.replace(/^https?:\/\/(www\.)?/, "")}
+            </span>
+          </span>
+        ))}
+      </span>
+    );
+  }
+
+  if (kind === "chips") {
+    if (muted) return <>{list.join(", ")}</>;
+    return (
+      <span className="a-chips">
+        {list.map((item) => (
+          <span key={item} className="a-chip">
+            {item}
+          </span>
+        ))}
+      </span>
+    );
+  }
+
+  if (kind === "hours") {
+    const week = parseWeekHours(value);
+    const summary = summariseWeek(week);
+    return <>{summary ?? <em>not set</em>}</>;
+  }
+
+  if (kind === "link" && !muted) {
+    const href = String(value);
+    const url = href.startsWith("http") ? href : `https://${href}`;
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        {href}
+      </a>
+    );
+  }
+
+  if (kind === "coords") return <code>{String(value)}</code>;
+  if (kind === "long") return <span className="a-diff__prose">{String(value)}</span>;
+  return <>{Array.isArray(value) ? list.join(", ") : String(value)}</>;
 }
 
 export default async function SubmissionPage({
@@ -62,25 +142,60 @@ export default async function SubmissionPage({
   const current = submission.placeId ? await getAnyPlace(submission.placeId) : null;
   const decided = submission.status !== "pending";
 
-  const FIELDS: [string, string][] = [
-    ["name", "Name"],
-    ["categoryId", "Category"],
-    ["subcategory", "Subcategory"],
-    ["subtype", "Speciality"],
-    ["city", "District"],
-    ["area", "Area"],
-    ["description", "Description"],
-    ["phone", "Phone"],
-    ["website", "Website"],
-    ["hours", "Hours (free text)"],
-    ["hoursJson", "Hours (structured)"],
-    ["image", "Main photo"],
-    ["images", "More photos"],
-    ["highlights", "Highlights"],
-    ["keywords", "Keywords"],
-    ["priceFrom", "Price from"],
-    ["lat", "Latitude"],
-    ["lng", "Longitude"],
+  /**
+   * Grouped, because eighteen equal rows is a record dump rather than a review.
+   * A reviewer reads in this order: what is it, what does it say about itself,
+   * how do you reach it, where is it, when is it open, what does it look like.
+   */
+  const SECTIONS: { title: string; fields: [string, string, Kind][] }[] = [
+    {
+      title: "What it is",
+      fields: [
+        ["name", "Name", "text"],
+        ["categoryId", "Category", "text"],
+        ["subcategory", "Subcategory", "text"],
+        ["subtype", "Speciality", "text"],
+      ],
+    },
+    {
+      title: "What it says",
+      fields: [
+        ["description", "Description", "long"],
+        ["highlights", "Highlights", "chips"],
+        ["keywords", "Keywords", "chips"],
+        ["priceFrom", "Price from", "text"],
+      ],
+    },
+    {
+      title: "How to reach it",
+      fields: [
+        ["phone", "Phone", "text"],
+        ["website", "Website", "link"],
+      ],
+    },
+    {
+      title: "Where it is",
+      fields: [
+        ["city", "District", "text"],
+        ["area", "Area", "text"],
+        ["lat", "Latitude", "coords"],
+        ["lng", "Longitude", "coords"],
+      ],
+    },
+    {
+      title: "When it is open",
+      fields: [
+        ["hoursJson", "Opening hours", "hours"],
+        ["hours", "In their words", "text"],
+      ],
+    },
+    {
+      title: "Photos",
+      fields: [
+        ["image", "Main photo", "photo"],
+        ["images", "More photos", "photos"],
+      ],
+    },
   ];
 
   return (
@@ -116,18 +231,28 @@ export default async function SubmissionPage({
       <div className="a-cols">
         <div>
           <Panel title={submission.kind === "create" ? "Proposed listing" : "Proposed changes"}>
-            <div className="a-difflist">
-              {FIELDS.map(([key, label]) => (
+            {SECTIONS.map((section) => {
+              const rows = section.fields.map(([key, label, kind]) => (
                 <Row
                   key={key}
                   label={label}
+                  kind={kind}
                   proposed={payload[key]}
                   current={
                     current ? (current as unknown as Record<string, unknown>)[key] : undefined
                   }
                 />
-              ))}
-            </div>
+              ));
+              // A section every field of which is empty is noise; drop it
+              // rather than printing a heading over nothing.
+              if (rows.every((r) => r === null)) return null;
+              return (
+                <div key={section.title} className="a-subsection">
+                  <h4 className="a-subsection__title">{section.title}</h4>
+                  <div className="a-difflist">{rows}</div>
+                </div>
+              );
+            })}
           </Panel>
         </div>
 

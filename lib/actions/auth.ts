@@ -183,9 +183,26 @@ async function signInWith(
     return {};
   } catch (error) {
     if (error instanceof AuthError) {
-      // Never say which half was wrong: "no such account" tells an attacker
-      // which addresses are registered.
-      return { error: "Email or password is incorrect." };
+      /*
+       * Two very different failures arrive here as the same class, and telling
+       * a reader their password is wrong when the database was unreachable is
+       * the worst outcome in this file: it is false, it is unfalsifiable from
+       * their side, and it sends them to reset a password that was fine.
+       *
+       * `CredentialsSignin` is authorize() returning null — genuinely wrong
+       * credentials. Anything else (Auth.js wraps a throw as
+       * CallbackRouteError) means authorize itself blew up, which after
+       * withDbRetry means the connection really is gone.
+       */
+      if (error.type === "CredentialsSignin") {
+        // Never say which half was wrong: "no such account" tells an attacker
+        // which addresses are registered.
+        return { error: "Email or password is incorrect." };
+      }
+      return {
+        error:
+          "We could not reach the database just now — this is us, not your password. Try again in a moment.",
+      };
     }
     throw error;
   }
