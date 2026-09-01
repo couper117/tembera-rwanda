@@ -8,13 +8,32 @@ import {
   getCategories,
   sensitiveCategoryIds,
 } from "@/lib/data/categories";
+import { planById } from "@/lib/business/plans";
 import * as engine from "@/lib/places/engine";
 import { searchPlaces } from "@/lib/places/search";
 
 export const PLACES_TAG = "places";
 
+/** The owning business, when a query asked for it. */
+type WithOwner = DbPlace & {
+  business?: { status: string; plan: string } | null;
+};
+
+/**
+ * Whether this listing has earned the verified tick.
+ *
+ * Both halves are required. The plan is what was paid for; the status is an
+ * admin having looked at the business and agreed it is who it says it is.
+ * Neither on its own is a statement Tembera should be making to a visitor.
+ */
+function isVerified(row: WithOwner): boolean {
+  const owner = row.business;
+  if (!owner || owner.status !== "verified") return false;
+  return planById(owner.plan)?.verifiedTick === true;
+}
+
 /** Prisma row → the domain Place the whole UI speaks. Nulls become undefined. */
-function toDomain(row: DbPlace): Place {
+function toDomain(row: WithOwner): Place {
   return {
     id: row.id,
     name: row.name,
@@ -40,6 +59,7 @@ function toDomain(row: DbPlace): Place {
     sensitive: row.sensitive,
     status: row.status,
     hoursJson: row.hoursJson,
+    verified: isVerified(row) || undefined,
   };
 }
 
@@ -61,13 +81,19 @@ export const getPlaces = unstable_cache(
         // so both must be invisible here without either being gone.
         where: { status: "published" },
         orderBy: { name: "asc" },
+        // The tick is derived from the owner, so the owner has to come with
+        // the row. Two columns on a relation most rows do not have; cheaper
+        // than a second query, and this one is cached anyway.
+        include: { business: { select: { status: true, plan: true } } },
       }),
       sensitiveCategoryIds(),
     ]);
     return rows.map((row) => {
       const place = toDomain(row);
       if (!sensitive.has(place.categoryId)) return place;
-      return { ...place, rating: undefined, priceFrom: undefined };
+      // A tick is a promotional claim, so it goes the same way the rating and
+      // the price do — at the source, where no component can forget.
+      return { ...place, rating: undefined, priceFrom: undefined, verified: undefined };
     });
   },
   ["places-all"],

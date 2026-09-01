@@ -3,8 +3,10 @@ import Icon from "@/components/Icon";
 import { EmptyRow, PageHead, Panel, Stat, StatusBadge } from "@/components/admin/ui";
 import { adminDate } from "@/lib/admin/placeholder";
 import { requireAdmin } from "@/lib/auth";
-import { adminBusinesses } from "@/lib/data/business";
-import { setBusinessStatusAction } from "./actions";
+import ConfirmButton from "@/components/admin/ConfirmButton";
+import { adminBusinesses, pendingRegistrations } from "@/lib/data/business";
+import { formatRwf, planById } from "@/lib/business/plans";
+import { decideRegistrationAction, setBusinessStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +14,10 @@ export default async function BusinessesPage() {
   // ADMIN only: verifying a business says Tembera has checked who they are.
   await requireAdmin();
 
-  const businesses = await adminBusinesses();
+  const [businesses, waiting] = await Promise.all([
+    adminBusinesses(),
+    pendingRegistrations(),
+  ]);
   const verified = businesses.filter((b) => b.status === "verified").length;
   const unverified = businesses.filter((b) => b.status === "unverified").length;
   const listings = businesses.reduce((sum, b) => sum + b._count.places, 0);
@@ -30,6 +35,82 @@ export default async function BusinessesPage() {
         <Stat label="Unverified" value={unverified} icon="alert" note="need checking" />
         <Stat label="Listings" value={listings} icon="pin" note="owned by businesses" />
       </div>
+
+      {/* The money queue sits above the account list because it is the only
+          thing on this screen with somebody waiting at the other end of it.
+          Confirming here is what creates the account — see
+          decideRegistrationAction. */}
+      {waiting.length > 0 && (
+        <Panel
+          title={`Paid sign-ups awaiting payment (${waiting.length})`}
+          flush
+        >
+          <div className="a-tablewrap">
+            <table className="a-table">
+              <thead>
+                <tr>
+                  <th>Business</th>
+                  <th>Contact</th>
+                  <th>Plan</th>
+                  <th>Owed</th>
+                  <th>Reference</th>
+                  <th style={{ textAlign: "right" }}>Payment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {waiting.map((r) => (
+                  <tr key={r.id}>
+                    <td>
+                      <span className="a-table__strong">{r.businessName}</span>
+                      <span className="a-table__sub">
+                        {r.city} · waiting since {adminDate(r.createdAt)}
+                      </span>
+                    </td>
+                    <td>
+                      {r.contactName}
+                      <span className="a-table__sub">
+                        {r.email} · {r.phone}
+                      </span>
+                    </td>
+                    <td>{planById(r.plan)?.name ?? r.plan}</td>
+                    <td>{formatRwf(r.amountRwf)}</td>
+                    <td>
+                      {/* The string an admin matches against the statement. */}
+                      <code className="a-ref">{r.reference}</code>
+                    </td>
+                    <td>
+                      <div className="a-table__actions">
+                        <form action={decideRegistrationAction}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="decision" value="confirm" />
+                          <button type="submit" className="t-btn t-btn--primary t-btn--sm">
+                            <Icon name="check" size={14} />
+                            Payment received
+                          </button>
+                        </form>
+                        <form action={decideRegistrationAction}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="decision" value="reject" />
+                          <ConfirmButton
+                            label="Reject"
+                            question="Reject this sign-up?"
+                          />
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="a-hint" style={{ padding: "var(--t-3) var(--t-4)" }}>
+            Confirming creates the account and the business, and grants the
+            verified tick. Only do it once the money is on the statement — this
+            is the only check between choosing a paid plan and having one.
+          </p>
+        </Panel>
+      )}
 
       <Panel title="All accounts" flush>
         <div className="a-tablewrap">

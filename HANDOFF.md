@@ -132,6 +132,48 @@ reviews section.
   `app/components.css` (auto-merged cleanly). The redesigned landing page
   needed no changes to read Postgres — the `lib/data` seam did its job.
 
+### Paid sign-ups no longer hand out accounts
+**The hole:** `registerBusinessAction` read the plan off a dropdown and created
+a live User + Business with it. Picking "Top" gave somebody the verified tick
+and the Recommended slot for free — the entire paid product, to anyone who
+could type.
+
+**The fix**, in `lib/actions/business.ts`:
+- **Free** still creates the account, the business and the membership in one
+  transaction and signs the person in. Nothing is owed.
+- **Checked and Top create nothing.** They write a `BusinessRegistration`
+  (`awaiting_payment`) holding the form plus a bcrypt hash of the chosen
+  password, and hand back a payment reference. No User, no Business, no login.
+- `decideRegistrationAction` in `app/admin/(dash)/businesses/actions.ts` is the
+  only path that turns one into an account, and it creates the Business
+  `verified` in the same transaction. ADMIN only — confirming a payment is a
+  financial assertion.
+
+**There is no payment provider.** `lib/business/payments.ts` is the honest
+version: the payer sends mobile money quoting the reference, and staff match it
+on `/admin/businesses`, where the queue sits above the account list. That needs
+no merchant account and is how a lot of Rwandan business already works. The
+seam is documented in that file — a provider webhook calls the same confirm
+path, and `reference` becomes its transaction id. `TEMBERA_MOMO_NUMBER` and
+`TEMBERA_MOMO_NAME` are read as a pair; with neither set the screen says it
+will email the number rather than inventing one.
+
+**The verified tick** is `Place.verified`, derived in `lib/data/places.ts` from
+two facts that must both hold: the owning business is `verified` AND its plan
+has `verifiedTick`. It is stripped from sensitive categories at the source
+alongside ratings and prices — a tick on a memorial is promotion.
+
+**`/business` and `/business/pricing` now `permanentRedirect` to
+`/business/register`,** which is a four-step flow (benefits → plans → details →
+payment; free skips the last) living in the `(business)` route group so it has
+no desktop rail and no tab bar. Two pages arguing the same case, one of which
+you had to leave to act, was a leak.
+
+Verified end to end: a Checked sign-up produced a registration row with no user
+and no business, sign-in with those details was refused, the admin confirm
+created a BUSINESS user and a `verified` business in one go, and the tick then
+rendered on that business's listing but not on a memorial or an unowned place.
+
 ### The admin dashboard was rebuilt
 Four things were actually wrong, all in `app/admin/(dash)/page.tsx` and
 `app/admin/admin.css`:

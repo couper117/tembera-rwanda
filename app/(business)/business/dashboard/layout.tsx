@@ -22,7 +22,7 @@ export default async function BusinessDashboardLayout({
   // An ADMIN is let through requireBusiness so staff can see what a business
   // sees, but they have no business of their own — send them somewhere useful
   // rather than rendering a dashboard with nothing in it.
-  if (!business) redirect(user.role === "ADMIN" ? "/admin/businesses" : "/business");
+  if (!business) redirect(user.role === "ADMIN" ? "/admin/businesses" : "/business/register");
 
   // Read once here for the sidebar summary, so every screen shows the same
   // figures without each fetching them again.

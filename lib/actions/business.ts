@@ -17,12 +17,19 @@ import {
   businessSignupSchema,
 } from "@/lib/validation/business";
 import { firstError, fieldErrors, type FieldErrors } from "@/lib/validation/admin";
+import { isPaidPlan, planById } from "@/lib/business/plans";
+import { newReference } from "@/lib/business/payments";
 
 export interface BusinessState {
   error?: string;
   fields?: FieldErrors;
   ok?: boolean;
   notice?: string;
+  /**
+   * A paid sign-up that is waiting for money. The form shows the payment step
+   * instead of navigating to a dashboard that does not exist yet.
+   */
+  awaitingPayment?: { reference: string; plan: string; amountRwf: number };
   /**
    * What was submitted, echoed back.
    *
@@ -48,13 +55,24 @@ const SIGNUP_PER_IP = { limit: 5, windowMs: 60 * 60 * 1000 };
 /**
  * Register a business.
  *
- * Creates three rows in one transaction: the account, the business, and the
- * membership joining them. Partial success would leave somebody holding a
- * BUSINESS role with no business — able to sign in, and to reach a dashboard
- * with nothing behind it.
+ * Two completely different outcomes, decided by the plan:
  *
- * The business starts unverified. It may propose listings and claim its own,
- * but not edit a live one until somebody has checked it is who it says it is.
+ * **Free** creates the account, the business and the membership in one
+ * transaction, and signs the person in. Nothing is owed, so there is nothing
+ * to wait for. Partial success would leave somebody holding a BUSINESS role
+ * with no business — able to sign in, and to reach a dashboard with nothing
+ * behind it — hence the transaction.
+ *
+ * **Checked and Top create no account at all.** They write a
+ * BusinessRegistration and hand back a payment reference. Until that payment
+ * is confirmed there is no User, no Business, no login and no verified tick.
+ * This is the fix for the hole the old flow had: it took the plan as a
+ * dropdown value and issued a live paid account against it, so anybody willing
+ * to select "Top" got the tick and the Recommended slot for nothing.
+ *
+ * Either way the business starts unverified as a *business identity*; the tick
+ * is granted when payment is confirmed, by an admin who has also looked at who
+ * they are.
  */
 export async function registerBusinessAction(
   _prev: BusinessState,
@@ -102,8 +120,57 @@ export async function registerBusinessAction(
     };
   }
 
-  const handle = await uniqueHandle(d.businessName);
   const passwordHash = await hashPassword(d.password);
+
+  // ---------------------------------------------------------- paid plans --
+  if (isPaidPlan(d.plan)) {
+    const plan = planById(d.plan)!;
+
+    // One live registration per email. Without this, somebody who reloads the
+    // payment step ends up with two references for one intended payment, and
+    // whoever reconciles the statement has to guess which is real.
+    const existing = await prisma.businessRegistration.findFirst({
+      where: { email: d.email, status: "awaiting_payment" },
+      select: { reference: true, plan: true, amountRwf: true },
+    });
+    if (existing) {
+      return {
+        awaitingPayment: {
+          reference: existing.reference,
+          plan: existing.plan,
+          amountRwf: existing.amountRwf,
+        },
+        notice: "You already have a sign-up waiting on payment. Use the same reference.",
+      };
+    }
+
+    const registration = await prisma.businessRegistration.create({
+      data: {
+        businessName: d.businessName,
+        contactName: d.contactName,
+        email: d.email,
+        phone: d.phone,
+        city: d.city,
+        passwordHash,
+        plan: d.plan,
+        // Frozen at sign-up: a later price change must not alter what this
+        // person was quoted while they were walking to an agent.
+        amountRwf: plan.rwf,
+        reference: newReference(),
+      },
+    });
+
+    return {
+      awaitingPayment: {
+        reference: registration.reference,
+        plan: registration.plan,
+        amountRwf: registration.amountRwf,
+      },
+    };
+  }
+
+  // ---------------------------------------------------------- free plan ---
+  const handle = await uniqueHandle(d.businessName);
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({

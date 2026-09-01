@@ -80,6 +80,17 @@ export interface Place {
    *  the imported listings and for the ones that genuinely do not fit a grid.
    *  Shaped by lib/places/hours.ts; unknown here because the column is JSON. */
   hoursJson?: unknown;
+  /**
+   * The owner has a paid plan and has been checked by Tembera.
+   *
+   * A claim the product makes to a visitor, not a property of the business —
+   * which is why it is computed at the source from two facts that both have to
+   * hold (a plan that includes the tick, and a business an admin has verified)
+   * rather than being a column anybody could set. Stripped from sensitive
+   * categories with the ratings and prices: a tick on a memorial would be
+   * promotion.
+   */
+  verified?: boolean;
 }
 
 /** A place plus the distance from wherever the user currently is. */

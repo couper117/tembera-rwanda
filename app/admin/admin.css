@@ -1952,3 +1952,449 @@ a.a-count:hover .a-count__label {
 .a-field--invalid .a-textarea:focus {
   outline-color: var(--t-danger);
 }
+
+/* ================================================ business sign-up flow == */
+/*
+ * A funnel, not a page in the app. It has no rail and no tab bar — it lives in
+ * the (business) route group for exactly that reason — so it brings its own
+ * bar and its own progress indicator.
+ */
+
+.b-flow {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-bg);
+  color: var(--t-ink);
+}
+
+.b-flow__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-gutter);
+  border-bottom: 1px solid var(--t-border);
+  background: var(--t-surface);
+}
+
+.b-flow__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+}
+
+.b-flow__brand > svg {
+  color: var(--t-accent);
+}
+
+.b-flow__for {
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-3);
+}
+
+.b-flow__signin--short {
+  display: none;
+}
+
+/* At 390px the bar had three things in it and two of them wrapped. The tag
+   after the wordmark and the long sign-in label are both decoration here. */
+@media (max-width: 479px) {
+  .b-flow__for,
+  .b-flow__signin--long {
+    display: none;
+  }
+
+  .b-flow__signin--short {
+    display: inline;
+  }
+}
+
+/* ------------------------------------------------------------ progress -- */
+
+.b-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--t-3);
+  padding: var(--t-4) var(--t-gutter) 0;
+}
+
+.b-steps__list {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  list-style: none;
+}
+
+.b-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 5px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+}
+
+.b-step__dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--t-border);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-micro);
+  font-weight: 800;
+}
+
+.b-step--now {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.b-step--now .b-step__dot,
+.b-step--done .b-step__dot {
+  background: var(--t-accent);
+  color: #fff;
+}
+
+/* On a phone the labels do not fit, and a truncated progress indicator is
+   worse than an honest counter. */
+.b-steps__count {
+  display: none;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-3);
+}
+
+@media (max-width: 599px) {
+  .b-step__label {
+    display: none;
+  }
+
+  .b-step {
+    padding: 5px;
+  }
+
+  .b-steps__count {
+    display: block;
+  }
+}
+
+/* --------------------------------------------------------------- panel -- */
+
+.b-flow__main {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--t-6) var(--t-gutter) var(--t-10);
+}
+
+.b-panel__title {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.b-panel__lede {
+  margin-top: var(--t-2);
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.b-flow__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  margin-top: var(--t-6);
+}
+
+.b-flow__actions .t-btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .b-flow__actions .t-btn {
+    flex: 0 0 auto;
+  }
+}
+
+/* ------------------------------------------------------------ benefits -- */
+
+.b-benefits {
+  display: grid;
+  gap: var(--t-3);
+  margin-top: var(--t-5);
+  list-style: none;
+}
+
+.b-benefit {
+  display: flex;
+  gap: var(--t-3);
+  align-items: flex-start;
+  padding: var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+}
+
+.b-benefit__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.b-benefit__title {
+  display: block;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.b-benefit__body {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+/* --------------------------------------------------------------- plans -- */
+
+.b-plans {
+  display: grid;
+  gap: var(--t-3);
+  margin-top: var(--t-5);
+}
+
+.b-plan {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  transition: border-color var(--t-fast) var(--t-ease),
+    box-shadow var(--t-fast) var(--t-ease);
+}
+
+.b-plan:hover {
+  border-color: var(--t-border-strong);
+}
+
+/* The chosen plan has to be unmistakable: it is the one decision on the
+   screen, and it is carried silently into the next step. */
+.b-plan--on {
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--t-accent) 26%, transparent);
+}
+
+.b-plan__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+}
+
+.b-plan__name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.b-plan__price {
+  display: block;
+  margin-top: var(--t-2);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.b-plan__per {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.b-plan__tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--t-3);
+  padding: 5px 10px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-size: var(--t-text-small);
+  font-weight: 700;
+}
+
+.b-plan__tagline {
+  display: block;
+  margin-top: var(--t-3);
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+.b-plan__perks {
+  display: grid;
+  gap: 6px;
+  margin-top: var(--t-3);
+  list-style: none;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.b-plan__perks li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: var(--t-2);
+  align-items: start;
+  line-height: 1.5;
+}
+
+.b-plan__perks svg {
+  margin-top: 3px;
+  color: var(--t-accent);
+}
+
+.b-plan__pick {
+  display: block;
+  margin-top: var(--t-4);
+  padding-top: var(--t-3);
+  border-top: 1px solid var(--t-border);
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink-3);
+}
+
+.b-plan--on .b-plan__pick {
+  color: var(--t-accent-ink);
+}
+
+@media (min-width: 860px) {
+  .b-flow__main {
+    max-width: 1040px;
+  }
+
+  .b-plans {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* --------------------------------------------------------------- notes -- */
+
+.b-note {
+  display: flex;
+  gap: var(--t-2);
+  align-items: flex-start;
+  margin-top: var(--t-5);
+  padding: var(--t-3) var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface-2);
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+.b-note > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--t-ink-3);
+}
+
+/* ------------------------------------------------------------- payment -- */
+
+.b-pay {
+  margin-top: var(--t-5);
+  padding: var(--t-5);
+  border: 1px solid var(--t-accent);
+  border-radius: var(--t-r-lg);
+  background: var(--t-accent-soft);
+  text-align: center;
+}
+
+.b-pay__label {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-accent-ink);
+}
+
+.b-pay__ref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--t-3);
+  margin-top: var(--t-2);
+}
+
+/* The one string on this screen that gets copied by hand into a phone. Wide
+   letter-spacing so two similar characters cannot be mistaken for each other. */
+.b-pay__ref code {
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--t-accent-ink);
+}
+
+.b-pay__hint {
+  margin-top: var(--t-3);
+  font-size: var(--t-text-small);
+  color: var(--t-accent-ink);
+  opacity: 0.85;
+}
+
+/* Block, not grid: a grid container turns its children into grid items, which
+   drops `display: list-item` and takes the numbers away with it — and the
+   numbers are the point of an ordered list. */
+.b-pay__steps {
+  margin: var(--t-5) 0 0;
+  padding-left: 1.35rem;
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.b-pay__steps li + li {
+  margin-top: var(--t-3);
+}
+
+.b-pay__steps li::marker {
+  font-weight: 800;
+  color: var(--t-accent);
+}
+
+/* A payment reference in a table: matched by eye against a statement, so it
+   is set apart from the prose around it. */
+.a-ref {
+  padding: 2px 6px;
+  border-radius: var(--t-r-sm, 6px);
+  background: var(--t-surface-2);
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}

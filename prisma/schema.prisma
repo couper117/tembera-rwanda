@@ -82,6 +82,8 @@ model User {
   /// one has signed up but not yet been given a business by an admin.
   membership  BusinessMember?
   submissions Submission[]
+  /// Paid sign-ups this person confirmed or refused, as staff.
+  registrationsDecided BusinessRegistration[] @relation("registrationDecider")
 
   @@map("users")
 }
@@ -431,6 +433,75 @@ enum BusinessStatus {
   suspended
 }
 
+/// Where a paid sign-up has got to.
+///
+/// The whole point of this enum is that `active` is the only state in which a
+/// User and a Business exist. A paid plan buys the right to edit a listing and
+/// carry a verified tick; handing that over the moment somebody picks "Top"
+/// from a dropdown gives away the product to anyone who can type.
+enum RegistrationStatus {
+  /// Details captured, money not received. No account exists yet.
+  awaiting_payment
+  /// Payment recorded. The account is created from this row and it becomes
+  /// `active` in the same transaction, so this is normally a moment, not a
+  /// state you find rows sitting in.
+  paid
+  /// The account and business were created. Terminal, and the audit trail for
+  /// how that business came to exist.
+  active
+  /// Refused — a reference that never matched a payment, or an obvious
+  /// duplicate. Keeps the row rather than deleting the evidence.
+  rejected
+  /// Nobody ever paid. Swept up rather than left to look like a live queue.
+  expired
+}
+
+/// A paid sign-up that has not been paid for yet.
+///
+/// Free sign-ups do not come through here at all: they create their User and
+/// Business immediately, because nothing is owed and an empty account costs
+/// nobody anything. This model exists only for Checked and Top, where an
+/// account has to be earned before it is issued.
+///
+/// It holds a password hash rather than a password. The person chose their
+/// password before paying, so it has to survive the wait, and it must survive
+/// it the same way every other password in this database does.
+model BusinessRegistration {
+  id           Int                @id @default(autoincrement())
+  businessName String             @map("business_name")
+  contactName  String             @map("contact_name")
+  email        String
+  phone        String
+  city         String
+  /// Chosen before payment, hashed on arrival. Never stored in the clear.
+  passwordHash String             @map("password_hash")
+  /// "checked" or "top" — see lib/business/plans.ts. Never "free".
+  plan         String
+  /// Rwandan francs owed, copied from the plan at sign-up time. Frozen on
+  /// purpose: a price change must not silently alter what somebody was quoted.
+  amountRwf    Int                @map("amount_rwf")
+  /// The code the payer types as their mobile-money reference, and the thing
+  /// an admin matches against the statement. Short, unambiguous, unique.
+  reference    String             @unique
+  status       RegistrationStatus @default(awaiting_payment)
+  /// What the payer said they sent it from, if they told us. A hint for the
+  /// person reconciling, never a credential.
+  payerNote    String?            @map("payer_note")
+  /// Set when an admin confirms or refuses. Basic audit trail.
+  decidedAt    DateTime?          @map("decided_at")
+  decidedById  Int?               @map("decided_by_id")
+  /// The business this became, once it became one.
+  businessId   Int?               @unique @map("business_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  decidedBy User?     @relation("registrationDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  business  Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("business_registrations")
+}
+
 enum ClaimStatus {
   pending
   approved
@@ -473,9 +544,10 @@ model Business {
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
-  members     BusinessMember[]
-  places      Place[]
-  submissions Submission[]
+  members      BusinessMember[]
+  places       Place[]
+  submissions  Submission[]
+  registration BusinessRegistration?
 
   @@index([status])
   @@map("businesses")

@@ -171,3 +171,26 @@ export async function adminSubmission(id: number) {
 export async function pendingSubmissionCount(): Promise<number> {
   return prisma.submission.count({ where: { status: "pending" } });
 }
+
+/**
+ * Paid sign-ups still waiting on money, oldest first.
+ *
+ * Oldest first on purpose: this is a queue somebody works through, and the
+ * person who has been waiting longest is the one most likely to give up.
+ */
+export async function pendingRegistrations() {
+  return prisma.businessRegistration.findMany({
+    where: { status: "awaiting_payment" },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+/** The last few decided sign-ups, so a confirmation can be checked afterwards. */
+export async function decidedRegistrations(take = 8) {
+  return prisma.businessRegistration.findMany({
+    where: { status: { in: ["active", "rejected"] } },
+    orderBy: { decidedAt: "desc" },
+    take,
+    include: { decidedBy: { select: { name: true } } },
+  });
+}

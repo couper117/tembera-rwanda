@@ -69,7 +69,21 @@ export default function PlaceHero({
           )}
         </div>
 
-        <h1 className="t-hero__name">{place.name}</h1>
+        <h1 className="t-hero__name">
+          {place.name}
+          {/* Earned, not set: see `verified` in lib/data/places.ts. It is
+              already stripped from sensitive categories at the source, and the
+              isSensitive guard here is the belt to that braces. */}
+          {place.verified && !isSensitive && (
+            <span
+              className="t-verified"
+              title="Checked by Tembera — this business keeps its own listing up to date"
+            >
+              <Icon name="shield" size={22} />
+              <span className="t-visually-hidden">Verified by Tembera</span>
+            </span>
+          )}
+        </h1>
 
         <div className="t-hero__meta">
           {/* A rating out of five is never shown for a place of remembrance. */}

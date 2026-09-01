@@ -240,7 +240,7 @@ export default function SettingsScreen() {
             </h2>
             <div className="t-card">
               <Link
-                href="/business"
+                href="/business/register"
                 className="t-fact"
                 style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
               >
