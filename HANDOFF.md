@@ -149,6 +149,16 @@ API:**
   the test runner can import it.
 - `verify` returns **200 with `"Transaction not found"`** for a reference nobody
   has paid, not a 404. A not-found is "no", not an error.
+- **Checkout sessions expire after 30 minutes, and `tx_ref` must be globally
+  unique.** The two together are nastier than either alone: you cannot reopen
+  an expired checkout by re-sending the same `tx_ref` — the gateway answers 409
+  `IDEMPOTENCY_KEY_CONFLICT`, and the payer sees "This payment link has
+  expired. Please contact the merchant", which reads as a broken integration.
+  So `tx_ref` is per-attempt (`retryTxRef`) while our own reference stays
+  stable and travels in `description` / `metadata`. The two identifiers do
+  different jobs and must not be the same string. Sessions are also minted at
+  click time by `/business/register/pay`, not at page-render time, so a page
+  left open over lunch still leads to a working checkout.
 - **`/checkout/{x}/verify` is keyed on RwandaPay's own `PAY-…` reference, not
   on our `tx_ref`** — and initialize echoing our `tx_ref` back as
   `data.reference` makes it look otherwise. Verifying on our own reference

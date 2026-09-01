@@ -1,8 +1,9 @@
 import "server-only";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { toLocalPhone } from "./phone";
+import { retryTxRef, sessionUsable } from "./session";
 
-export { toLocalPhone };
+export { toLocalPhone, retryTxRef, sessionUsable };
 
 /**
  * RwandaPay, the payment gateway behind paid business plans.
@@ -69,6 +70,20 @@ export async function initializeCheckout(input: {
   customer: { name: string; phone: string; email: string };
   redirectUrl?: string;
   webhookUrl?: string;
+  /**
+   * The gateway-facing id for THIS attempt. Defaults to `reference`.
+   *
+   * `tx_ref` has to be globally unique — reopening a checkout with one that
+   * has been used before is refused outright with a 409
+   * IDEMPOTENCY_KEY_CONFLICT, which is what a payer sees as "This payment link
+   * has expired" with no way forward. So a retry passes a fresh one.
+   *
+   * `reference` stays stable regardless, because that is what ties the payment
+   * back to the sign-up: it travels in `description` and `metadata`, which is
+   * where verifyPayment looks. The two identifiers do different jobs and had
+   * to stop being the same string.
+   */
+  txRef?: string;
 }): Promise<InitializeResult> {
   if (!gatewayConfigured()) return { ok: false, error: "Payments are not configured." };
 
@@ -80,6 +95,9 @@ export async function initializeCheckout(input: {
     };
   }
 
+  // One attempt, one tx_ref. See the note on the field.
+  const txRef = input.txRef ?? input.reference;
+
   let res: Response;
   try {
     res = await fetch(`${BASE}/checkout/initialize`, {
@@ -87,11 +105,11 @@ export async function initializeCheckout(input: {
       headers: {
         ...authHeaders(),
         "Content-Type": "application/json",
-        "Idempotency-Key": input.reference,
+        "Idempotency-Key": txRef,
       },
       body: JSON.stringify({
         amount: input.amountRwf,
-        tx_ref: input.reference,
+        tx_ref: txRef,
         // `tx_ref` identifies the checkout SESSION and does not survive onto
         // the transaction — a paid transaction carries RwandaPay's own
         // `PAY-...` reference and no field pointing back at ours. `description`
@@ -129,7 +147,9 @@ export async function initializeCheckout(input: {
   return {
     ok: true,
     session: {
-      reference: typeof data.reference === "string" ? data.reference : input.reference,
+      // Our stable reference, not the per-attempt tx_ref: everything
+      // downstream reconciles on this one.
+      reference: input.reference,
       sessionId,
       paymentUrl,
       expiresAt:
@@ -291,3 +311,5 @@ export function verifyWebhookSignature(rawBody: string, signature: string | null
 export function idempotencyKey(): string {
   return randomUUID();
 }
+
+

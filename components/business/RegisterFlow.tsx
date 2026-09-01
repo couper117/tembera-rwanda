@@ -473,7 +473,13 @@ function PaymentStep({
         )}
 
         <div className="b-flow__actions">
-          <a href={paymentUrl} className="t-btn t-btn--primary">
+          {/* Through /pay rather than straight at the gateway: a checkout
+              session lasts thirty minutes, and this page can sit open for
+              longer than that. The route mints a fresh one at click time. */}
+          <a
+            href={`/business/register/pay?ref=${encodeURIComponent(reference)}`}
+            className="t-btn t-btn--primary"
+          >
             <Icon name="shield" size={17} />
             Pay {formatRwf(amountRwf)} securely
           </a>

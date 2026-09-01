@@ -58,7 +58,6 @@ export default async function PaymentReturnPage({
         reference={registration.reference}
         amountRwf={registration.amountRwf}
         plan={registration.plan}
-        paymentUrl={registration.paymentUrl ?? undefined}
       />
     );
   }
@@ -86,7 +85,6 @@ function Shell({
   reference,
   amountRwf,
   plan,
-  paymentUrl,
   reason,
   email,
 }: {
@@ -96,7 +94,6 @@ function Shell({
   reference?: string;
   amountRwf?: number;
   plan?: string;
-  paymentUrl?: string;
   reason?: string;
 }) {
   return (
@@ -145,8 +142,15 @@ function Shell({
               </p>
 
               <div className="b-flow__actions">
-                {paymentUrl && (
-                  <a href={paymentUrl} className="t-btn t-btn--primary">
+                {reference && (
+                  /* Not the stored payment URL: by the time somebody reads
+                     this page its session has usually expired, and an expired
+                     link reads as a broken integration. /pay opens a fresh
+                     one. */
+                  <a
+                    href={`/business/register/pay?ref=${encodeURIComponent(reference)}`}
+                    className="t-btn t-btn--primary"
+                  >
                     Try the payment again
                   </a>
                 )}
