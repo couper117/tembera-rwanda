@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
@@ -203,6 +204,26 @@ export default async function PlaceDetailPage({
                       confirm opening times with the site before travelling.
                     </p>
                   </div>
+                )}
+
+                {/* --------------------------------------------- owner --- */}
+                {/* Who stands behind this listing. Worth more than the tick on
+                    its own: it turns an anonymous badge into a name with other
+                    listings attached, which a visitor can judge for themselves. */}
+                {place.owner && !isSensitive && (
+                  <Link href={`/business/${place.owner.id}`} className="t-owner">
+                    <span className="t-owner__mark" aria-hidden="true">
+                      {place.owner.name.slice(0, 2).toUpperCase()}
+                    </span>
+                    <span className="t-owner__body">
+                      <span className="t-owner__label">Kept up to date by</span>
+                      <span className="t-owner__name">
+                        {place.owner.name}
+                        <Icon name="shield" size={15} />
+                      </span>
+                    </span>
+                    <Icon name="chevronRight" size={18} />
+                  </Link>
                 )}
 
                 {/* ----------------------------------------- why visit --- */}

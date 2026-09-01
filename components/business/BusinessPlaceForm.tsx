@@ -251,21 +251,46 @@ export default function BusinessPlaceForm({
             </select>
           </Field>
 
-          <Field name="subcategory" label="Subcategory" required error={err("subcategory")}>
-            <input
+          {/* A real dropdown, not free text with a datalist behind it.
+              Typing invented a new subcategory on every typo — "Resturants"
+              is a category of one nobody will ever browse — and a datalist
+              gives no hint that a fixed list even exists. The list is keyed on
+              the chosen category, so it re-renders when that changes. */}
+          <Field
+            name="subcategory"
+            label="Subcategory"
+            required
+            error={err("subcategory")}
+            hint={
+              categoryId
+                ? `${subs.length} to choose from`
+                : "Pick a category first"
+            }
+          >
+            <select
               id="subcategory"
+              key={categoryId}
               name="subcategory"
-              className="a-input"
-              list="biz-subcategories"
+              className="a-select"
               defaultValue={v("subcategory")}
-              readOnly={locked}
+              disabled={locked || !categoryId}
               required
-            />
-            <datalist id="biz-subcategories">
+            >
+              <option value="">
+                {categoryId ? "Choose…" : "Pick a category first"}
+              </option>
               {subs.map((s) => (
-                <option key={s} value={s} />
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
-            </datalist>
+              {/* A listing whose stored subcategory has since been renamed
+                  still has to be editable — without this its value would
+                  silently reset to blank on the first save. */}
+              {v("subcategory") && !subs.includes(v("subcategory")) && (
+                <option value={v("subcategory")}>{v("subcategory")}</option>
+              )}
+            </select>
           </Field>
         </div>
 

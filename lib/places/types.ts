@@ -100,6 +100,15 @@ export interface Place {
    * memorial cannot be promoted at any price.
    */
   plan?: "free" | "checked" | "top";
+  /**
+   * The business that keeps this listing up to date, when a verified one does.
+   *
+   * Only set for a verified owner: naming an unchecked business beside a
+   * listing would be Tembera vouching for somebody nobody has looked at.
+   * Stripped from sensitive categories with the rest — a memorial has
+   * custodians, not proprietors, and the public page must not imply otherwise.
+   */
+  owner?: { id: number; name: string };
 }
 
 /** A place plus the distance from wherever the user currently is. */

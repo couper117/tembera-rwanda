@@ -16,7 +16,7 @@ export const PLACES_TAG = "places";
 
 /** The owning business, when a query asked for it. */
 type WithOwner = DbPlace & {
-  business?: { status: string; plan: string } | null;
+  business?: { id: number; name: string; status: string; plan: string } | null;
 };
 
 /**
@@ -69,6 +69,10 @@ function toDomain(row: WithOwner): Place {
     // Only a verified owner's plan counts, for the same reason the tick needs
     // both: a plan string on an unchecked business is a claim nobody has read.
     plan: isVerified(row) ? planOf(row) : undefined,
+    owner:
+      isVerified(row) && row.business
+        ? { id: row.business.id, name: row.business.name }
+        : undefined,
   };
 }
 
@@ -93,7 +97,9 @@ export const getPlaces = unstable_cache(
         // The tick is derived from the owner, so the owner has to come with
         // the row. Two columns on a relation most rows do not have; cheaper
         // than a second query, and this one is cached anyway.
-        include: { business: { select: { status: true, plan: true } } },
+        include: {
+          business: { select: { id: true, name: true, status: true, plan: true } },
+        },
       }),
       sensitiveCategoryIds(),
     ]);
@@ -108,6 +114,7 @@ export const getPlaces = unstable_cache(
         priceFrom: undefined,
         verified: undefined,
         plan: undefined,
+        owner: undefined,
       };
     });
   },

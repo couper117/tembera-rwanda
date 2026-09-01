@@ -4151,3 +4151,121 @@ button.t-profile__stat:active {
   font-weight: 700;
   vertical-align: 1px;
 }
+
+/* ------------------------------------------------------ owning business -- */
+
+/* Who keeps this listing current, on the place page. A row rather than a
+   badge: it is a destination, and it has to look like one. */
+.t-owner {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  margin-top: var(--t-5);
+  padding: var(--t-3) var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  color: var(--t-ink);
+  transition: border-color var(--t-fast) var(--t-ease);
+}
+
+.t-owner:hover {
+  border-color: var(--t-border-strong);
+}
+
+.t-owner > svg:last-child {
+  color: var(--t-ink-3);
+  flex: none;
+}
+
+.t-owner__mark,
+.t-bizhead__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.t-owner__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-owner__label {
+  display: block;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-owner__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.t-owner__name svg {
+  color: #4ba3f5;
+}
+
+/* ------------------------------------------------- business profile head -- */
+
+.t-bizhead {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+}
+
+.t-bizhead__mark {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25rem;
+}
+
+.t-bizhead__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-2);
+  margin-top: var(--t-2);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+/* Each fact is one unbreakable unit — the pin was wrapping onto its own line
+   above the district it labels. */
+.t-bizhead__meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.t-bizhead__meta svg {
+  color: var(--t-ink-3);
+}
+
+.t-bizhead__verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-weight: 700;
+}
+
+.t-bizhead__verified svg {
+  color: #4ba3f5;
+}

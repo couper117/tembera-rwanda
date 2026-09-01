@@ -194,3 +194,37 @@ export async function decidedRegistrations(take = 8) {
     include: { decidedBy: { select: { name: true } } },
   });
 }
+
+/**
+ * A business as a visitor sees it, with everything it keeps up to date.
+ *
+ * Only verified businesses have a public page. Naming an unchecked one, and
+ * gathering its listings under a heading, is Tembera vouching for somebody
+ * nobody has looked at — and the tick beside those listings already says we
+ * have. Returns null otherwise, which the route turns into a 404.
+ */
+export async function publicBusiness(id: number) {
+  const business = await prisma.business.findFirst({
+    where: { id, status: "verified" },
+    select: { id: true, name: true, city: true, plan: true, createdAt: true },
+  });
+  if (!business) return null;
+
+  const places = await prisma.place.findMany({
+    where: { businessId: id, status: "published" },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      categoryId: true,
+      subcategory: true,
+      city: true,
+      area: true,
+      image: true,
+      rating: true,
+      sensitive: true,
+    },
+  });
+
+  return { business, places };
+}

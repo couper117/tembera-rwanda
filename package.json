@@ -23,6 +23,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "verify-seed": "tsx scripts/verify-seed.ts",
     "set-password": "tsx scripts/set-password.ts",
+    "sync-subcategories": "tsx scripts/sync-subcategories.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {
