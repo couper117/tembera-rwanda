@@ -69,6 +69,15 @@ model User {
   /// Auth.js writes an avatar URL here for OAuth providers. Unused today —
   /// the only provider is credentials — but the adapter expects the column.
   image        String?
+  /// Travel interests, chosen by the reader. Structured as a list of stable
+  /// ids rather than free text so the recommendation work can join on them
+  /// later without having to guess what "food" and "Food" have in common.
+  interests    String[] @default([])
+  /// Language, currency, distance units and notification choices. JSON because
+  /// this list will grow and each addition would otherwise be a migration —
+  /// and none of it is ever queried, only read back for the person it belongs
+  /// to. Shape and defaults live in lib/profile/preferences.ts.
+  preferences  Json?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

@@ -8,6 +8,9 @@ import { getCurrentUser, hashPassword, requireUser, verifyPassword } from "@/lib
 import { PLACES_TAG } from "@/lib/data/places";
 import { isSensitivePlace } from "@/lib/places/engine";
 import { reviewSchema } from "@/lib/validation/review";
+import { cleanInterests } from "@/lib/profile/interests";
+import { parsePreferences } from "@/lib/profile/preferences";
+import { Prisma } from "@prisma/client";
 
 /**
  * Everything a signed-in person does to their own data.
@@ -377,5 +380,74 @@ export async function deleteReviewAction(
   await recomputeRating(placeId);
   revalidateTag(PLACES_TAG);
   revalidatePath(`/place/${placeId}`);
+  return { ok: true };
+}
+
+/* -------------------------------------------------------------- profile */
+
+/**
+ * The avatar.
+ *
+ * Stored as a data URI on the user row rather than uploaded anywhere: there is
+ * no image host configured, and a "change photo" button that silently does
+ * nothing is worse than none. The client crops to a square and re-encodes
+ * before sending, so what arrives is already small — the cap below is the
+ * backstop, not the plan.
+ *
+ * 96KB is roughly a 256px JPEG with room to spare. Anything larger is either a
+ * client that skipped the resize or somebody posting to this action directly,
+ * and neither should be able to put a megabyte in a row that is read on every
+ * page that shows an avatar.
+ */
+const MAX_AVATAR_BYTES = 96 * 1024;
+
+export async function updateAvatarAction(
+  dataUri: string | null,
+): Promise<{ ok: true } | { error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not signed in." };
+
+  if (dataUri !== null) {
+    if (!/^data:image\/(jpeg|png|webp);base64,/.test(dataUri)) {
+      return { error: "That does not look like an image." };
+    }
+    if (dataUri.length > MAX_AVATAR_BYTES) {
+      return { error: "That photo is too large. Try a smaller one." };
+    }
+  }
+
+  await prisma.user.update({ where: { id: user.id }, data: { image: dataUri } });
+  revalidatePath("/profile");
+  return { ok: true };
+}
+
+export async function updateInterestsAction(
+  raw: unknown,
+): Promise<{ ok: true } | { error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not signed in." };
+
+  // Unknown ids are dropped rather than rejected: the list in the code is the
+  // authority, and a client sending a stale one should not lose the rest.
+  const interests = cleanInterests(raw);
+  await prisma.user.update({ where: { id: user.id }, data: { interests } });
+  revalidatePath("/profile");
+  return { ok: true };
+}
+
+export async function updatePreferencesAction(
+  raw: unknown,
+): Promise<{ ok: true } | { error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not signed in." };
+
+  // Parsed through the same reader the app uses, so anything unrecognised
+  // becomes a default instead of being written back verbatim.
+  const preferences = parsePreferences(raw);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { preferences: preferences as unknown as Prisma.InputJsonValue },
+  });
+  revalidatePath("/profile");
   return { ok: true };
 }

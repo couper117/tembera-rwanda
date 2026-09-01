@@ -4293,3 +4293,658 @@ button.t-profile__stat:active {
     animation: none;
   }
 }
+
+/* ==================================================================== profile
+ *
+ * Rebuilt around identity rather than around a form.
+ *
+ * The rules that shape everything below:
+ *   - one card on the page, for the stats, because four numbers only mean
+ *     anything together. Nothing else gets a box;
+ *   - sections are separated by a hairline and a lot of air, not by borders;
+ *   - the avatar is the anchor and the name is the loudest thing on screen —
+ *     typography does the work that boxes were doing;
+ *   - green appears on the avatar ring and the active pill, and nowhere else.
+ */
+
+/* --------------------------------------------------------------- header -- */
+
+.t-prof__head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--t-4) var(--t-5);
+  align-items: start;
+  padding: var(--t-6) 0 var(--t-6);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-prof__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  /* The one deliberate flash of brand on the page. */
+  box-shadow: 0 0 0 3px var(--t-bg), 0 0 0 5px var(--t-accent-soft);
+}
+
+.t-prof__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.t-prof__id {
+  min-width: 0;
+}
+
+.t-prof__name {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.t-prof__handle {
+  margin-top: 2px;
+  font-size: var(--t-text-body);
+  color: var(--t-ink-3);
+}
+
+.t-prof__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2) var(--t-4);
+  margin-top: var(--t-3);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.t-prof__meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.t-prof__meta svg {
+  color: var(--t-ink-3);
+}
+
+.t-prof__bio {
+  margin-top: var(--t-3);
+  max-width: 62ch;
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.t-prof__headactions {
+  grid-column: 2;
+}
+
+@media (min-width: 860px) {
+  .t-prof__head {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+
+  .t-prof__avatar {
+    width: 112px;
+    height: 112px;
+    font-size: 2.25rem;
+  }
+
+  .t-prof__headactions {
+    grid-column: 3;
+  }
+}
+
+/* -------------------------------------------------------------- sections -- */
+
+/* Air and a hairline. A border around a heading and three rows is a box drawn
+   for the sake of drawing a box. */
+.t-prof__section {
+  padding: var(--t-6) 0;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-prof__section:last-child {
+  border-bottom: none;
+}
+
+.t-prof__h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--t-4);
+}
+
+.t-prof__h2row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  margin-bottom: var(--t-4);
+}
+
+.t-prof__h2row .t-prof__h2 {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------- journey -- */
+
+/* One card, four figures. Four separate cards for four integers is the layout
+   that made this read as a dashboard. */
+.t-journey {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--t-4);
+  padding: var(--t-5);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+}
+
+@media (min-width: 720px) {
+  .t-journey {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* Hairlines between, rather than four boxes. */
+  .t-figure + .t-figure {
+    border-left: 1px solid var(--t-border);
+    padding-left: var(--t-5);
+  }
+}
+
+.t-figure__value {
+  display: block;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.t-figure__label {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-2);
+}
+
+.t-figure__note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+/* ------------------------------------------------------------- districts -- */
+
+.t-districts {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .t-districts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--t-6);
+  }
+}
+
+.t-district {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-2);
+  margin-inline: calc(var(--t-2) * -1);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-district:hover {
+  background: var(--t-surface-2);
+}
+
+.t-district__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 650;
+}
+
+.t-district__count {
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-district > svg {
+  color: var(--t-ink-3);
+  flex: none;
+}
+
+/* ----------------------------------------------------------------- pills -- */
+
+.t-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+}
+
+.t-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--t-r-pill);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  transition: border-color var(--t-fast) var(--t-ease), background var(--t-fast) var(--t-ease);
+}
+
+button.t-pill:hover {
+  border-color: var(--t-border-strong);
+}
+
+.t-pill svg {
+  color: var(--t-ink-3);
+}
+
+.t-pill--on {
+  border-color: var(--t-accent);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-pill--on svg {
+  color: var(--t-accent);
+}
+
+/* ------------------------------------------------------------------ feed -- */
+
+.t-feed {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+.t-feed__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) 0;
+}
+
+.t-feed__item + .t-feed__item {
+  border-top: 1px solid var(--t-border);
+}
+
+.t-feed__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-feed__icon--reviewed {
+  color: var(--t-gold);
+}
+
+.t-feed__icon--visited {
+  color: var(--t-accent);
+  background: var(--t-accent-soft);
+}
+
+.t-feed__body {
+  min-width: 0;
+}
+
+.t-feed__name {
+  display: block;
+  font-weight: 650;
+  color: var(--t-ink);
+}
+
+.t-feed__name:hover {
+  text-decoration: underline;
+}
+
+.t-feed__what {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+/* --------------------------------------------------------- account links -- */
+
+.t-prof__links {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .t-prof__links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--t-4);
+  }
+}
+
+.t-proflink {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-2);
+  margin-inline: calc(var(--t-2) * -1);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-proflink:hover {
+  background: var(--t-surface-2);
+}
+
+.t-proflink__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-proflink__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-proflink__title {
+  display: block;
+  font-weight: 650;
+}
+
+.t-proflink__note {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-proflink > svg {
+  color: var(--t-ink-3);
+  flex: none;
+}
+
+/* ---------------------------------------------------------- empty states -- */
+
+/* Deliberate, not broken. Left-aligned with the section it belongs to rather
+   than centred in a dashed box. */
+.t-profempty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-4) 0;
+  color: var(--t-ink-3);
+}
+
+.t-profempty p {
+  flex: 1;
+  min-width: 12rem;
+  margin: 0;
+  font-size: var(--t-text-small);
+}
+
+/* ---------------------------------------------------------------- editor -- */
+
+/* Wide enough to hold two columns, narrow enough that a text field is not a
+   metre across. The overview fills the page; a form should not. */
+.t-prof__editwrap {
+  max-width: 780px;
+}
+
+.t-formgrid {
+  display: grid;
+  gap: var(--t-4);
+}
+
+@media (min-width: 720px) {
+  .t-formgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .t-formfield--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.t-formfield {
+  min-width: 0;
+}
+
+.t-formfield__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink);
+}
+
+.t-formfield__hint,
+.t-formfield__error {
+  margin-top: 5px;
+  font-size: var(--t-text-small);
+}
+
+.t-formfield__hint {
+  color: var(--t-ink-3);
+}
+
+.t-formfield__error {
+  color: var(--t-danger);
+}
+
+.t-input {
+  width: 100%;
+  padding: 11px var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface);
+  color: var(--t-ink);
+  font: inherit;
+  font-size: var(--t-text-body);
+  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-fast) var(--t-ease);
+}
+
+.t-input:focus-visible {
+  outline: none;
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 3px var(--t-accent-soft);
+}
+
+.t-textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.t-inputwrap {
+  position: relative;
+  display: block;
+}
+
+.t-inputwrap__prefix {
+  position: absolute;
+  left: var(--t-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t-ink-3);
+  pointer-events: none;
+}
+
+.t-input--prefixed {
+  padding-left: 28px;
+}
+
+.t-prof__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-3);
+  margin-top: var(--t-6);
+}
+
+.t-prof__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-prof__status svg {
+  color: var(--t-open, #1f7a3d);
+}
+
+/* --------------------------------------------------------------- avatar -- */
+
+.t-avpick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-5);
+}
+
+.t-avpick__stage {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.t-avpick__img,
+.t-avpick__canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+/* Grab, because it is: dragging the canvas is what positions the crop. */
+.t-avpick__canvas {
+  cursor: grab;
+  touch-action: none;
+}
+
+.t-avpick__canvas:active {
+  cursor: grabbing;
+}
+
+.t-avpick__initials {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+/* Sits on the rim rather than inside it — a badge tucked into a circle reads
+   as clipped. `overflow: hidden` on the stage would cut it, so it lives on the
+   wrapper instead. */
+.t-avpick__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--t-bg);
+  background: var(--t-accent);
+  color: #fff;
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-avpick__badge:hover {
+  background: var(--t-accent-hover);
+}
+
+.t-avpick__controls {
+  display: grid;
+  gap: var(--t-3);
+  min-width: 12rem;
+}
+
+.t-avpick__zoom {
+  display: grid;
+  gap: 4px;
+  max-width: 15rem;
+}
+
+.t-avpick__zoom input {
+  accent-color: var(--t-accent);
+}
+
+.t-avpick__err {
+  color: var(--t-danger);
+}
+
+/* -------------------------------------------------------------- switches -- */
+
+.t-switches {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+.t-switchrow {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  padding: var(--t-3) 0;
+}
+
+.t-switchrow + .t-switchrow {
+  border-top: 1px solid var(--t-border);
+}
+
+.t-switchrow__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-switchrow__label {
+  display: block;
+  font-weight: 650;
+}
+
+.t-switchrow__note {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}

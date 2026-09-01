@@ -96,3 +96,49 @@ export async function adminUsers(): Promise<AdminUserRow[]> {
     },
   });
 }
+
+/**
+ * Everything the profile overview needs, in one round trip.
+ *
+ * Real counts and real timestamps only. A profile that invents "12 places
+ * visited" is worse than one that says none yet, because the number is the
+ * whole reason somebody looks at the page.
+ */
+export async function getProfileOverview(userId: number) {
+  const [user, reviews, saves, visits] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { image: true, interests: true, preferences: true },
+    }),
+    prisma.review.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: { placeId: true, rating: true, createdAt: true },
+    }),
+    prisma.savedPlace.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: { placeId: true, createdAt: true },
+    }),
+    prisma.visitedPlace.findMany({
+      where: { userId },
+      orderBy: { visitedAt: "desc" },
+      select: { placeId: true, visitedAt: true },
+    }),
+  ]);
+
+  return {
+    image: user?.image ?? null,
+    interests: user?.interests ?? [],
+    preferences: user?.preferences ?? null,
+    reviews: reviews.map((r) => ({
+      placeId: r.placeId,
+      rating: r.rating,
+      at: r.createdAt.getTime(),
+    })),
+    saves: saves.map((s) => ({ placeId: s.placeId, at: s.createdAt.getTime() })),
+    visits: visits.map((v) => ({ placeId: v.placeId, at: v.visitedAt.getTime() })),
+  };
+}
+
+export type ProfileOverview = Awaited<ReturnType<typeof getProfileOverview>>;
