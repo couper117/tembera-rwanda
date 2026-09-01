@@ -58,7 +58,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, reference, paid: false, signed });
   }
 
-  const result = await activateRegistration(reference, "gateway");
+  const result = await activateRegistration(
+    reference,
+    "gateway",
+    undefined,
+    status.gatewayReference ?? reference,
+  );
   return NextResponse.json({
     ok: true,
     reference,

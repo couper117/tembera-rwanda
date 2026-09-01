@@ -28,6 +28,14 @@ export async function activateRegistration(
   reference: string,
   via: "gateway" | "manual",
   actorId?: number,
+  /**
+   * RwandaPay's own reference for the transaction that paid for this, when we
+   * have it. Recorded in the audit trail so an account can be tied back to the
+   * payment that bought it — which is the first thing anybody asks in a
+   * dispute, and it is not derivable afterwards: a transaction carries no
+   * field pointing back at our reference.
+   */
+  gatewayReference?: string,
 ): Promise<ActivationResult> {
   const registration = await prisma.businessRegistration.findUnique({
     where: { reference },
@@ -129,6 +137,7 @@ export async function activateRegistration(
       reference: registration.reference,
       amountRwf: registration.amountRwf,
       via,
+      ...(gatewayReference ? { gatewayReference } : {}),
     },
   });
 

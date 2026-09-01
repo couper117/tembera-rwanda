@@ -63,7 +63,12 @@ export default async function PaymentReturnPage({
     );
   }
 
-  const result = await activateRegistration(registration.reference, "gateway");
+  const result = await activateRegistration(
+    registration.reference,
+    "gateway",
+    undefined,
+    status.gatewayReference,
+  );
   return result.ok ? (
     <Shell
       state="done"

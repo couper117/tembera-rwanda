@@ -149,6 +149,16 @@ API:**
   the test runner can import it.
 - `verify` returns **200 with `"Transaction not found"`** for a reference nobody
   has paid, not a 404. A not-found is "no", not an error.
+- **`/checkout/{x}/verify` is keyed on RwandaPay's own `PAY-…` reference, not
+  on our `tx_ref`** — and initialize echoing our `tx_ref` back as
+  `data.reference` makes it look otherwise. Verifying on our own reference
+  returns "Transaction not found" *forever*, including after the money lands,
+  so every real payment would have gone unconfirmed. A paid transaction carries
+  no field pointing back at our reference either: the only carriers that
+  survive the checkout are `description` and `metadata`, which is why
+  `initializeCheckout` writes the reference into both and `verifyPayment` falls
+  back to scanning `/transactions` for a successful row carrying it. Matching
+  proven against a real successful transaction on the account.
 
 Flow: sign-up creates the registration → `initializeCheckout` opens a hosted
 session and stores `sessionId` / `paymentUrl` → payer goes to RwandaPay →

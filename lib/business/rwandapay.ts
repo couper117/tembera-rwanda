@@ -92,6 +92,13 @@ export async function initializeCheckout(input: {
       body: JSON.stringify({
         amount: input.amountRwf,
         tx_ref: input.reference,
+        // `tx_ref` identifies the checkout SESSION and does not survive onto
+        // the transaction — a paid transaction carries RwandaPay's own
+        // `PAY-...` reference and no field pointing back at ours. `description`
+        // and `metadata` do survive, so the reference travels in both. See
+        // verifyPayment, which reconciles on them.
+        description: `Tembera ${input.reference}`,
+        metadata: { tembera_reference: input.reference },
         customer: { name: input.customer.name, phone, email: input.customer.email },
         ...(input.redirectUrl ? { redirect_url: input.redirectUrl } : {}),
         ...(input.webhookUrl ? { webhook_url: input.webhookUrl } : {}),
@@ -139,19 +146,52 @@ export interface PaymentStatus {
   status: string;
   /** Present when the call itself failed, as opposed to the payment. */
   error?: string;
+  /** RwandaPay's own reference for the transaction, once one exists. */
+  gatewayReference?: string;
 }
 
 /**
  * Has this reference been paid?
  *
- * Deliberately conservative: anything other than an explicit success is "not
- * paid". A network failure, a malformed body and an unpaid reference all
- * return `paid: false`, because the only thing this answer is used for is
- * deciding whether to issue an account, and the safe default is not to.
+ * Harder than it should be, and worth explaining, because the obvious
+ * implementation is wrong in a way that fails silently.
+ *
+ * `/checkout/{x}/verify` answers correctly — but only for **RwandaPay's own**
+ * transaction reference (`PAY-TEST-…`). Given the `tx_ref` we chose, it
+ * returns a 200 saying `{"status":"pending","message":"Transaction not
+ * found"}` forever, even after the money has arrived. Initialize echoes our
+ * `tx_ref` back as `data.reference`, which makes it look like the identifier
+ * to verify on; it is the checkout session's, not the transaction's, and a
+ * paid transaction carries no field pointing back at it.
+ *
+ * So there are two paths, tried in order:
+ *
+ *   1. **Direct.** Works when we are handed RwandaPay's reference — which is
+ *      what their webhook sends. Cheap, and exact.
+ *   2. **Reconcile.** Scan recent transactions for a successful one whose
+ *      `description` or `metadata` carries our reference. That is why
+ *      initializeCheckout puts it in both.
+ *
+ * Conservative throughout: a network failure, a malformed body and an unpaid
+ * reference all come back `paid: false`, because the only thing this answer
+ * decides is whether to issue a paid account, and the safe default is not to.
  */
 export async function verifyPayment(reference: string): Promise<PaymentStatus> {
   if (!gatewayConfigured()) return { paid: false, status: "unconfigured" };
 
+  const direct = await verifyDirect(reference);
+  if (direct.paid) return direct;
+
+  const found = await findTransaction(reference);
+  if (found) {
+    return { paid: true, status: found.status, gatewayReference: found.reference };
+  }
+
+  return direct;
+}
+
+/** `/checkout/{reference}/verify`, keyed on RwandaPay's own reference. */
+async function verifyDirect(reference: string): Promise<PaymentStatus> {
   let res: Response;
   try {
     res = await fetch(`${BASE}/checkout/${encodeURIComponent(reference)}/verify`, {
@@ -168,10 +208,60 @@ export async function verifyPayment(reference: string): Promise<PaymentStatus> {
 
   if (!body) return { paid: false, status: "unreadable" };
 
-  // Both flags, not either. `success` alone has been seen on a body that also
-  // says the transaction does not exist.
+  // Both flags, not either. `success` alone appears on a body that also says
+  // the transaction does not exist.
   const paid = body.success === true && body.completed === true;
   return { paid, status: body.status ?? "unknown" };
+}
+
+interface GatewayTransaction {
+  reference: string;
+  status: string;
+}
+
+/**
+ * Find a successful transaction carrying our reference.
+ *
+ * Matches on the two fields that survive from the checkout onto the
+ * transaction. Requires an explicitly successful status: `settled`, `pending`
+ * and `failed` rows all appear in this list, and only one of them means the
+ * money is in.
+ */
+async function findTransaction(reference: string): Promise<GatewayTransaction | null> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/transactions?per_page=50`, {
+      headers: authHeaders(),
+      cache: "no-store",
+    });
+  } catch {
+    return null;
+  }
+
+  const body = (await res.json().catch(() => null)) as
+    | { data?: { data?: unknown[] } | unknown[] }
+    | null;
+  const rows = Array.isArray(body?.data)
+    ? body.data
+    : Array.isArray((body?.data as { data?: unknown[] } | undefined)?.data)
+      ? (body!.data as { data: unknown[] }).data
+      : [];
+
+  for (const row of rows as Record<string, unknown>[]) {
+    const status = typeof row.status === "string" ? row.status : "";
+    if (status !== "successful" && status !== "completed") continue;
+
+    const description = typeof row.description === "string" ? row.description : "";
+    const meta = row.metadata as Record<string, unknown> | null | undefined;
+    const tagged =
+      typeof meta?.tembera_reference === "string" ? meta.tembera_reference : "";
+
+    if (description.includes(reference) || tagged === reference) {
+      const ref = typeof row.reference === "string" ? row.reference : reference;
+      return { reference: ref, status };
+    }
+  }
+  return null;
 }
 
 /**
