@@ -166,6 +166,14 @@ It is idempotent by conditional `updateMany` — the redirect and the webhook
 race each other constantly, and a `findUnique` then `update` would let both
 through and make two accounts for one payment.
 
+`/business/register/return` renders `PaymentSuccess` once a registration is
+active: a tick that draws itself, then a visible countdown to `/login` with the
+email prefilled. The auto-redirect follows three rules, because a page that
+moves on its own is hostile if it breaks any of them — the countdown is
+visible, there is a button to go immediately, and the destination is a real
+link so it works without JavaScript. `prefers-reduced-motion` gets the finished
+tick rather than a shorter animation.
+
 **Still to do:** nobody has completed an actual test payment through the hosted
 checkout, so the paid branch of `verify` is unexercised. Set
 `RWANDAPAY_WEBHOOK_SECRET` and `PUBLIC_SITE_URL` before production — webhooks

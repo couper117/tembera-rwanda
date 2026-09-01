@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import PaymentSuccess from "@/components/business/PaymentSuccess";
 import { ThemeProvider } from "@/lib/client/theme";
 import { prisma } from "@/lib/prisma";
 import { activateRegistration } from "@/lib/business/activate";
@@ -38,7 +39,13 @@ export default async function PaymentReturnPage({
   if (!registration) return <Shell state="unknown" />;
 
   if (registration.status === "active") {
-    return <Shell state="done" businessName={registration.businessName} />;
+    return (
+      <Shell
+        state="done"
+        businessName={registration.businessName}
+        email={registration.email}
+      />
+    );
   }
 
   const status = await verifyPayment(registration.reference);
@@ -58,7 +65,11 @@ export default async function PaymentReturnPage({
 
   const result = await activateRegistration(registration.reference, "gateway");
   return result.ok ? (
-    <Shell state="done" businessName={registration.businessName} />
+    <Shell
+      state="done"
+      businessName={registration.businessName}
+      email={registration.email}
+    />
   ) : (
     <Shell state="snag" reason={result.reason} reference={registration.reference} />
   );
@@ -72,9 +83,11 @@ function Shell({
   plan,
   paymentUrl,
   reason,
+  email,
 }: {
   state: "done" | "pending" | "unknown" | "snag";
   businessName?: string;
+  email?: string;
   reference?: string;
   amountRwf?: number;
   plan?: string;
@@ -94,22 +107,7 @@ function Shell({
 
         <main className="b-flow__main">
           {state === "done" && (
-            <section className="b-panel">
-              <h1 className="b-panel__title">You are in.</h1>
-              <p className="b-panel__lede">
-                Payment received{businessName ? ` for ${businessName}` : ""}. Your
-                account is live and your listing carries the verified tick. Sign in
-                with the email and password you chose.
-              </p>
-              <div className="b-flow__actions">
-                <Link href="/login" className="t-btn t-btn--primary">
-                  Sign in
-                </Link>
-                <Link href="/" className="t-btn t-btn--secondary">
-                  Back to Tembera
-                </Link>
-              </div>
-            </section>
+            <PaymentSuccess businessName={businessName} email={email} />
           )}
 
           {state === "pending" && (

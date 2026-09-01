@@ -8,7 +8,7 @@ import { loginAction, type AuthState } from "@/lib/actions/auth";
 
 const initial: AuthState = {};
 
-export default function LoginForm() {
+export default function LoginForm({ email }: { email?: string }) {
   const [state, action, pending] = useActionState(loginAction, initial);
 
   return (
@@ -60,6 +60,10 @@ export default function LoginForm() {
                   name="email"
                   autoComplete="email"
                   placeholder="name@example.com"
+                  // Filled when we already know who is arriving — straight
+                  // after a business sign-up, retyping the address they just
+                  // gave us is a small insult.
+                  defaultValue={email}
                   required
                 />
               </label>

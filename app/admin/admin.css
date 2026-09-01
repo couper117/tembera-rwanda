@@ -2398,3 +2398,90 @@ a.a-count:hover .a-count__label {
   font-weight: 700;
   letter-spacing: 0.06em;
 }
+
+/* ------------------------------------------------------ payment success -- */
+
+.b-success {
+  text-align: center;
+  padding-top: var(--t-6);
+}
+
+.b-success__title {
+  margin-top: var(--t-4);
+}
+
+/* The tick draws itself: the ring sweeps round, then the mark is written into
+   it. Motion is what the eye reads as confirmation — a tick that is simply
+   present is just another piece of layout, and this is the one moment in the
+   product where somebody is actively worried it did not work. */
+.b-tick {
+  display: inline-block;
+  width: 84px;
+  height: 84px;
+}
+
+.b-tick svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.b-tick__ring {
+  stroke: var(--t-open, #1f7a3d);
+  stroke-width: 2.5;
+  /* 2πr for r=24, rounded up so no sliver is left undrawn. */
+  stroke-dasharray: 152;
+  stroke-dashoffset: 152;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+  animation: b-ring 620ms var(--t-ease, cubic-bezier(0.4, 0, 0.2, 1)) forwards;
+}
+
+.b-tick__mark {
+  stroke: var(--t-open, #1f7a3d);
+  stroke-width: 3.5;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  /* Starts as the ring closes, so the two read as one gesture rather than two. */
+  animation: b-mark 380ms var(--t-ease, cubic-bezier(0.4, 0, 0.2, 1)) 460ms forwards;
+}
+
+@keyframes b-ring {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes b-mark {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* A confirmation nobody can read is worse than no animation. Reduced motion
+   gets the finished tick immediately rather than a shorter version of the
+   same movement. */
+@media (prefers-reduced-motion: reduce) {
+  .b-tick__ring,
+  .b-tick__mark {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+.b-success__next {
+  margin-top: var(--t-5);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-3);
+  /* Fixed height: the countdown loses a digit as it runs, and letting the
+     buttons jump a pixel every second undoes the calm this screen is for. */
+  min-height: 1.4em;
+}
+
+.b-success .b-flow__actions {
+  justify-content: center;
+  margin-top: var(--t-3);
+}
