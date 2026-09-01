@@ -198,6 +198,7 @@ export async function registerBusinessAction(
             paymentUrl: opened.session.paymentUrl,
             sessionExpiresAt: opened.session.expiresAt,
             sessionOrigin: base,
+            sessionTxRef: opened.session.txRef,
           },
         });
       } else {

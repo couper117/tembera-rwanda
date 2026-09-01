@@ -149,6 +149,17 @@ API:**
   the test runner can import it.
 - `verify` returns **200 with `"Transaction not found"`** for a reference nobody
   has paid, not a 404. A not-found is "no", not an error.
+- **`/transactions` is OLDEST-first, paginated, and ignores every sort
+  parameter** (`sort`, `order`, `sort_by` all return page one unchanged). Page
+  one is the account's first fifty transactions, from months ago; a payment
+  made a minute ago is on the LAST page. Scanning page one — which is what
+  reconciliation did — found nothing, ever, and the failure is indistinguishable
+  from "the payment did not happen". `findTransaction` reads page one for the
+  pagination header then walks backwards from the last page.
+- **Verify is keyed on `tx_ref`, and a retry's `tx_ref` is not our reference.**
+  So the attempt's tx_ref is stored on the registration (`sessionTxRef`) and
+  passed to `verifyPayment`; without it a retried payment is asked about under
+  an identifier the gateway has never seen.
 - **Checkout sessions expire after 30 minutes, and `tx_ref` must be globally
   unique.** The two together are nastier than either alone: you cannot reopen
   an expired checkout by re-sending the same `tx_ref` — the gateway answers 409

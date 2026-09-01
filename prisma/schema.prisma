@@ -498,6 +498,11 @@ model BusinessRegistration {
   /// localhost:4100 returns the payer to localhost:4100 whatever they are
   /// using now — so a stored session is only reusable from the same origin.
   sessionOrigin    String?        @map("session_origin")
+  /// The gateway-facing `tx_ref` of the CURRENT attempt. Not the same as
+  /// `reference`: tx_ref must be globally unique so a retry gets a suffixed
+  /// one, and verify is keyed on it. Without storing it there is no way to ask
+  /// the gateway about the attempt that is actually open.
+  sessionTxRef     String?        @map("session_tx_ref")
   /// How the money was confirmed: "gateway" when RwandaPay told us, "manual"
   /// when an admin matched it on a statement. Worth keeping — the two have
   /// very different levels of evidence behind them.

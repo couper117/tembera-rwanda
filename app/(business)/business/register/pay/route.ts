@@ -95,6 +95,7 @@ export async function GET(request: Request) {
       paymentUrl: opened.session.paymentUrl,
       sessionExpiresAt: opened.session.expiresAt,
       sessionOrigin: base,
+      sessionTxRef: opened.session.txRef,
     },
   });
 

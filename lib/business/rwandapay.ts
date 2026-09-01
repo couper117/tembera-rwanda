@@ -44,8 +44,10 @@ function authHeaders(): Record<string, string> {
 }
 
 export interface CheckoutSession {
-  /** Our own reference, echoed back. This is what `verify` is keyed on. */
+  /** Our own stable reference. Everything downstream reconciles on this. */
   reference: string;
+  /** The gateway-facing id for this attempt. Verify is keyed on this one. */
+  txRef: string;
   sessionId: string;
   paymentUrl: string;
   expiresAt: Date | null;
@@ -150,6 +152,7 @@ export async function initializeCheckout(input: {
       // Our stable reference, not the per-attempt tx_ref: everything
       // downstream reconciles on this one.
       reference: input.reference,
+      txRef,
       sessionId,
       paymentUrl,
       expiresAt:
@@ -196,11 +199,25 @@ export interface PaymentStatus {
  * reference all come back `paid: false`, because the only thing this answer
  * decides is whether to issue a paid account, and the safe default is not to.
  */
-export async function verifyPayment(reference: string): Promise<PaymentStatus> {
+export async function verifyPayment(
+  reference: string,
+  /**
+   * The tx_ref of the attempt currently open, when we have it. Verify is keyed
+   * on tx_ref, and a retry's tx_ref is not our reference — so without this,
+   * every retried payment is asked about under an identifier the gateway has
+   * never seen.
+   */
+  txRef?: string,
+): Promise<PaymentStatus> {
   if (!gatewayConfigured()) return { paid: false, status: "unconfigured" };
 
   const direct = await verifyDirect(reference);
   if (direct.paid) return direct;
+
+  if (txRef && txRef !== reference) {
+    const byAttempt = await verifyDirect(txRef);
+    if (byAttempt.paid) return byAttempt;
+  }
 
   const found = await findTransaction(reference);
   if (found) {
@@ -248,9 +265,39 @@ interface GatewayTransaction {
  * money is in.
  */
 async function findTransaction(reference: string): Promise<GatewayTransaction | null> {
+  // The list is OLDEST first, paginated, and ignores every sort parameter it
+  // was offered (`sort`, `order`, `sort_by`) — so page one is the account's
+  // first fifty transactions, from months ago, and a payment made a minute ago
+  // is on the LAST page. Scanning page one found nothing, ever, which is a
+  // failure that looks exactly like "the payment did not happen".
+  //
+  // So: read page one for the pagination header, then walk backwards from the
+  // last page. A payment we are asking about is minutes old, so it is at the
+  // end; two pages is a hundred transactions of slack.
+  const first = await fetchTransactions(1);
+  if (!first) return null;
+
+  const match = scan(first.rows, reference);
+  if (match) return match;
+
+  for (let page = first.lastPage; page > 1 && page >= first.lastPage - 1; page--) {
+    const later = await fetchTransactions(page);
+    if (!later) break;
+    const hit = scan(later.rows, reference);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+interface TransactionPage {
+  rows: Record<string, unknown>[];
+  lastPage: number;
+}
+
+async function fetchTransactions(page: number): Promise<TransactionPage | null> {
   let res: Response;
   try {
-    res = await fetch(`${BASE}/transactions?per_page=50`, {
+    res = await fetch(`${BASE}/transactions?per_page=50&page=${page}`, {
       headers: authHeaders(),
       cache: "no-store",
     });
@@ -259,15 +306,32 @@ async function findTransaction(reference: string): Promise<GatewayTransaction | 
   }
 
   const body = (await res.json().catch(() => null)) as
-    | { data?: { data?: unknown[] } | unknown[] }
+    | { data?: { data?: unknown[]; last_page?: number } | unknown[] }
     | null;
-  const rows = Array.isArray(body?.data)
-    ? body.data
-    : Array.isArray((body?.data as { data?: unknown[] } | undefined)?.data)
-      ? (body!.data as { data: unknown[] }).data
-      : [];
+  if (!body?.data) return null;
 
-  for (const row of rows as Record<string, unknown>[]) {
+  if (Array.isArray(body.data)) {
+    return { rows: body.data as Record<string, unknown>[], lastPage: 1 };
+  }
+  const inner = body.data as { data?: unknown[]; last_page?: number };
+  return {
+    rows: (inner.data ?? []) as Record<string, unknown>[],
+    lastPage: typeof inner.last_page === "number" ? inner.last_page : 1,
+  };
+}
+
+/**
+ * A successful transaction carrying our reference.
+ *
+ * Matches on the two fields that survive the checkout onto the transaction.
+ * The status set seen on this account is `successful` and `completed`; both
+ * mean the money is in, and anything else does not.
+ */
+function scan(
+  rows: Record<string, unknown>[],
+  reference: string,
+): GatewayTransaction | null {
+  for (const row of rows) {
     const status = typeof row.status === "string" ? row.status : "";
     if (status !== "successful" && status !== "completed") continue;
 
@@ -275,8 +339,13 @@ async function findTransaction(reference: string): Promise<GatewayTransaction | 
     const meta = row.metadata as Record<string, unknown> | null | undefined;
     const tagged =
       typeof meta?.tembera_reference === "string" ? meta.tembera_reference : "";
+    const txRef = typeof row.tx_ref === "string" ? row.tx_ref : "";
 
-    if (description.includes(reference) || tagged === reference) {
+    if (
+      description.includes(reference) ||
+      tagged === reference ||
+      txRef.startsWith(reference)
+    ) {
       const ref = typeof row.reference === "string" ? row.reference : reference;
       return { reference: ref, status };
     }

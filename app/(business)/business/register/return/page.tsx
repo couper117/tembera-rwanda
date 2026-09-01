@@ -48,7 +48,10 @@ export default async function PaymentReturnPage({
     );
   }
 
-  const status = await verifyPayment(registration.reference);
+  const status = await verifyPayment(
+    registration.reference,
+    registration.sessionTxRef ?? undefined,
+  );
 
   if (!status.paid) {
     return (
