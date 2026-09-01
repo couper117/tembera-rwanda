@@ -132,6 +132,28 @@ reviews section.
   `app/components.css` (auto-merged cleanly). The redesigned landing page
   needed no changes to read Postgres — the `lib/data` seam did its job.
 
+### The admin dashboard was rebuilt
+Four things were actually wrong, all in `app/admin/(dash)/page.tsx` and
+`app/admin/admin.css`:
+
+- `.a-stats` was `repeat(6, 1fr)` while every row on the dashboard holds four
+  cards, so two columns' worth of screen sat empty to the right of each row.
+  Column counts are declared per row now (`.a-stats--4`).
+- Eight identically-weighted cards said nothing about where to start. The four
+  queues (`Stat attention`) now tint when they hold work and recede at zero;
+  the four catalogue counts moved to a quiet `CountStrip` at the bottom.
+- `.a-cols` split 1.6/1, which stranded a two-item queue beside a taller
+  column with the screen empty underneath. `.a-cols--even` puts Awaiting review
+  and Recent activity side by side at equal weight.
+- Below 600px `.a-stats` collapsed to one column, turning four short numbers
+  into four full-width cards. Two per row now.
+
+Also: form labels (`.a-label`) and stat labels are sentence case — uppercase is
+kept only for table column headers, where it is structure rather than prose;
+`.a-hint` help text was the smallest size in the palest ink, and is now
+readable; the sparkline dropped from 140px to 56px and moved into the panel it
+describes.
+
 ### Maps need no API key
 `/map`, `/navigate/[id]` and the place-page map all draw with **Leaflet over
 OpenStreetMap tiles**, and routing comes from the public **OSRM** server. There

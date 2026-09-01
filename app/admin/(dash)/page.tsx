@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { PageHead, Panel, Stat } from "@/components/admin/ui";
+import { CountStrip, PageHead, Panel, Stat } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
 import { adminDate } from "@/lib/admin/placeholder";
 import { recentAudit } from "@/lib/audit";
@@ -75,12 +75,14 @@ export default async function AdminDashboardPage() {
         }
       />
 
-      {/* Two rows, deliberately. The first is work waiting on somebody; the
-          second is the size and health of the catalogue. Mixing them makes a
-          number nobody can act on sit beside one that needs doing today. */}
+      {/* What is waiting on somebody. Four queues, and a queue at zero looks
+          different from a queue with work in it — that difference is the whole
+          job of this row. The size of the catalogue is a separate question and
+          sits at the bottom of the page, where it belongs. */}
       <h2 className="a-statsgroup">Needs attention</h2>
-      <div className="a-stats">
+      <div className="a-stats a-stats--4">
         <Stat
+          attention
           label="Open reports"
           value={openReports}
           icon="alert"
@@ -88,6 +90,7 @@ export default async function AdminDashboardPage() {
           href="/admin/reports"
         />
         <Stat
+          attention
           label="Submissions"
           value={pendingSubmissions.length}
           icon="mail"
@@ -95,6 +98,7 @@ export default async function AdminDashboardPage() {
           href="/admin/submissions"
         />
         <Stat
+          attention
           label="Drafts"
           value={drafts}
           icon="pin"
@@ -102,129 +106,139 @@ export default async function AdminDashboardPage() {
           href="/admin/places?status=draft"
         />
         <Stat
+          attention
           label="Missing a photo"
           value={missingPhoto}
           icon="image"
-          note="of the whole catalogue"
+          note={`of ${places.toLocaleString()} listings`}
           href="/admin/places?gap=no-photo"
         />
       </div>
 
-      <h2 className="a-statsgroup">The catalogue</h2>
-      <div className="a-stats">
-        <Stat label="Places" value={places} icon="pin" note="listed" href="/admin/places" />
-        <Stat
-          label="Categories"
-          value={categories}
-          icon="list"
-          note={`${cities} districts`}
-          href="/admin/categories"
-        />
-        {admin && (
-          <Stat label="Users" value={users} icon="user" note="accounts" href="/admin/users" />
-        )}
-        {admin && (
-          <Stat
-            label="Businesses"
-            value={businesses.length}
-            icon="basket"
-            note={`${unverified} unverified`}
-            href="/admin/businesses"
-          />
-        )}
-      </div>
-
-      <div className="a-cols">
-        <div>
-          <Panel
-            title="Awaiting review"
-            action={
-              <Link href="/admin/submissions" className="t-btn t-btn--ghost t-btn--sm">
-                See all
-                <Icon name="chevronRight" size={15} />
-              </Link>
-            }
-            flush
-          >
-            {pendingSubmissions.length === 0 ? (
-              <p className="a-empty">Nothing waiting. The queue is clear.</p>
-            ) : (
-              <div className="a-queue">
-                {pendingSubmissions.slice(0, 4).map((s) => {
-                  const payload = s.payload as { name?: string } | null;
-                  return (
-                    <Link
-                      key={s.id}
-                      href={`/admin/submissions/${s.id}`}
-                      className="a-queue__item"
-                    >
-                      <span className="a-queue__icon">
-                        <Icon name="mail" size={18} />
-                      </span>
-                      <span className="a-queue__body">
-                        <span className="a-queue__name">
-                          {s.kind === "create"
-                            ? payload?.name ?? "A new listing"
-                            : `Changes to ${s.placeId ?? "a listing"}`}
-                        </span>
-                        <span className="a-queue__meta">
-                          {s.business.name} · {adminDate(s.createdAt)}
-                        </span>
-                      </span>
-                      <Icon name="chevronRight" size={16} />
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-
-        </div>
-
-        <div>
-          <Panel title="Submissions per week">
-            <TrendChart values={weeklySubmissions} />
-            <p className="a-hint" style={{ marginTop: "var(--t-2)" }}>
-              The last eight weeks.
-            </p>
-          </Panel>
-
-          <Panel
-            title="Recent activity"
-            action={
-              <Link href="/admin/activity" className="t-btn t-btn--ghost t-btn--sm">
-                See all
-                <Icon name="chevronRight" size={15} />
-              </Link>
-            }
-            flush
-          >
-            {activity.length === 0 ? (
-              <p className="a-empty">
-                Nothing changed yet. Every edit made here is recorded.
-              </p>
-            ) : (
-              <div className="a-queue">
-                {activity.map((event) => (
-                  <div key={event.id} className="a-queue__item">
+      {/* The two panels an editor actually reads: what is waiting, and what
+          just happened. Side by side and equal, rather than one of them
+          stranded beside a column of taller cards. */}
+      <div className="a-cols a-cols--even">
+        <Panel
+          title="Awaiting review"
+          action={
+            <Link href="/admin/submissions" className="t-btn t-btn--ghost t-btn--sm">
+              See all
+              <Icon name="chevronRight" size={15} />
+            </Link>
+          }
+          flush
+        >
+          {pendingSubmissions.length === 0 ? (
+            <p className="a-empty">Nothing waiting. The queue is clear.</p>
+          ) : (
+            <div className="a-queue">
+              {pendingSubmissions.slice(0, 5).map((s) => {
+                const payload = s.payload as { name?: string } | null;
+                return (
+                  <Link
+                    key={s.id}
+                    href={`/admin/submissions/${s.id}`}
+                    className="a-queue__item"
+                  >
                     <span className="a-queue__icon">
-                      <Icon name="refresh" size={17} />
+                      <Icon name="mail" size={18} />
                     </span>
                     <span className="a-queue__body">
                       <span className="a-queue__name">
-                        {event.actor?.name ?? "A removed account"} · <code>{event.action}</code>
+                        {s.kind === "create"
+                          ? payload?.name ?? "A new listing"
+                          : `Changes to ${s.placeId ?? "a listing"}`}
                       </span>
                       <span className="a-queue__meta">
-                        {event.entityId} · {adminDate(event.createdAt)}
+                        {s.business.name} · {adminDate(s.createdAt)}
                       </span>
                     </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Panel>
-        </div>
+                    <Icon name="chevronRight" size={16} />
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* The trend belongs with the queue it describes, not in a panel of
+              its own — on a quiet week that panel was a box with one line in
+              it taking a quarter of the screen. */}
+          <div className="a-panel__foot">
+            <p className="a-hint">Submissions per week, last eight weeks</p>
+            <TrendChart values={weeklySubmissions} />
+          </div>
+        </Panel>
+
+        <Panel
+          title="Recent activity"
+          action={
+            <Link href="/admin/activity" className="t-btn t-btn--ghost t-btn--sm">
+              See all
+              <Icon name="chevronRight" size={15} />
+            </Link>
+          }
+          flush
+        >
+          {activity.length === 0 ? (
+            <p className="a-empty">
+              Nothing changed yet. Every edit made here is recorded.
+            </p>
+          ) : (
+            <div className="a-queue">
+              {activity.map((event) => (
+                <div key={event.id} className="a-queue__item">
+                  <span className="a-queue__icon">
+                    <Icon name="refresh" size={17} />
+                  </span>
+                  <span className="a-queue__body">
+                    <span className="a-queue__name">
+                      {event.actor?.name ?? "A removed account"} · <code>{event.action}</code>
+                    </span>
+                    <span className="a-queue__meta">
+                      {event.entityId} · {adminDate(event.createdAt)}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
       </div>
+
+      <Panel title="The catalogue">
+        <CountStrip
+          items={[
+            { label: "places", value: places, icon: "pin", note: "listed", href: "/admin/places" },
+            {
+              label: "categories",
+              value: categories,
+              icon: "list",
+              note: `${cities} districts`,
+              href: "/admin/categories",
+            },
+            ...(admin
+              ? [
+                  {
+                    label: "users",
+                    value: users,
+                    icon: "user" as const,
+                    note: "accounts",
+                    href: "/admin/users",
+                  },
+                  {
+                    label: "businesses",
+                    value: businesses.length,
+                    icon: "basket" as const,
+                    note: `${unverified} unverified`,
+                    href: "/admin/businesses",
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </Panel>
+
     </>
   );
 }

@@ -99,13 +99,30 @@ export function Stat({
   icon,
   note,
   href,
+  attention = false,
 }: {
   label: string;
   value: number | string;
   icon: IconName;
   note?: string;
   href?: string;
+  /**
+   * This number is a queue, not an inventory. A queue at zero is good news and
+   * fades back; anything above zero is work waiting and takes a tint. Eight
+   * identically-weighted cards told an editor nothing about where to start.
+   */
+  attention?: boolean;
 }) {
+  const waiting = attention && typeof value === "number" && value > 0;
+  const className = [
+    "a-stat",
+    attention ? "a-stat--attention" : "",
+    waiting ? "a-stat--waiting" : "",
+    attention && !waiting ? "a-stat--clear" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const inner = (
     <>
       <span className="a-stat__top">
@@ -122,11 +139,49 @@ export function Stat({
   // A number you can't act on is a poster, not a dashboard — every stat that
   // has a screen behind it links to it.
   return href ? (
-    <Link href={href} className="a-stat">
+    <Link href={href} className={className}>
       {inner}
     </Link>
   ) : (
-    <div className="a-stat">{inner}</div>
+    <div className={className}>{inner}</div>
+  );
+}
+
+/**
+ * The quiet counts: how big the catalogue is, rather than what needs doing.
+ *
+ * A row of full cards for these competed with the queue above them, and the
+ * two answer completely different questions. One line each, no boxes.
+ */
+export function CountStrip({
+  items,
+}: {
+  items: { label: string; value: number; icon: IconName; note?: string; href?: string }[];
+}) {
+  return (
+    <div className="a-counts">
+      {items.map((item) => {
+        const inner = (
+          <>
+            <span className="a-count__icon">
+              <Icon name={item.icon} size={16} />
+            </span>
+            <span className="a-count__value">{item.value.toLocaleString()}</span>
+            <span className="a-count__label">{item.label}</span>
+            {item.note && <span className="a-count__note">{item.note}</span>}
+          </>
+        );
+        return item.href ? (
+          <Link key={item.label} href={item.href} className="a-count">
+            {inner}
+          </Link>
+        ) : (
+          <div key={item.label} className="a-count">
+            {inner}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
