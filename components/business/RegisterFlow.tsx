@@ -414,6 +414,8 @@ export default function RegisterFlow({
             planName={planById(state.awaitingPayment.plan)?.name ?? state.awaitingPayment.plan}
             notice={state.notice}
             payTo={payTo}
+            paymentUrl={state.awaitingPayment.paymentUrl}
+            gatewayError={state.awaitingPayment.gatewayError}
           />
         )}
       </main>
@@ -435,14 +437,66 @@ function PaymentStep({
   planName,
   notice,
   payTo,
+  paymentUrl,
+  gatewayError,
 }: {
   reference: string;
   amountRwf: number;
   planName: string;
   notice?: string;
   payTo: PayTo | null;
+  /** RwandaPay's hosted checkout, when one was opened. */
+  paymentUrl?: string;
+  /** Why there is not one, when there is not. */
+  gatewayError?: string;
 }) {
   const [copied, setCopied] = useState(false);
+
+  // With a hosted checkout open, paying is one button and the account appears
+  // by itself. Without one, it falls back to mobile money by hand — the
+  // registration is already saved either way, so a gateway that is down costs
+  // the person a slower route, not their details.
+  if (paymentUrl) {
+    return (
+      <section className="b-panel">
+        <h1 className="b-panel__title">Pay {formatRwf(amountRwf)} to finish</h1>
+        <p className="b-panel__lede">
+          {planName}, paid monthly. Your details are saved — the account opens
+          the moment the payment clears, and not a moment before.
+        </p>
+
+        {notice && (
+          <p className="b-note">
+            <Icon name="info" size={16} />
+            <span>{notice}</span>
+          </p>
+        )}
+
+        <div className="b-flow__actions">
+          <a href={paymentUrl} className="t-btn t-btn--primary">
+            <Icon name="shield" size={17} />
+            Pay {formatRwf(amountRwf)} securely
+          </a>
+        </div>
+
+        <p className="b-note">
+          <Icon name="shield" size={16} />
+          <span>
+            You pay on RwandaPay, not here — Tembera never sees your mobile
+            money PIN or your card. Your reference is{" "}
+            <strong>{reference}</strong>; keep it if you need to ask us about
+            this payment.
+          </span>
+        </p>
+
+        <div className="b-flow__actions">
+          <Link href="/" className="t-btn t-btn--secondary">
+            I will pay later
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="b-panel">
@@ -451,6 +505,16 @@ function PaymentStep({
         Your details are saved. {planName} costs {formatRwf(amountRwf)} a month,
         and your account opens as soon as we match your payment.
       </p>
+
+      {gatewayError && (
+        <p className="b-note">
+          <Icon name="info" size={16} />
+          <span>
+            Card and mobile money checkout is unavailable right now
+            ({gatewayError}), so here is how to pay us directly.
+          </span>
+        </p>
+      )}
 
       {notice && (
         <p className="b-note">

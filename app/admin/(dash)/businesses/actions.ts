@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
+import { activateRegistration } from "@/lib/business/activate";
 
 /**
  * Business standing.
@@ -64,15 +65,16 @@ const decision = z.object({
  * the old flow granted all of it the instant somebody picked a plan from a
  * dropdown.
  *
- * One transaction, because a half-issued account is the worst of both states.
- * Interactive transactions are exactly why lib/prisma.ts uses the Neon
- * WebSocket driver rather than the HTTP one.
+ * The account itself is created by activateRegistration, which the gateway
+ * callback and the webhook also call. Confirming by hand and confirming by
+ * payment therefore produce exactly the same account, and a manual
+ * confirmation racing a late webhook cannot produce two.
  *
- * ADMIN only. Confirming a payment is a financial assertion and it hands out
- * the tick; an EDITOR fixing opening hours has no business making it.
- *
- * When a payment provider is wired up, its webhook calls this same path with
- * the provider's transaction id — see lib/business/payments.ts.
+ * This path is the fallback: it exists for money that arrives outside the
+ * gateway — a direct mobile money transfer against the reference — and for the
+ * case where the gateway is unreachable. ADMIN only, because confirming a
+ * payment is a financial assertion and it hands out the verified tick; an
+ * EDITOR fixing opening hours has no business making it.
  */
 export async function decideRegistrationAction(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
@@ -106,84 +108,11 @@ export async function decideRegistrationAction(formData: FormData): Promise<void
     return;
   }
 
-  // The email may have been claimed while the money was in transit.
-  const taken = await prisma.user.findUnique({
-    where: { email: registration.email },
-    select: { id: true },
-  });
-  if (taken) return;
-
-  const handle = await uniqueRegistrationHandle(registration.businessName);
-
-  await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        email: registration.email,
-        name: registration.contactName,
-        handle,
-        // Reused, never regenerated: they chose this password before paying
-        // and expect to sign in with it.
-        passwordHash: registration.passwordHash,
-        role: "BUSINESS",
-        homeCity: registration.city,
-      },
-    });
-
-    const business = await tx.business.create({
-      data: {
-        name: registration.businessName,
-        contactName: registration.contactName,
-        email: registration.email,
-        phone: registration.phone,
-        city: registration.city,
-        plan: registration.plan,
-        // Verified here and only here. Paying is half of it; the other half is
-        // that an admin has just looked at this row and decided it is real.
-        status: "verified",
-      },
-    });
-
-    await tx.businessMember.create({
-      data: { businessId: business.id, userId: user.id, owner: true },
-    });
-
-    await tx.businessRegistration.update({
-      where: { id: registration.id },
-      data: {
-        status: "active",
-        decidedAt: new Date(),
-        decidedById: admin.id,
-        businessId: business.id,
-      },
-    });
-  });
-
-  await recordAudit({
-    actorId: admin.id,
-    action: "registration.confirm",
-    entity: "registration",
-    entityId: String(registration.id),
-    meta: {
-      business: registration.businessName,
-      plan: registration.plan,
-      reference: registration.reference,
-      amountRwf: registration.amountRwf,
-    },
-  });
+  // One shared path with the gateway callback and the webhook, so an account
+  // created by hand is identical to one created by a confirmed payment — and
+  // so a manual confirmation racing a late webhook cannot make two.
+  const result = await activateRegistration(registration.reference, "manual", admin.id);
+  if (!result.ok) return;
 
   revalidatePath("/admin/businesses");
-}
-
-/** Same rule as the free sign-up path, kept here so neither can drift. */
-async function uniqueRegistrationHandle(businessName: string): Promise<string> {
-  const base =
-    businessName.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 20) || "business";
-  for (let n = 1; ; n++) {
-    const candidate = n === 1 ? base : `${base}${n}`;
-    const taken = await prisma.user.findUnique({
-      where: { handle: candidate },
-      select: { handle: true },
-    });
-    if (!taken) return candidate;
-  }
 }

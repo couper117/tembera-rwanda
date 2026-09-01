@@ -132,6 +132,45 @@ reviews section.
   `app/components.css` (auto-merged cleanly). The redesigned landing page
   needed no changes to read Postgres — the `lib/data` seam did its job.
 
+### RwandaPay is wired up (test keys)
+`lib/business/rwandapay.ts` is the client. Keys live in `.env` (gitignored) as
+`RWANDAPAY_PUBLIC_KEY` / `RWANDAPAY_SECRET_KEY` — **never `NEXT_PUBLIC_`**, that
+prefix compiles a value into the browser bundle.
+
+**Three things the docs do not tell you, all found by probing the live test
+API:**
+- `Idempotency-Key` is **mandatory** on financial calls. Without it you get a
+  400 `IDEMPOTENCY_KEY_REQUIRED` before the body is even looked at. Our
+  reference doubles as the key, so a resubmitted sign-up reuses its session
+  instead of charging twice.
+- Phone numbers must be **local ten-digit** (`0788123456`). The international
+  form the sign-up form asks for is rejected with a 422. `lib/business/phone.ts`
+  normalises it — pure and unit-tested, deliberately free of `server-only` so
+  the test runner can import it.
+- `verify` returns **200 with `"Transaction not found"`** for a reference nobody
+  has paid, not a 404. A not-found is "no", not an error.
+
+Flow: sign-up creates the registration → `initializeCheckout` opens a hosted
+session and stores `sessionId` / `paymentUrl` → payer goes to RwandaPay →
+`/business/register/return` and `/api/webhooks/rwandapay` both come back.
+
+**Neither of those trusts what it is handed.** The return page proves only that
+a browser followed a link; the webhook body is attacker-controllable. Both call
+`verifyPayment` server-to-server and only an explicit paid answer creates
+anything. A forged webhook claiming `status: successful` was tested and
+correctly refused.
+
+`lib/business/activate.ts` is the **only** function that turns a registration
+into an account, called by the return page, the webhook and the admin confirm.
+It is idempotent by conditional `updateMany` — the redirect and the webhook
+race each other constantly, and a `findUnique` then `update` would let both
+through and make two accounts for one payment.
+
+**Still to do:** nobody has completed an actual test payment through the hosted
+checkout, so the paid branch of `verify` is unexercised. Set
+`RWANDAPAY_WEBHOOK_SECRET` and `PUBLIC_SITE_URL` before production — webhooks
+cannot reach localhost.
+
 ### Paid sign-ups no longer hand out accounts
 **The hole:** `registerBusinessAction` read the plan off a dropdown and created
 a live User + Business with it. Picking "Top" gave somebody the verified tick

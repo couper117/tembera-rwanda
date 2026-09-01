@@ -484,6 +484,19 @@ model BusinessRegistration {
   /// an admin matches against the statement. Short, unambiguous, unique.
   reference    String             @unique
   status       RegistrationStatus @default(awaiting_payment)
+  /// RwandaPay's id for the hosted checkout we opened for this sign-up.
+  /// Null when the gateway is not configured and payment is being taken by
+  /// hand — that fallback is deliberate, see lib/business/payments.ts.
+  sessionId    String?            @map("session_id")
+  /// Where to send the payer. Sessions expire, so this is a record of what we
+  /// opened rather than a link to be reused indefinitely.
+  paymentUrl   String?            @map("payment_url")
+  /// When the hosted session stops accepting payment.
+  sessionExpiresAt DateTime?      @map("session_expires_at")
+  /// How the money was confirmed: "gateway" when RwandaPay told us, "manual"
+  /// when an admin matched it on a statement. Worth keeping — the two have
+  /// very different levels of evidence behind them.
+  confirmedVia String?            @map("confirmed_via")
   /// What the payer said they sent it from, if they told us. A hint for the
   /// person reconciling, never a credential.
   payerNote    String?            @map("payer_note")

@@ -19,6 +19,8 @@ import {
 import { firstError, fieldErrors, type FieldErrors } from "@/lib/validation/admin";
 import { isPaidPlan, planById } from "@/lib/business/plans";
 import { newReference } from "@/lib/business/payments";
+import { gatewayConfigured, initializeCheckout } from "@/lib/business/rwandapay";
+import { siteUrl } from "@/lib/site-url";
 
 export interface BusinessState {
   error?: string;
@@ -29,7 +31,16 @@ export interface BusinessState {
    * A paid sign-up that is waiting for money. The form shows the payment step
    * instead of navigating to a dashboard that does not exist yet.
    */
-  awaitingPayment?: { reference: string; plan: string; amountRwf: number };
+  awaitingPayment?: {
+    reference: string;
+    plan: string;
+    amountRwf: number;
+    /** RwandaPay's hosted checkout. Absent when the gateway is unconfigured or
+     *  refused, in which case the screen falls back to paying by hand. */
+    paymentUrl?: string;
+    /** Why there is no payment link, when there is not one. */
+    gatewayError?: string;
+  };
   /**
    * What was submitted, echoed back.
    *
@@ -131,7 +142,7 @@ export async function registerBusinessAction(
     // whoever reconciles the statement has to guess which is real.
     const existing = await prisma.businessRegistration.findFirst({
       where: { email: d.email, status: "awaiting_payment" },
-      select: { reference: true, plan: true, amountRwf: true },
+      select: { reference: true, plan: true, amountRwf: true, paymentUrl: true },
     });
     if (existing) {
       return {
@@ -139,6 +150,7 @@ export async function registerBusinessAction(
           reference: existing.reference,
           plan: existing.plan,
           amountRwf: existing.amountRwf,
+          paymentUrl: existing.paymentUrl ?? undefined,
         },
         notice: "You already have a sign-up waiting on payment. Use the same reference.",
       };
@@ -160,11 +172,45 @@ export async function registerBusinessAction(
       },
     });
 
+    // Open a hosted checkout, if the gateway is configured. A failure here is
+    // not a failure of the sign-up: the registration is already saved, so the
+    // screen falls back to the mobile-money-by-hand route rather than losing
+    // everything the person typed.
+    let paymentUrl: string | undefined;
+    let gatewayError: string | undefined;
+
+    if (gatewayConfigured()) {
+      const base = await siteUrl();
+      const opened = await initializeCheckout({
+        reference: registration.reference,
+        amountRwf: registration.amountRwf,
+        customer: { name: d.contactName, phone: d.phone, email: d.email },
+        redirectUrl: `${base}/business/register/return?ref=${encodeURIComponent(registration.reference)}`,
+        webhookUrl: `${base}/api/webhooks/rwandapay`,
+      });
+
+      if (opened.ok) {
+        paymentUrl = opened.session.paymentUrl;
+        await prisma.businessRegistration.update({
+          where: { id: registration.id },
+          data: {
+            sessionId: opened.session.sessionId,
+            paymentUrl: opened.session.paymentUrl,
+            sessionExpiresAt: opened.session.expiresAt,
+          },
+        });
+      } else {
+        gatewayError = opened.error;
+      }
+    }
+
     return {
       awaitingPayment: {
         reference: registration.reference,
         plan: registration.plan,
         amountRwf: registration.amountRwf,
+        paymentUrl,
+        gatewayError,
       },
     };
   }
