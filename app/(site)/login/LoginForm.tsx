@@ -102,6 +102,22 @@ export default function LoginForm({ email }: { email?: string }) {
             <Link href="/register" className="t-btn t-btn--secondary t-btn--block">
               Create a free account
             </Link>
+
+            {/* The business funnel is a different door, and somebody who owns
+                a restaurant should not have to find it from the visitor
+                sign-up. Same pattern as above so it reads as a second option
+                rather than an advert. */}
+            <div className="t-authcard__divider">
+              <span>Are you a business?</span>
+            </div>
+
+            <Link
+              href="/business/register"
+              className="t-btn t-btn--secondary t-btn--block"
+            >
+              <Icon name="basket" size={17} />
+              Register now
+            </Link>
           </form>
         </div>
       </div>
