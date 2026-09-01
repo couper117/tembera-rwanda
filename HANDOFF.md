@@ -132,6 +132,22 @@ reviews section.
   `app/components.css` (auto-merged cleanly). The redesigned landing page
   needed no changes to read Postgres — the `lib/data` seam did its job.
 
+### Maps need no API key
+`/map`, `/navigate/[id]` and the place-page map all draw with **Leaflet over
+OpenStreetMap tiles**, and routing comes from the public **OSRM** server. There
+is no Google Maps key anywhere, `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is gone from
+`.env.example` and the README, and the "Map view isn't switched on" /
+"key was rejected" product states are deleted — they cannot happen.
+
+Before this gets busy, **move the tiles off OSM's donated infrastructure**:
+their usage policy is written for modest traffic. It is a one-line change to
+`TILE_URL` in `components/map/rwandaMap.ts` (MapTiler, Thunderforest, Stadia,
+or self-hosted). Nothing else has to change.
+
+This also settles the long-standing "the Google Maps key is in git history and
+must be revoked" item: the key is no longer used by anything, so revoking it
+now costs nothing. **It still has to be revoked.**
+
 ### Traps found the hard way
 - **The `prisma` CLI publishes an RC to its `latest` tag.** A plain
   `npm install prisma` gives 8.0.0-rc.12 against a stable 7.10.0 client — a

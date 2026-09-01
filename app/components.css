@@ -2728,18 +2728,6 @@ a.t-notice:hover {
   inset: 0;
 }
 
-.t-nav__nomap {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: var(--t-2);
-  padding: var(--t-4);
-  text-align: center;
-  color: var(--t-ink-3);
-}
-
 .t-nav__panel {
   flex: 1;
   min-height: 0;
@@ -4076,4 +4064,29 @@ button.t-profile__stat:active {
 
 .t-readmore__toggle[aria-expanded="true"] svg {
   transform: rotate(180deg);
+}
+
+/* Leaflet's own panes and controls sit at z-index 400-1000, which is above the
+   sticky header and the bottom nav. Both full-screen maps are their own
+   stacking context so none of it escapes, the same containment the place-page
+   map uses. */
+.t-map__canvas,
+.t-nav__canvas {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* The tile credit is a licence requirement, so it must stay legible — but it
+   is not content, and Leaflet's default styling shouts. */
+.t-map__canvas .leaflet-control-attribution,
+.t-nav__canvas .leaflet-control-attribution {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+/* Our pins are SVG data URIs; Leaflet's default marker styling would add a
+   box around them. */
+.t-pin {
+  background: none;
+  border: none;
 }

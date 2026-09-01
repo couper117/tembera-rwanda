@@ -77,15 +77,18 @@ sign in with, and nothing behind it to protect.
 
 ### Optional environment variables
 
-Both are optional; the app runs correctly without either.
+| Variable                | Effect when unset                              |
+| ----------------------- | ---------------------------------------------- |
+| `PRIVACY_CONTACT_EMAIL` | The privacy page says no address is configured  |
 
-| Variable                      | Effect when unset                             |
-| ----------------------------- | --------------------------------------------- |
-| `NEXT_PUBLIC_GOOGLE_MAPS_KEY` | `/map` falls back to the static map            |
-| `PRIVACY_CONTACT_EMAIL`       | The privacy page says no address is configured |
+**There is no map key.** `/map`, `/navigate/[id]` and the map on a place page
+all draw with Leaflet over OpenStreetMap tiles, and routing comes from the
+public OSRM server — open data, no account, nothing to restrict or rotate.
 
-`NEXT_PUBLIC_GOOGLE_MAPS_KEY` ships to the browser by design. **Restrict it by
-HTTP referrer in the Google Cloud console** — that is its only real protection.
+Before this gets busy, move the tiles off OSM's donated infrastructure: their
+usage policy is written for modest traffic. Point `TILE_URL` in
+`components/map/rwandaMap.ts` at a paid host (MapTiler, Thunderforest, Stadia)
+or your own; nothing else changes.
 
 ## What is and isn't wired
 

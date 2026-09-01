@@ -14,15 +14,12 @@ export default async function MapPage() {
     (place) => place.lat !== undefined && place.lng !== undefined,
   );
 
-  // The legacy page hard-coded a Maps key in client source. It comes from the
-  // environment now, and an empty value is handled as a real product state
-  // rather than a silently grey box.
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? "";
-
+  // No key of any kind: the map draws itself from OpenStreetMap tiles and
+  // routes on OSRM, so there is nothing to configure and nothing to leak.
   return (
     <>
       <AppHeader />
-      <MapScreen places={places} apiKey={apiKey} />
+      <MapScreen places={places} />
     </>
   );
 }

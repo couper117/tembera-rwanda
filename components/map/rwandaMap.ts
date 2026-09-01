@@ -1,6 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/** Map configuration. A plain Google map, framed on Rwanda. */
+/**
+ * Map configuration. Leaflet over OpenStreetMap, framed on Rwanda.
+ *
+ * There is no API key anywhere in here, and that is the point. The map used to
+ * be drawn by the Google Maps JS API, which needs a Cloud project with billing
+ * enabled — so with no key configured every map screen in the product rendered
+ * "Map view isn't switched on" instead of a map. Tiles come from OpenStreetMap
+ * now, and the routing already came from OSRM, so the whole map stack runs on
+ * open data with no account behind it.
+ *
+ * One thing to know before launch: OSM's public tile servers are run on
+ * donated capacity and their usage policy is written for modest traffic. A
+ * national directory that gets popular should move to a paid tile host
+ * (Thunderforest, MapTiler, Stadia) or self-host — that is a URL change in
+ * TILE_URL and nothing else.
+ */
 
 /** Rwanda's bounding box — used once, to frame the country on first load. */
 export const RWANDA_BOUNDS = {
@@ -10,20 +25,24 @@ export const RWANDA_BOUNDS = {
   east: 30.8997,
 };
 
+/** Leaflet wants [[south, west], [north, east]]. */
+export const RWANDA_LATLNG_BOUNDS: [[number, number], [number, number]] = [
+  [RWANDA_BOUNDS.south, RWANDA_BOUNDS.west],
+  [RWANDA_BOUNDS.north, RWANDA_BOUNDS.east],
+];
+
+export const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+/** OpenStreetMap's licence requires this credit, and Leaflet renders it. */
+export const TILE_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+export const MAX_ZOOM = 19;
+
 /** Far enough out to see the region, no further. */
 export const MIN_ZOOM = 6;
 /** Zoom used when the map jumps to a single place. */
 export const PLACE_ZOOM = 15;
-
-/**
- * Google's default map, with only its own business pins turned off. Ours are
- * the content here, and two sets of pins on one map is unreadable — everything
- * else (roads, water, parks, place names) stays exactly as Google draws it.
- */
-export const MAP_STYLE = [
-  { featureType: "poi.business", stylers: [{ visibility: "off" }] },
-  { featureType: "transit", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-];
 
 /**
  * Marker glyphs, keyed by the same icon names components/Icon.tsx uses — so a
@@ -96,7 +115,7 @@ interface PinOptions {
  * together. The viewBox is inset by 1.5 on each side to give that keyline room
  * — hence the anchor sitting at 96.2% of the height rather than the bottom.
  */
-export function pinIcon(google: any, { icon, color, active = false }: PinOptions) {
+export function pinIcon(L: any, { icon, color, active = false }: PinOptions) {
   // A CSS custom property means nothing inside a data URI, so anything that
   // isn't a literal hex is treated as "no colour".
   const fill = color?.startsWith("#") ? color : FALLBACK_FILL;
@@ -119,11 +138,13 @@ export function pinIcon(google: any, { icon, color, active = false }: PinOptions
 
   const width = active ? 34 : 26;
   const height = Math.round((width * 39) / 31);
-  const built = {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(width, height),
-    anchor: new google.maps.Point(width / 2, height * 0.962),
-  };
+  const built = L.icon({
+    iconUrl: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height * 0.962],
+    // The tooltip is the accessible name; without this Leaflet renders none.
+    className: "t-pin",
+  });
   iconCache.set(key, built);
   return built;
 }
