@@ -35,6 +35,17 @@ export function gatewayConfigured(): boolean {
   return Boolean(process.env.RWANDAPAY_PUBLIC_KEY && process.env.RWANDAPAY_SECRET_KEY);
 }
 
+/**
+ * Are we running on test keys?
+ *
+ * Belt to the braces on test-mode activation: the stored session mode is the
+ * gateway's own word, but a row written under test keys must not be able to
+ * grant a free account after somebody swaps in live ones.
+ */
+export function isTestKey(): boolean {
+  return (process.env.RWANDAPAY_SECRET_KEY ?? "").startsWith("sk_test_");
+}
+
 function authHeaders(): Record<string, string> {
   return {
     "X-Public-Key": process.env.RWANDAPAY_PUBLIC_KEY ?? "",

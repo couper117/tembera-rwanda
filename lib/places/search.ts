@@ -9,6 +9,7 @@
 import { DISTRICT_CENTRES, KIGALI_DISTRICTS, distanceKm } from "./geo";
 import { CATEGORY_GROUPS } from "./taxonomy";
 import type { CategoryId, Coords, Place, PlaceWithDistance } from "./types";
+import { comparePromotion, relevanceBand } from "./ranking";
 
 /** Words that map a query onto a category group. */
 const CATEGORY_SYNONYMS: Record<CategoryId, string[]> = {
@@ -351,11 +352,27 @@ export function searchPlaces(
   }
 
   // Proximity dominates when the user asked for it; otherwise text relevance
-  // leads, with rating as the tie-breaker.
+  // leads, then paid placement within a band of comparable relevance, then
+  // rating.
+  //
+  // Banded, not additive. Adding points for a paid plan lets a weak paid match
+  // overtake a strong free one — searching a restaurant's exact name and being
+  // shown a different restaurant that paid. Banding means promotion reorders
+  // listings that matched in roughly the same way and can never cross a real
+  // difference in relevance. See lib/places/ranking.ts for the rules this is
+  // enforcing; RELEVANCE_BAND is the one number that decides how much of the
+  // results page is for sale.
   scored.sort((a, b) => {
     if (parsed.nearMe && origin) {
+      // A promoted listing does not get to be nearer than it is.
       return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
     }
+    const band = relevanceBand(b.score) - relevanceBand(a.score);
+    if (band !== 0) return band;
+
+    const promoted = comparePromotion(a.place, b.place);
+    if (promoted !== 0) return promoted;
+
     if (b.score !== a.score) return b.score - a.score;
     return (b.place.rating ?? 0) - (a.place.rating ?? 0);
   });

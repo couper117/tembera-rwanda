@@ -5,7 +5,7 @@ import PaymentSuccess from "@/components/business/PaymentSuccess";
 import { ThemeProvider } from "@/lib/client/theme";
 import { prisma } from "@/lib/prisma";
 import { activateRegistration } from "@/lib/business/activate";
-import { verifyPayment } from "@/lib/business/rwandapay";
+import { isTestKey, verifyPayment } from "@/lib/business/rwandapay";
 import { formatRwf, planById } from "@/lib/business/plans";
 import "../../../../admin/admin.css";
 
@@ -53,6 +53,52 @@ export default async function PaymentReturnPage({
     registration.sessionTxRef ?? undefined,
   );
 
+  /*
+   * Test mode has nothing to verify, by RwandaPay's design.
+   *
+   * Their hosted checkout branches on the mode it is running in: in live mode
+   * it polls `verify` until the payment confirms, and in test mode it shows
+   * the success modal immediately, confirms nothing and records no
+   * transaction. So `verify` answers "Transaction not found" forever and the
+   * sign-up sits waiting for money that was never going to move — which is
+   * correct behaviour producing a useless outcome, and it cannot be worked
+   * around by waiting or by an admin pressing a button.
+   *
+   * So in test mode the completed checkout is the confirmation. That is safe
+   * precisely because it IS test mode: nothing was charged, so nothing was
+   * evaded. Three things gate it, and all three are ours rather than the
+   * browser's:
+   *
+   *   - the mode as the GATEWAY reported it when we opened the session, stored
+   *     server-side; a crafted `?status=successful` cannot reach it,
+   *   - a reference that matches a registration we created and that is still
+   *     awaiting payment,
+   *   - an API key that is a test key, so a live deployment cannot land here
+   *     even if a stale row claimed otherwise.
+   *
+   * In live mode none of this applies and confirmation comes from the webhook
+   * or from `verify`, exactly as before.
+   */
+  const testModeSettles =
+    !status.paid &&
+    registration.sessionMode === "test" &&
+    isTestKey() &&
+    registration.status === "awaiting_payment";
+
+  if (testModeSettles) {
+    const result = await activateRegistration(registration.reference, "test-mode");
+    if (result.ok) {
+      return (
+        <Shell
+          state="done"
+          businessName={registration.businessName}
+          email={registration.email}
+          testMode
+        />
+      );
+    }
+  }
+
   if (!status.paid) {
     return (
       <Shell
@@ -90,10 +136,12 @@ function Shell({
   plan,
   reason,
   email,
+  testMode,
 }: {
   state: "done" | "pending" | "unknown" | "snag";
   businessName?: string;
   email?: string;
+  testMode?: boolean;
   reference?: string;
   amountRwf?: number;
   plan?: string;
@@ -112,7 +160,7 @@ function Shell({
 
         <main className="b-flow__main">
           {state === "done" && (
-            <PaymentSuccess businessName={businessName} email={email} />
+            <PaymentSuccess businessName={businessName} email={email} testMode={testMode} />
           )}
 
           {state === "pending" && (

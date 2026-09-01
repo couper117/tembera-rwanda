@@ -2485,3 +2485,7 @@ a.a-count:hover .a-count__label {
   justify-content: center;
   margin-top: var(--t-3);
 }
+
+.b-success__test {
+  text-align: left;
+}

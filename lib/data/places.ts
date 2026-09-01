@@ -32,6 +32,12 @@ function isVerified(row: WithOwner): boolean {
   return planById(owner.plan)?.verifiedTick === true;
 }
 
+/** The owner's plan, narrowed to the ids ranking understands. */
+function planOf(row: WithOwner): Place["plan"] {
+  const plan = row.business?.plan;
+  return plan === "top" || plan === "checked" || plan === "free" ? plan : undefined;
+}
+
 /** Prisma row → the domain Place the whole UI speaks. Nulls become undefined. */
 function toDomain(row: WithOwner): Place {
   return {
@@ -60,6 +66,9 @@ function toDomain(row: WithOwner): Place {
     status: row.status,
     hoursJson: row.hoursJson,
     verified: isVerified(row) || undefined,
+    // Only a verified owner's plan counts, for the same reason the tick needs
+    // both: a plan string on an unchecked business is a claim nobody has read.
+    plan: isVerified(row) ? planOf(row) : undefined,
   };
 }
 
@@ -93,7 +102,13 @@ export const getPlaces = unstable_cache(
       if (!sensitive.has(place.categoryId)) return place;
       // A tick is a promotional claim, so it goes the same way the rating and
       // the price do — at the source, where no component can forget.
-      return { ...place, rating: undefined, priceFrom: undefined, verified: undefined };
+      return {
+        ...place,
+        rating: undefined,
+        priceFrom: undefined,
+        verified: undefined,
+        plan: undefined,
+      };
     });
   },
   ["places-all"],

@@ -503,6 +503,12 @@ model BusinessRegistration {
   /// one, and verify is keyed on it. Without storing it there is no way to ask
   /// the gateway about the attempt that is actually open.
   sessionTxRef     String?        @map("session_tx_ref")
+  /// "test" or "live", as the GATEWAY reported it when the session was opened.
+  /// Never taken from the browser. In test mode RwandaPay's hosted page
+  /// declares success without confirming anything and records no transaction,
+  /// so there is nothing to verify — and nothing at stake either, since no
+  /// money moves. See the return page.
+  sessionMode      String?        @map("session_mode")
   /// How the money was confirmed: "gateway" when RwandaPay told us, "manual"
   /// when an admin matched it on a statement. Worth keeping — the two have
   /// very different levels of evidence behind them.

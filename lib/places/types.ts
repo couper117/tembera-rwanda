@@ -91,6 +91,15 @@ export interface Place {
    * promotion.
    */
   verified?: boolean;
+  /**
+   * The owning business's plan, when that business is verified.
+   *
+   * Drives placement — see lib/places/ranking.ts, which is where the rules
+   * about what money may and may not change are written down. Derived at the
+   * source like `verified`, and stripped from sensitive categories with it: a
+   * memorial cannot be promoted at any price.
+   */
+  plan?: "free" | "checked" | "top";
 }
 
 /** A place plus the distance from wherever the user currently is. */

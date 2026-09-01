@@ -96,6 +96,7 @@ export async function GET(request: Request) {
       sessionExpiresAt: opened.session.expiresAt,
       sessionOrigin: base,
       sessionTxRef: opened.session.txRef,
+      sessionMode: opened.session.mode,
     },
   });
 

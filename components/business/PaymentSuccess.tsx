@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Icon from "@/components/Icon";
 
 /**
  * The moment the money lands.
@@ -31,9 +32,12 @@ const SECONDS = 5;
 export default function PaymentSuccess({
   businessName,
   email,
+  testMode,
 }: {
   businessName?: string;
   email?: string;
+  /** Settled by a test-mode checkout, where no money moved. Say so. */
+  testMode?: boolean;
 }) {
   const router = useRouter();
   const [left, setLeft] = useState(SECONDS);
@@ -78,6 +82,19 @@ export default function PaymentSuccess({
 
       {/* "…to sign in in 5" stutters; the separator reads cleanly and keeps
           the number where the eye is already looking. */}
+      {testMode && (
+        /* Never let a test-mode account look like a paid one. Somebody will
+           find this row in a month and need to know nothing was charged. */
+        <p className="b-note b-success__test">
+          <Icon name="info" size={16} />
+          <span>
+            <strong>Test mode.</strong> No money was taken — the payment
+            gateway is running on test keys, so this account was opened on a
+            simulated payment.
+          </span>
+        </p>
+      )}
+
       <p className="b-success__next">
         Taking you to sign in {left > 0 ? <>· {left}s</> : <>now…</>}
       </p>

@@ -7,6 +7,7 @@
 
 import type { Coords, Place, PlaceWithDistance } from "./types";
 import { distanceKm } from "./geo";
+import { isPromoted } from "./ranking";
 import type { CategoryGroup } from "./taxonomy";
 
 /**
@@ -267,6 +268,52 @@ export function featured(
         isRenderableImage(p.image),
     )
     .slice(0, limit);
+}
+
+/**
+ * Listings whose owners pay for placement.
+ *
+ * Its own row, with its own label, rather than salted through "Top rated".
+ * "Top rated" is a claim about ratings; if paying could put a listing there
+ * the label would be false, and a directory that lies about small things is
+ * not trusted about large ones. This row says what it is, so a business gets
+ * real visibility and a visitor keeps an honest map of the country.
+ *
+ * Ordered by rating within the promoted set, so paying buys the row rather
+ * than a specific spot in it — one business cannot outbid another for first
+ * place.
+ */
+export function sponsored(
+  places: Place[],
+  limit = 8,
+  sensitive: ReadonlySet<string> = EMPTY_SET,
+  categoryId?: string,
+): Place[] {
+  return places
+    .filter(
+      (p) =>
+        isPromoted(p) &&
+        !sensitive.has(p.categoryId) &&
+        isRenderableImage(p.image) &&
+        (!categoryId || p.categoryId === categoryId),
+    )
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, limit);
+}
+
+/**
+ * Promoted listings first, everything else in the order it arrived.
+ *
+ * For a browse list, where there is no relevance score to band against — the
+ * reader asked for a category, so every result is equally "relevant" and the
+ * only question is order. A stable partition rather than a sort, so the
+ * existing ordering survives underneath.
+ */
+export function withPromotedFirst(places: Place[]): Place[] {
+  const promoted: Place[] = [];
+  const rest: Place[] = [];
+  for (const place of places) (isPromoted(place) ? promoted : rest).push(place);
+  return promoted.length ? [...promoted, ...rest] : places;
 }
 
 /* ----------------------------------------------------------- search index */

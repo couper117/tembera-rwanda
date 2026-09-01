@@ -5,9 +5,10 @@ import { recordAudit } from "@/lib/audit";
 /**
  * Turn a paid sign-up into an account. The only function that does.
  *
- * Three different things can decide a payment has landed — the payer coming
- * back from the gateway, RwandaPay's webhook, and an admin matching a mobile
- * money statement by hand — and all three call this. One path means the three
+ * Four different things can decide a payment has landed — the payer coming
+ * back from the gateway, RwandaPay's webhook, an admin matching a mobile money
+ * statement by hand, and a completed test-mode checkout — and all of them call
+ * this. One path means the three
  * cannot drift apart on what a paid account looks like, and it means the rule
  * that a Business is created `verified` lives in exactly one place.
  *
@@ -26,7 +27,7 @@ export type ActivationResult =
 
 export async function activateRegistration(
   reference: string,
-  via: "gateway" | "manual",
+  via: "gateway" | "manual" | "test-mode",
   actorId?: number,
   /**
    * RwandaPay's own reference for the transaction that paid for this, when we

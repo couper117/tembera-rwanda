@@ -132,6 +132,36 @@ reviews section.
   `app/components.css` (auto-merged cleanly). The redesigned landing page
   needed no changes to read Postgres — the `lib/data` seam did its job.
 
+### Test-mode checkouts settle themselves — and why they have to
+**RwandaPay's hosted checkout never confirms anything in test mode.** Its own
+page branches on it:
+
+    if (response.data.mode === 'test') { showSuccessModal(ref); }
+    else { pollPaymentStatus(ref); }
+
+Live mode polls `verify` until the payment confirms. Test mode shows the
+success modal immediately, confirms nothing, and records no transaction — so
+`verify` answers "Transaction not found" forever and a sign-up waits for money
+that was never going to move. Correct behaviour, useless outcome, and no amount
+of waiting or admin intervention fixes it.
+
+So in test mode the completed checkout IS the confirmation. Safe precisely
+because it is test mode: nothing was charged, so nothing was evaded. Three
+gates, all server-side: the mode as the **gateway** reported it when the
+session was opened (never the browser's `?status=`), a reference matching a
+registration of ours still awaiting payment, and a `sk_test_` key so a live
+deployment cannot land there. Activated rows are marked `confirmedVia:
+"test-mode"` and the success screen says no money was taken.
+
+**Live mode is unchanged** — the webhook and `verify` govern, and the browser
+is still never believed.
+
+Also learned from reading that page: the hosted checkout calls
+`POST /checkout/{session}/process`, which returns RwandaPay's own `PAY-…`
+reference, and only then is `verify` meaningful — keyed on *that* reference.
+Server-side we never see it except through the webhook, which is why the
+webhook is the real live-mode path.
+
 ### RwandaPay is wired up (test keys)
 `lib/business/rwandapay.ts` is the client. Keys live in `.env` (gitignored) as
 `RWANDAPAY_PUBLIC_KEY` / `RWANDAPAY_SECRET_KEY` — **never `NEXT_PUBLIC_`**, that
