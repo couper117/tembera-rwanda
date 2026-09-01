@@ -111,6 +111,24 @@ const CURATED: Recipe[] = [
   },
 ];
 
+/**
+ * The photograph that represents a collection.
+ *
+ * It used to be whichever place sorted first, so "Where to eat in Kigali" led
+ * with a close-up of a teapot — a real photo of a real listing, and a terrible
+ * advertisement for the row it was standing for. The best-rated listing is the
+ * one somebody has actually vouched for, and its photo is usually the one
+ * worth putting on the front.
+ */
+function coverImage(found: Place[]): string | undefined {
+  const withPhoto = found.filter((p) => isRenderableImage(p.image));
+  if (withPhoto.length === 0) return undefined;
+  const best = withPhoto
+    .slice()
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0];
+  return best.image;
+}
+
 function matches(place: Place, recipe: Recipe): boolean {
   if (recipe.categoryId && place.categoryId !== recipe.categoryId) return false;
   if (recipe.city && !cityMatches(place, recipe.city)) return false;
@@ -144,7 +162,7 @@ export async function getCollections(): Promise<Collection[]> {
       // A collection of two is a list, not a collection.
       if (found.length < 3) continue;
 
-      const image = found.find((p) => isRenderableImage(p.image))?.image;
+      const image = coverImage(found);
       if (!image) continue;
 
       used.add(recipe.link);
@@ -164,7 +182,7 @@ export async function getCollections(): Promise<Collection[]> {
       if (used.has(link) || sensitive.has(group.id)) continue;
 
       const inCategory = places.filter((p) => p.categoryId === group.id);
-      const image = inCategory.find((p) => isRenderableImage(p.image))?.image;
+      const image = coverImage(inCategory);
       if (!image) continue;
 
       used.add(link);

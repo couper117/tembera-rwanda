@@ -4,11 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import Icon from "@/components/Icon";
-import { useAccount } from "@/lib/client/account";
+
 import { DISTRICT_CENTRES } from "@/lib/places/geo";
 import { INTEREST_CHOICES } from "@/lib/home/rows";
 import { DEFAULT_PREFERENCES, UNITS, type Units } from "@/lib/profile/preferences";
-import { updateInterestsAction, updatePreferencesAction } from "@/lib/actions/user";
+import {
+  updateInterestsAction,
+  updatePreferencesAction,
+  updateProfileAction,
+} from "@/lib/actions/user";
 
 /**
  * The three questions worth asking a new account.
@@ -29,15 +33,21 @@ const STEPS = ["What brings you to Rwanda?", "Where are you based?", "One last t
 
 export default function WelcomeScreen({
   name,
+  handle,
+  email,
+  bio,
   homeCity,
   initialInterests,
 }: {
   name: string;
+  /** Carried through so saving the district does not blank the rest. */
+  handle: string;
+  email: string;
+  bio: string;
   homeCity: string;
   initialInterests: string[];
 }) {
   const router = useRouter();
-  const { update } = useAccount();
 
   const [step, setStep] = useState(0);
   const [interests, setInterests] = useState<string[]>(initialInterests);
@@ -60,7 +70,12 @@ export default function WelcomeScreen({
       updateInterestsAction(interests),
       updatePreferencesAction({ ...DEFAULT_PREFERENCES, units }),
     ]);
-    if (city !== homeCity) await update({ homeCity: city });
+    // Straight to the action: this screen sits outside the site layout, so
+    // there is no AccountProvider to go through — which is the point, since
+    // that layout is what brings the rail and the tab bar with it.
+    if (city !== homeCity) {
+      await updateProfileAction({ name, handle, email, bio, homeCity: city });
+    }
     setSaving(false);
 
     const failed = [a, b].find((r) => "error" in r);
@@ -75,8 +90,22 @@ export default function WelcomeScreen({
   }
 
   return (
-    <main className="t-main">
-      <div className="t-page">
+    <div className="t-flow">
+      <header className="t-flow__bar">
+        <span className="t-flow__brand">
+          <Icon name="pin" size={20} />
+          Tembera
+        </span>
+        {/* Always available, and only in the bar — it appeared twice on the
+            same screen, which reads as two different offers. Somebody who
+            wants to look around first gets the unpersonalised page, which is
+            no worse than what everyone had before. */}
+        <Link href="/" className="t-welcome__skip">
+          Skip for now
+        </Link>
+      </header>
+
+      <main className="t-flow__main">
         <div className="t-welcome">
           <p className="t-welcome__step">
             Step {step + 1} of {STEPS.length}
@@ -213,16 +242,9 @@ export default function WelcomeScreen({
                 {saving ? "Setting up…" : "Start exploring"}
               </button>
             )}
-
-            {/* Always available. Somebody who wants to look around first gets
-                the unpersonalised page, which is no worse than what everyone
-                had before. */}
-            <Link href="/" className="t-welcome__skip">
-              Skip for now
-            </Link>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

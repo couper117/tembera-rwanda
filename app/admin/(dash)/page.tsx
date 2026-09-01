@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { CountStrip, PageHead, Panel, Stat } from "@/components/admin/ui";
+import { CountStrip, PageHead, Stat } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
 import { adminDate } from "@/lib/admin/placeholder";
 import { recentAudit } from "@/lib/audit";
@@ -115,25 +115,32 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      {/* The two panels an editor actually reads: what is waiting, and what
-          just happened. Side by side and equal, rather than one of them
-          stranded beside a column of taller cards. */}
-      <div className="a-cols a-cols--even">
-        <Panel
-          title="Awaiting review"
-          action={
+      {/* The two things an editor reads: what is waiting, and what just
+          happened. Plain sections divided by a hairline rather than panels
+          inside a page — the old version put a bordered box inside a bordered
+          layout, and an empty queue then rendered as a large box containing
+          the words "nothing waiting" and a chart nailed to its floor. */}
+      <div className="a-board">
+        <section className="a-board__col">
+          <div className="a-board__head">
+            <h2 className="a-board__title">Awaiting review</h2>
             <Link href="/admin/submissions" className="t-btn t-btn--ghost t-btn--sm">
               See all
               <Icon name="chevronRight" size={15} />
             </Link>
-          }
-          flush
-        >
+          </div>
+
           {pendingSubmissions.length === 0 ? (
-            <p className="a-empty">Nothing waiting. The queue is clear.</p>
+            <div className="a-clear">
+              <Icon name="check" size={18} />
+              <p>
+                <strong>The queue is clear.</strong> Anything a business sends
+                in lands here.
+              </p>
+            </div>
           ) : (
             <div className="a-queue">
-              {pendingSubmissions.slice(0, 5).map((s) => {
+              {pendingSubmissions.slice(0, 6).map((s) => {
                 const payload = s.payload as { name?: string } | null;
                 return (
                   <Link
@@ -160,30 +167,22 @@ export default async function AdminDashboardPage() {
               })}
             </div>
           )}
+        </section>
 
-          {/* The trend belongs with the queue it describes, not in a panel of
-              its own — on a quiet week that panel was a box with one line in
-              it taking a quarter of the screen. */}
-          <div className="a-panel__foot">
-            <p className="a-hint">Submissions per week, last eight weeks</p>
-            <TrendChart values={weeklySubmissions} />
-          </div>
-        </Panel>
-
-        <Panel
-          title="Recent activity"
-          action={
+        <section className="a-board__col">
+          <div className="a-board__head">
+            <h2 className="a-board__title">Recent activity</h2>
             <Link href="/admin/activity" className="t-btn t-btn--ghost t-btn--sm">
               See all
               <Icon name="chevronRight" size={15} />
             </Link>
-          }
-          flush
-        >
+          </div>
+
           {activity.length === 0 ? (
-            <p className="a-empty">
-              Nothing changed yet. Every edit made here is recorded.
-            </p>
+            <div className="a-clear">
+              <Icon name="clock" size={18} />
+              <p>Nothing changed yet. Every edit made here is recorded.</p>
+            </div>
           ) : (
             <div className="a-queue">
               {activity.map((event) => (
@@ -203,41 +202,55 @@ export default async function AdminDashboardPage() {
               ))}
             </div>
           )}
-        </Panel>
+        </section>
       </div>
 
-      <Panel title="The catalogue">
-        <CountStrip
-          items={[
-            { label: "places", value: places, icon: "pin", note: "listed", href: "/admin/places" },
-            {
-              label: "categories",
-              value: categories,
-              icon: "list",
-              note: `${cities} districts`,
-              href: "/admin/categories",
-            },
-            ...(admin
-              ? [
-                  {
-                    label: "users",
-                    value: users,
-                    icon: "user" as const,
-                    note: "accounts",
-                    href: "/admin/users",
-                  },
-                  {
-                    label: "businesses",
-                    value: businesses.length,
-                    icon: "basket" as const,
-                    note: `${unverified} unverified`,
-                    href: "/admin/businesses",
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </Panel>
+      {/* How big the catalogue is, and how fast submissions are arriving.
+          The sparkline lives here because it is a fact about the catalogue —
+          it used to be bolted to the bottom of the review queue, where an
+          empty queue left it floating in white space. */}
+      <section className="a-board__foot">
+        <div className="a-board__head">
+          <h2 className="a-board__title">The catalogue</h2>
+          <span className="a-hint">Submissions per week, last eight</span>
+        </div>
+
+        <div className="a-summary">
+          <CountStrip
+            items={[
+              { label: "places", value: places, icon: "pin", note: "listed", href: "/admin/places" },
+              {
+                label: "categories",
+                value: categories,
+                icon: "list",
+                note: `${cities} districts`,
+                href: "/admin/categories",
+              },
+              ...(admin
+                ? [
+                    {
+                      label: "users",
+                      value: users,
+                      icon: "user" as const,
+                      note: "accounts",
+                      href: "/admin/users",
+                    },
+                    {
+                      label: "businesses",
+                      value: businesses.length,
+                      icon: "basket" as const,
+                      note: `${unverified} unverified`,
+                      href: "/admin/businesses",
+                    },
+                  ]
+                : []),
+            ]}
+          />
+          <div className="a-summary__chart">
+            <TrendChart values={weeklySubmissions} />
+          </div>
+        </div>
+      </section>
 
     </>
   );

@@ -2569,3 +2569,98 @@ a.a-count:hover .a-count__label {
   border: 1px solid var(--t-border);
   background: var(--t-surface-2);
 }
+
+/* ======================================================= admin dashboard ==
+ *
+ * Sections divided by hairlines, not panels inside a page. The previous
+ * version nested a bordered box inside a bordered layout, so an empty review
+ * queue rendered as a large box containing three words and a chart nailed to
+ * its floor. Whitespace and a rule do the same job without the boxes.
+ */
+
+.a-board {
+  display: grid;
+  gap: var(--t-6);
+  margin-top: var(--t-6);
+  padding-top: var(--t-6);
+  border-top: 1px solid var(--t-border);
+}
+
+@media (min-width: 1100px) {
+  .a-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--t-8);
+    align-items: start;
+  }
+
+  /* A hairline between the columns rather than a border around each. */
+  .a-board__col + .a-board__col {
+    padding-left: var(--t-8);
+    border-left: 1px solid var(--t-border);
+  }
+}
+
+.a-board__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  margin-bottom: var(--t-3);
+}
+
+.a-board__title {
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.a-board__foot {
+  margin-top: var(--t-6);
+  padding-top: var(--t-6);
+  border-top: 1px solid var(--t-border);
+}
+
+/* An empty queue is good news, so it reads as good news rather than as a
+   section that failed to load. */
+.a-clear {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  padding: var(--t-4) 0;
+  color: var(--t-ink-3);
+}
+
+.a-clear svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--t-open, #1f7a3d);
+}
+
+.a-clear p {
+  margin: 0;
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+}
+
+.a-clear strong {
+  color: var(--t-ink-2);
+}
+
+/* Counts and the trend on one line: the sparkline is a fact about the
+   catalogue, so it sits with the catalogue. */
+.a-summary {
+  display: grid;
+  gap: var(--t-5);
+}
+
+@media (min-width: 900px) {
+  .a-summary {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    align-items: center;
+    gap: var(--t-8);
+  }
+}
+
+.a-summary__chart {
+  min-width: 0;
+}

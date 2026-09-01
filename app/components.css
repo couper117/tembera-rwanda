@@ -4950,12 +4950,48 @@ button.t-pill:hover {
 }
 
 
-/* Onboarding. Narrow on purpose — three questions, one at a time, nothing
-   else on screen to wander off into. */
+/* A focused flow: its own chrome, no rail, no tab bar. Every navigation
+   control on screen is an invitation to leave an onboarding half-finished. */
+.t-flow {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-bg);
+  color: var(--t-ink);
+}
+
+.t-flow__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  padding: var(--t-4) var(--t-gutter);
+}
+
+.t-flow__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.t-flow__brand svg {
+  color: var(--t-accent);
+}
+
+.t-flow__main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--t-6) var(--t-gutter) var(--t-10);
+}
+
+/* Bigger than a form. This is the whole screen, so the question should read
+   like one thing being asked rather than a field on a page. */
 .t-welcome {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: var(--t-10) 0 var(--t-8);
+  width: 100%;
+  max-width: 860px;
 }
 
 .t-welcome__step {
@@ -4966,7 +5002,7 @@ button.t-pill:hover {
 
 .t-welcome__title {
   margin-top: var(--t-2);
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-size: clamp(2.1rem, 6vw, 3.4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -4975,18 +5011,35 @@ button.t-pill:hover {
 
 .t-welcome__lede {
   margin-top: var(--t-3);
-  font-size: var(--t-text-body);
+  max-width: 46ch;
+  font-size: 1.05rem;
   line-height: 1.6;
   color: var(--t-ink-2);
 }
 
 .t-welcome__pills {
-  margin-top: var(--t-5);
+  margin-top: var(--t-6);
+  gap: var(--t-3);
+}
+
+.t-welcome__pills .t-pill {
+  padding: 11px 20px;
+  font-size: var(--t-text-body);
+}
+
+.t-welcome__pills .t-pill svg {
+  width: 18px;
+  height: 18px;
 }
 
 .t-welcome__field {
-  margin-top: var(--t-5);
-  max-width: 22rem;
+  margin-top: var(--t-6);
+  max-width: 26rem;
+}
+
+.t-welcome__field .t-input {
+  padding: 14px var(--t-4);
+  font-size: 1.05rem;
 }
 
 .t-welcome__recap {
