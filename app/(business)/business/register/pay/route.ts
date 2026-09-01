@@ -46,15 +46,27 @@ export async function GET(request: Request) {
     return back(`/business/register/return?ref=${encodeURIComponent(reference)}`);
   }
 
-  if (registration.paymentUrl && sessionUsable(registration.sessionExpiresAt)) {
-    return NextResponse.redirect(registration.paymentUrl);
+  const base = await siteUrl();
+
+  // Reuse the stored session only if it has life left AND was opened from
+  // here. The gateway is told where to send the payer back to at the moment
+  // the session is created, so one opened against a different origin returns
+  // them to that origin no matter where they are now — which is how somebody
+  // ends up staring at ERR_CONNECTION_REFUSED on a port that is no longer
+  // listening. Dev ports move around; this has to be checked, not assumed.
+  const reusable =
+    registration.paymentUrl &&
+    sessionUsable(registration.sessionExpiresAt) &&
+    registration.sessionOrigin === base;
+
+  if (reusable) {
+    return NextResponse.redirect(registration.paymentUrl!);
   }
 
   if (!gatewayConfigured()) {
     return back(`/business/register/return?ref=${encodeURIComponent(reference)}`);
   }
 
-  const base = await siteUrl();
   const opened = await initializeCheckout({
     reference: registration.reference,
     amountRwf: registration.amountRwf,
@@ -82,6 +94,7 @@ export async function GET(request: Request) {
       sessionId: opened.session.sessionId,
       paymentUrl: opened.session.paymentUrl,
       sessionExpiresAt: opened.session.expiresAt,
+      sessionOrigin: base,
     },
   });
 

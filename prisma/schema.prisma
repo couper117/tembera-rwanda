@@ -493,6 +493,11 @@ model BusinessRegistration {
   paymentUrl   String?            @map("payment_url")
   /// When the hosted session stops accepting payment.
   sessionExpiresAt DateTime?      @map("session_expires_at")
+  /// The origin the session was opened from, because the gateway is told at
+  /// that moment where to send the payer back to. A session opened against
+  /// localhost:4100 returns the payer to localhost:4100 whatever they are
+  /// using now — so a stored session is only reusable from the same origin.
+  sessionOrigin    String?        @map("session_origin")
   /// How the money was confirmed: "gateway" when RwandaPay told us, "manual"
   /// when an admin matched it on a statement. Worth keeping — the two have
   /// very different levels of evidence behind them.
