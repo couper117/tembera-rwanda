@@ -333,6 +333,19 @@ current Windows and a `tr -d ''` typo was a no-op, so every run leaked a server.
 Thirty-two had accumulated. It uses PowerShell now and matches only its own
 processes.
 
+### The Neon WebSocket drop is fixed
+`lib/prisma.ts` sets `neonConfig.webSocketConstructor = ws`. Without it the
+connection drops under ordinary use and surfaces as a bare `prisma:error
+undefined` with an opaque `[object ErrorEvent]` — naming neither the database
+nor the query, so it reads as an application bug. Node 24 has a global
+WebSocket, which is why it appeared to work at all, but it is undici's and the
+driver does not get on with it.
+
+The earlier attempt at this was reverted because importing `ws` broke the
+production build with "Cannot find module for page". That was the bundler, not
+the package: `ws`, `@prisma/adapter-neon` and `@neondatabase/serverless` are in
+`serverExternalPackages` now, so they stay plain runtime requires.
+
 ### Traps found the hard way
 - **The `prisma` CLI publishes an RC to its `latest` tag.** A plain
   `npm install prisma` gives 8.0.0-rc.12 against a stable 7.10.0 client — a

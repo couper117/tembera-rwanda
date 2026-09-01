@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
 
 /**
  * One PrismaClient, talking to Neon over its serverless driver.
@@ -14,14 +16,20 @@ import { PrismaNeon } from "@prisma/adapter-neon";
  * DIRECT_URL and is only used by the CLI for migrations — see prisma.config.ts.
  */
 
-// NOTE: the Neon WebSocket connection drops occasionally under repeated load,
-// surfacing as a bare `prisma:error undefined` and an opaque
-// `[object ErrorEvent]` — which says nothing about the database and reads like
-// an application bug. Setting neonConfig.webSocketConstructor = ws is the
-// documented Node fix, but importing `ws` here broke the production build
-// ("Cannot find module for page"), so it is left for a focused change rather
-// than bundled into a UI commit. Node 24 supplies a global WebSocket, which is
-// why it works at all.
+// Give the driver a real WebSocket.
+//
+// Without this the Neon connection drops under ordinary use and surfaces as a
+// bare `prisma:error undefined` with an opaque `[object ErrorEvent]` — which
+// names neither the database nor the query, so it reads as an application bug
+// and gets debugged as one. Node 24 does have a global WebSocket, which is why
+// it appears to work at all, but it is undici's and the driver does not get on
+// with it.
+//
+// An earlier attempt at this was reverted because importing `ws` broke the
+// production build with "Cannot find module for page". That was the bundler,
+// not the package: `ws` is listed in serverExternalPackages now (see
+// next.config.mjs) so it stays a plain runtime require.
+neonConfig.webSocketConstructor = ws;
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error(

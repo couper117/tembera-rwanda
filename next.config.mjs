@@ -32,6 +32,16 @@ const nextConfig = {
    */
   outputFileTracingRoot: dirname(fileURLToPath(import.meta.url)),
 
+  /**
+   * Keep the database driver out of the bundler.
+   *
+   * `ws` is a Node package with native-ish internals and conditional requires;
+   * bundling it produces a "Cannot find module for page" at runtime, which is
+   * why an earlier attempt at the WebSocket fix was reverted. Listing these
+   * leaves them as plain runtime requires, which is what they expect to be.
+   */
+  serverExternalPackages: ["ws", "@prisma/adapter-neon", "@neondatabase/serverless"],
+
   // Legacy PHP kept for reference only — never build it.
   eslint: { ignoreDuringBuilds: false },
   images: {
