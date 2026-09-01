@@ -4,7 +4,6 @@ import { PageHead, Panel, Stat, StatusBadge } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
 import {
   ACTIVITY,
-  BUSINESSES,
   SUBMISSIONS,
   SUBMISSION_TREND,
   adminDate,
@@ -14,18 +13,25 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [places, categories, cities, users, pendingBookings, recentBookings] =
-    await Promise.all([
-      prisma.place.count(),
-      prisma.category.count(),
-      prisma.city.count(),
-      prisma.user.count(),
-      prisma.booking.count({ where: { status: "pending" } }),
-      prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
-    ]);
+  const [
+    places,
+    categories,
+    cities,
+    users,
+    pendingBookings,
+    recentBookings,
+    pendingClaims,
+  ] = await Promise.all([
+    prisma.place.count(),
+    prisma.category.count(),
+    prisma.city.count(),
+    prisma.user.count(),
+    prisma.booking.count({ where: { status: "pending" } }),
+    prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.businessClaim.count({ where: { status: "pending" } }),
+  ]);
 
   const pendingSubmissions = SUBMISSIONS.filter((s) => s.status === "pending");
-  const unverified = BUSINESSES.filter((b) => b.status === "unverified").length;
 
   return (
     <>
@@ -38,21 +44,24 @@ export default async function AdminDashboardPage() {
               <Icon name="plus" size={15} />
               Add place
             </Link>
-            <Link href="/admin/submissions" className="t-btn t-btn--primary t-btn--sm">
-              <Icon name="mail" size={15} />
-              Review submissions
+            <Link href="/admin/claims" className="t-btn t-btn--primary t-btn--sm">
+              <Icon name="basket" size={15} />
+              Review claims
             </Link>
           </>
         }
       />
 
+      {/* Real queues first. The two sample tiles say so in their own note —
+          this screen aggregates both kinds, so without that a fabricated
+          figure sits beside a live one and reads exactly like it. */}
       <div className="a-stats">
         <Stat
-          label="Submissions"
-          value={pendingSubmissions.length}
-          icon="mail"
-          note="awaiting review"
-          href="/admin/submissions"
+          label="Claims"
+          value={pendingClaims}
+          icon="basket"
+          note="waiting for a call"
+          href="/admin/claims"
         />
         <Stat
           label="Bookings"
@@ -62,12 +71,15 @@ export default async function AdminDashboardPage() {
           href="/admin/bookings"
         />
         <Stat
-          label="Businesses"
-          value={BUSINESSES.length}
-          icon="basket"
-          note={`${unverified} unverified`}
-          href="/admin/businesses"
+          label="Submissions"
+          value={pendingSubmissions.length}
+          icon="mail"
+          note="sample data"
+          href="/admin/submissions"
         />
+        {/* Businesses is not on the dashboard: it holds no real rows and the
+            live version of that queue is Claims, above. The screen is still
+            reachable from the sidebar, where it is marked as sample. */}
         <Stat label="Places" value={places} icon="pin" note="published" href="/admin/places" />
         <Stat
           label="Categories"
@@ -82,7 +94,7 @@ export default async function AdminDashboardPage() {
       <div className="a-cols">
         <div>
           <Panel
-            title="Awaiting review"
+            title="Awaiting review — sample"
             action={
               <Link href="/admin/submissions" className="t-btn t-btn--ghost t-btn--sm">
                 See all
@@ -163,7 +175,7 @@ export default async function AdminDashboardPage() {
             </p>
           </Panel>
 
-          <Panel title="Recent activity" flush>
+          <Panel title="Recent activity — sample" flush>
             <div className="a-queue">
               {ACTIVITY.slice(0, 5).map((entry) => (
                 <div key={entry.id} className="a-queue__item">

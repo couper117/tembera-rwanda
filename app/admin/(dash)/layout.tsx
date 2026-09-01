@@ -20,16 +20,20 @@ export default async function AdminDashLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const admin = await requireAdmin();
 
-  // Bookings are real; submissions have no table yet, so the badge counts the
-  // sample queue. Both read the same way to the shell.
-  const bookings = await prisma.booking.count({ where: { status: "pending" } });
+  // Claims and bookings are real queues. Submissions still has no table, so
+  // that badge counts the sample queue — the row itself is marked as sample in
+  // the nav, so the number is never read as live.
+  const [bookings, claims] = await Promise.all([
+    prisma.booking.count({ where: { status: "pending" } }),
+    prisma.businessClaim.count({ where: { status: "pending" } }),
+  ]);
 
   return (
     <ThemeProvider>
       <AdminShell
         email={admin.email}
         name={admin.name}
-        counts={{ submissions: PENDING_SUBMISSIONS, bookings }}
+        counts={{ submissions: PENDING_SUBMISSIONS, bookings, claims }}
       >
         {children}
       </AdminShell>

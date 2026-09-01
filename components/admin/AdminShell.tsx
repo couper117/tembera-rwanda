@@ -31,7 +31,7 @@ interface Props {
   email: string;
   name: string;
   /** Live counts for the queue badges. */
-  counts: { submissions: number; bookings: number };
+  counts: { submissions: number; bookings: number; claims: number };
   children: ReactNode;
 }
 
