@@ -24,7 +24,10 @@ export interface Interest {
 export const INTERESTS: Interest[] = [
   { id: "nature", label: "Nature", icon: "tree", categories: ["nature"] },
   { id: "food", label: "Food", icon: "utensils", categories: ["dining"] },
-  { id: "culture", label: "Culture", icon: "palette", categories: ["arts", "worship"] },
+  // Arts only. Worship is 181 near-identical parish churches and it swamps
+  // any row it is allowed into; a reader picking "Culture" means museums and
+  // galleries, not every ADEPR in the country.
+  { id: "culture", label: "Culture", icon: "palette", categories: ["arts"] },
   { id: "adventure", label: "Adventure", icon: "mountain", categories: ["nature", "recreation"] },
   { id: "wildlife", label: "Wildlife", icon: "tree", categories: ["nature"] },
   { id: "history", label: "History", icon: "landmark", categories: ["arts", "wonders"] },

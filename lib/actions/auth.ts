@@ -98,7 +98,11 @@ export async function registerAction(
   });
 
   // A brand-new account is always a USER, so there is no role to look up.
-  return signInWith(email, password, "/profile");
+  // Straight into onboarding rather than the profile. A brand-new account has
+  // nothing on its profile to look at, and the three questions asked next are
+  // what decide whether the home page is a guide to their trip or the same
+  // page everyone else gets.
+  return signInWith(email, password, "/welcome");
 }
 
 export async function loginAction(

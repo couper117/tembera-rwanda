@@ -4948,3 +4948,77 @@ button.t-pill:hover {
   font-size: var(--t-text-small);
   color: var(--t-ink-3);
 }
+
+
+/* Onboarding. Narrow on purpose — three questions, one at a time, nothing
+   else on screen to wander off into. */
+.t-welcome {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--t-10) 0 var(--t-8);
+}
+
+.t-welcome__step {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-accent);
+}
+
+.t-welcome__title {
+  margin-top: var(--t-2);
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.t-welcome__lede {
+  margin-top: var(--t-3);
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.t-welcome__pills {
+  margin-top: var(--t-5);
+}
+
+.t-welcome__field {
+  margin-top: var(--t-5);
+  max-width: 22rem;
+}
+
+.t-welcome__recap {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: var(--t-5);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.t-welcome__recap svg {
+  margin-top: 2px;
+  flex: none;
+  color: var(--t-open, #1f7a3d);
+}
+
+.t-welcome__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-3);
+  margin-top: var(--t-10);
+}
+
+.t-welcome__skip {
+  margin-left: auto;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-welcome__skip:hover {
+  color: var(--t-ink-2);
+  text-decoration: underline;
+}

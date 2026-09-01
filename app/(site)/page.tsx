@@ -6,12 +6,17 @@ import HomeFeed from "@/components/home/HomeFeed";
 import PlaceImage from "@/components/ui/PlaceImage";
 import PlaceCard from "@/components/ui/PlaceCard";
 import SectionHeader from "@/components/ui/SectionHeader";
+import { getCurrentUser } from "@/lib/auth";
+import { getProfileOverview } from "@/lib/data/user";
+import { cleanInterests } from "@/lib/profile/interests";
 import { getCategories } from "@/lib/data/categories";
 import {
   cityGroup,
   citySummaries,
   countByCategory,
   featured,
+  outsideKigali,
+  personalRows,
   sponsored,
   nearest,
   topRated,
@@ -69,6 +74,13 @@ export default async function HomePage() {
   // "Top rated", which is a claim about ratings. See lib/places/ranking.ts.
   const promoted = await sponsored(6);
 
+  // What this reader is here for. A guest has none, and gets the same page
+  // everyone used to get — personalisation adds rows, it never removes them.
+  const user = await getCurrentUser();
+  const interests = user ? cleanInterests((await getProfileOverview(user.id)).interests) : [];
+  const rows = await personalRows(interests);
+  const beyond = await outsideKigali(8);
+
   return (
     <>
       <AppHeader />
@@ -104,6 +116,56 @@ export default async function HomePage() {
               and they filter the two rows under them instead of navigating
               away. */}
           <HomeFeed nearby={nearby} rated={rated} limit={ROW} />
+
+          {/* ------------------------------------------- your rows ---- */}
+          {/* Their interests first, then a few things they did not pick. A
+              feed that only returns what you already asked for stops being a
+              guide to a country and becomes a mirror. */}
+          {rows.map((row) => (
+            <section key={row.id} className="t-section">
+              {/* The "why" goes in the subtitle rather than on a line of its
+                  own. As a separate element it appeared on some rows and not
+                  others, so every row had a different height above its cards
+                  and the page lost its rhythm. */}
+              <SectionHeader
+                title={row.title}
+                subtitle={
+                  row.reason === "interest"
+                    ? `${row.subtitle} · picked for you`
+                    : row.reason === "discover"
+                      ? `${row.subtitle} · something different`
+                      : row.subtitle
+                }
+                actionLabel="See all"
+                actionHref={row.href}
+              />
+              {/* The same grid Near you and Top rated use, so every card on the
+                  page is one size. A scroller here made these rows visibly
+                  different from the two above them for no reason. */}
+              <div className="t-tilegrid">
+                {row.places.map((place) => (
+                  <PlaceCard key={place.id} place={place} variant="tile" />
+                ))}
+              </div>
+            </section>
+          ))}
+
+          {/* --------------------------------------------- beyond ------ */}
+          {beyond.length > 0 && (
+            <section className="t-section">
+              <SectionHeader
+                title="Beyond Kigali"
+                subtitle="Places worth the drive, one from each district"
+                actionLabel="Browse districts"
+                actionHref="/explore"
+              />
+              <div className="t-tilegrid">
+                {beyond.map((place) => (
+                  <PlaceCard key={place.id} place={place} variant="tile" />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* -------------------------------------------------- cities -- */}
           <section className="t-section">
