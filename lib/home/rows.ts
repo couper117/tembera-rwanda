@@ -214,46 +214,5 @@ export function homeRows(
   return rows;
 }
 
-/**
- * Places outside Kigali.
- *
- * Most of the catalogue is in the capital, so every ranked row fills with
- * Kigali and the rest of the country never surfaces. This is the one row that
- * cannot be reached by browsing, which is why it is worth having.
- *
- * Deliberately NOT "top rated outside Kigali": only twelve listings in the
- * whole catalogue carry a rating and every one of them is in Kigali, so that
- * row would be permanently empty. Ranking by a signal the data does not have
- * is how a good idea becomes a blank space. A rating still sorts where one
- * exists; a photograph is the real requirement, because this row is
- * photographs.
- */
-export function beyondKigali(
-  places: Place[],
-  sensitive: ReadonlySet<string> = new Set(),
-  limit = ROW_SIZE,
-): Place[] {
-  const KIGALI = ["Gasabo", "Kicukiro", "Nyarugenge", "Kigali"];
-  const out = eligible(places, sensitive).filter((p) => !KIGALI.includes(p.city));
-
-  // Spread across districts rather than eight from whichever one sorts first —
-  // the point of the row is the breadth of the country, not depth in Musanze.
-  const byDistrict = new Map<string, Place[]>();
-  for (const place of withPromotedFirst(out.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)))) {
-    byDistrict.set(place.city, [...(byDistrict.get(place.city) ?? []), place]);
-  }
-
-  const picked: Place[] = [];
-  let round = 0;
-  while (picked.length < limit && round < 4) {
-    for (const list of byDistrict.values()) {
-      if (list[round]) picked.push(list[round]);
-      if (picked.length >= limit) break;
-    }
-    round++;
-  }
-  return picked;
-}
-
 /** Every interest that has a row title, for the onboarding screen. */
 export const INTEREST_CHOICES = INTERESTS.filter((i) => i.id in INTEREST_ROWS);

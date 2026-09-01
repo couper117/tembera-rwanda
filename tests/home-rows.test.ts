@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { beyondKigali, homeRows } from "../lib/home/rows";
+import { homeRows } from "../lib/home/rows";
 import type { Place } from "../lib/places/types";
 
 /**
@@ -74,36 +74,6 @@ test("places with no usable photo are left out", () => {
   const noPhotos = bulk("dining", 6).map((p) => ({ ...p, image: undefined }));
   const rows = homeRows(noPhotos, ["food"], new Set());
   assert.equal(rows.length, 0);
-});
-
-test("beyond Kigali surfaces the rest of the country", () => {
-  const mixed = [
-    ...bulk("nature", 4, "Gasabo", 5),
-    ...bulk("nature", 4, "Musanze", 4),
-  ];
-  const out = beyondKigali(mixed, new Set());
-  assert.ok(out.length > 0);
-  assert.ok(
-    out.every((p) => !["Gasabo", "Kicukiro", "Nyarugenge", "Kigali"].includes(p.city)),
-    "the whole point is that Kigali does not fill this row",
-  );
-});
-
-test("beyond Kigali does not require a rating", () => {
-  // Only twelve listings in the real catalogue carry a rating and all are in
-  // Kigali, so requiring one left this row permanently empty.
-  const unrated = bulk("nature", 6, "Rubavu").map((p) => ({ ...p, rating: undefined }));
-  assert.ok(beyondKigali(unrated, new Set()).length > 0);
-});
-
-test("beyond Kigali spreads across districts", () => {
-  const many = [
-    ...bulk("nature", 8, "Musanze"),
-    ...bulk("nature", 8, "Rubavu"),
-    ...bulk("nature", 8, "Huye"),
-  ];
-  const cities = new Set(beyondKigali(many, new Set(), 6).map((p) => p.city));
-  assert.equal(cities.size, 3, "breadth of the country, not depth in one district");
 });
 
 test("a row never repeats a photograph", () => {

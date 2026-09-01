@@ -15,7 +15,6 @@ import {
   citySummaries,
   countByCategory,
   featured,
-  outsideKigali,
   personalRows,
   sponsored,
   nearest,
@@ -79,7 +78,6 @@ export default async function HomePage() {
   const user = await getCurrentUser();
   const interests = user ? cleanInterests((await getProfileOverview(user.id)).interests) : [];
   const rows = await personalRows(interests);
-  const beyond = await outsideKigali(8);
 
   return (
     <>
@@ -149,23 +147,6 @@ export default async function HomePage() {
               </div>
             </section>
           ))}
-
-          {/* --------------------------------------------- beyond ------ */}
-          {beyond.length > 0 && (
-            <section className="t-section">
-              <SectionHeader
-                title="Beyond Kigali"
-                subtitle="Places worth the drive, one from each district"
-                actionLabel="Browse districts"
-                actionHref="/explore"
-              />
-              <div className="t-tilegrid">
-                {beyond.map((place) => (
-                  <PlaceCard key={place.id} place={place} variant="tile" />
-                ))}
-              </div>
-            </section>
-          )}
 
           {/* -------------------------------------------------- cities -- */}
           <section className="t-section">

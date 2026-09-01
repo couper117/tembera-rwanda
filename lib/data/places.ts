@@ -10,7 +10,7 @@ import {
 } from "@/lib/data/categories";
 import { planById } from "@/lib/business/plans";
 import * as engine from "@/lib/places/engine";
-import { beyondKigali, homeRows } from "@/lib/home/rows";
+import { homeRows } from "@/lib/home/rows";
 import { searchPlaces } from "@/lib/places/search";
 
 export const PLACES_TAG = "places";
@@ -228,12 +228,6 @@ export async function sponsored(limit = 8, categoryId?: string): Promise<Place[]
 export async function personalRows(interests: string[]) {
   const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
   return homeRows(places, interests, sensitive);
-}
-
-/** Highly rated places outside the capital — the row browsing cannot reach. */
-export async function outsideKigali(limit = 8): Promise<Place[]> {
-  const [places, sensitive] = await Promise.all([getPlaces(), sensitiveCategoryIds()]);
-  return beyondKigali(places, sensitive, limit);
 }
 
 export async function featured(limit = 8): Promise<Place[]> {
