@@ -43,6 +43,19 @@ export default function AppHeader() {
   const savedCount = ready ? ids.length : 0;
   const isLanding = pathname === "/";
 
+  /**
+   * On the landing page the header search waits until the hero's own search
+   * box has scrolled away, then takes its place.
+   *
+   * Two identical boxes on one screen is one too many, but hiding it outright
+   * meant that once you had scrolled past the hero there was no way to search
+   * at all without going back up. The threshold is roughly the height of the
+   * hero: far enough that the two are never both on screen, close enough that
+   * the field is there the moment you want it.
+   */
+  const pastHero = useScrolled(260);
+  const showHeaderSearch = !isLanding || pastHero;
+
   const today = nowInKigali();
   const upcoming = getCalendarEvents(today.year)
     .filter((e) => e.date >= today.iso)
@@ -71,14 +84,21 @@ export default function AppHeader() {
             Except on the landing page, which has its own search under the
             headline: two identical boxes on one screen is one too many. The
             slot stays, holding a spacer, so the actions still sit right. */}
-        {isLanding ? (
-          <span className="t-header__gap t-show-desktop" aria-hidden="true" />
-        ) : (
-          <Link href="/search" className="t-header__search t-show-desktop">
+        {showHeaderSearch ? (
+          <Link
+            href="/search"
+            className={`t-header__search t-show-desktop${
+              isLanding ? " t-header__search--arrive" : ""
+            }`}
+          >
             <Icon name="search" size={18} />
             <span>Search places, restaurants, hotels…</span>
             <span className="t-searchlink__hint">/</span>
           </Link>
+        ) : (
+          /* The slot stays, holding a spacer, so the actions on the right do
+             not jump sideways when the field arrives. */
+          <span className="t-header__gap t-show-desktop" aria-hidden="true" />
         )}
 
         <div className="t-header__actions">

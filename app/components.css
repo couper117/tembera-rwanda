@@ -4269,3 +4269,27 @@ button.t-profile__stat:active {
 .t-bizhead__verified svg {
   color: #4ba3f5;
 }
+
+/* The header search arriving on the landing page as the hero scrolls away.
+   Fades and lifts rather than appearing, so it reads as the same field moving
+   up rather than a new one materialising. */
+.t-header__search--arrive {
+  animation: t-search-arrive 220ms var(--t-ease) both;
+}
+
+@keyframes t-search-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-header__search--arrive {
+    animation: none;
+  }
+}
