@@ -2775,3 +2775,94 @@ a.a-count:hover .a-count__label {
   color: var(--t-accent-ink);
   text-decoration: underline;
 }
+
+/* ------------------------------------------------------ catalogue quality */
+/*
+ * /admin/quality lists named places with an edit link beside each one, rather
+ * than reporting a completeness percentage. The styling follows that: these
+ * are worklists, so they stay dense and quiet, and nothing here competes with
+ * the stat row above it.
+ */
+
+.a-qpanel__detail {
+  margin: 0 0 var(--t-3);
+  color: var(--t-ink-2);
+  font-size: 0.875rem;
+  max-width: 68ch;
+}
+
+.a-qlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2px var(--t-3);
+}
+
+.a-qlist li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--t-2);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--t-border);
+  min-width: 0;
+}
+
+.a-qlist__name {
+  color: var(--t-ink);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  /* A long place name must not push the city off the row. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.a-qlist__name:hover {
+  color: var(--t-accent);
+  text-decoration: underline;
+}
+
+.a-qlist__meta {
+  color: var(--t-ink-3);
+  font-size: 0.75rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.a-qlist__more {
+  margin: var(--t-3) 0 0;
+  color: var(--t-ink-3);
+  font-size: 0.8125rem;
+}
+
+/* A borrowed photo is a group, not a row: the point is which places are
+   wearing the same picture, so they are boxed together. */
+.a-qdupes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--t-3);
+}
+
+.a-qdupe {
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  padding: var(--t-3);
+  background: var(--t-surface-2);
+}
+
+.a-qdupe .a-qlist {
+  grid-template-columns: 1fr;
+}
+
+.a-qdupe__count {
+  display: inline-block;
+  margin-bottom: var(--t-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}

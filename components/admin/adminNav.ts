@@ -48,6 +48,9 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     title: "Catalogue",
     items: [
       { href: "/admin/places", label: "Places", icon: "pin" },
+      // Sits with the catalogue rather than under Requests: nobody filed
+      // these, and they are maintenance on what is already published.
+      { href: "/admin/quality", label: "Quality", icon: "shield" },
       { href: "/admin/categories", label: "Categories", icon: "list" },
       { href: "/admin/cities", label: "Cities", icon: "map" },
     ],
