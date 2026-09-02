@@ -17,29 +17,25 @@ import { isSensitivePlace } from "@/lib/places/engine";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
 import { externalRoute, fetchRoute, type Route } from "@/lib/places/routing";
 import type { Place } from "@/lib/places/types";
-import { MAP_STYLE, MIN_ZOOM, PLACE_ZOOM, RWANDA_BOUNDS, pinIcon } from "./rwandaMap";
-
-declare global {
-  interface Window {
-    google: any;
-    __temberaInitMap?: () => void;
-    gm_authFailure?: () => void;
-  }
-}
+import {
+  MAX_ZOOM,
+  MIN_ZOOM,
+  PLACE_ZOOM,
+  RWANDA_LATLNG_BOUNDS,
+  TILE_ATTRIBUTION,
+  TILE_URL,
+  pinIcon,
+} from "./rwandaMap";
+import "leaflet/dist/leaflet.css";
 
 interface Props {
   places: Place[];
-  apiKey: string;
 }
 
 type MapStatus =
   | "loading"
   | "ready"
-  /** No key configured at all. */
-  | "nokey"
-  /** Google rejected the key: unauthorised referrer, disabled API, or quota. */
-  | "keyrejected"
-  /** Script never loaded — network, blocker, offline. */
+  /** Leaflet's chunk never arrived — offline, or a blocked bundle. */
   | "failed";
 
 /**
@@ -50,12 +46,14 @@ type MapStatus =
  */
 const INITIAL_FIT = 40;
 
-export default function MapScreen({ places, apiKey }: Props) {
+export default function MapScreen({ places }: Props) {
   const { origin, coords, requestLocation, originLabel } = useLocation();
   const categories = useCategories();
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  /** The Leaflet module, once its chunk has arrived. */
+  const LRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
   /** The drawn route. Ours to draw now that OSRM only returns the geometry. */
@@ -63,7 +61,7 @@ export default function MapScreen({ places, apiKey }: Props) {
   /** Which pin is currently drawn in its active state, if any. */
   const litRef = useRef<string | null>(null);
 
-  const [status, setStatus] = useState<MapStatus>(apiKey ? "loading" : "nokey");
+  const [status, setStatus] = useState<MapStatus>("loading");
   const [category, setCategory] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -114,87 +112,67 @@ export default function MapScreen({ places, apiKey }: Props) {
    * empty map. Fitting the pins is what a map beside a list is for.
    */
   const fitPlaces = useCallback((limit?: number) => {
-    const google = window.google;
+    const L = LRef.current;
     const map = mapRef.current;
-    if (!map || !google?.maps) return;
+    if (!map || !L) return;
 
     // `visible` is nearest-first, so a limit frames the closest results.
     const list = limit ? visibleRef.current.slice(0, limit) : visibleRef.current;
-    const bounds = new google.maps.LatLngBounds();
-    for (const place of list) bounds.extend({ lat: place.lat!, lng: place.lng! });
+    const points = list.map((place) => [place.lat!, place.lng!] as [number, number]);
 
-    if (bounds.isEmpty()) {
-      bounds.extend({ lat: RWANDA_BOUNDS.south, lng: RWANDA_BOUNDS.west });
-      bounds.extend({ lat: RWANDA_BOUNDS.north, lng: RWANDA_BOUNDS.east });
-    }
-    map.fitBounds(bounds, 48);
-    // A single result fits to maximum zoom, which drops you into a street with
-    // no context. Pull back to something recognisable.
-    google.maps.event.addListenerOnce(map, "idle", () => {
-      if (map.getZoom() > PLACE_ZOOM) map.setZoom(PLACE_ZOOM);
+    // `maxZoom` is what stops a single result fitting all the way in and
+    // dropping the reader into a street with no context around it.
+    map.fitBounds(points.length ? L.latLngBounds(points) : RWANDA_LATLNG_BOUNDS, {
+      padding: [48, 48],
+      maxZoom: PLACE_ZOOM,
     });
   }, []);
 
-  /* ----------------------------------------------------- script loading */
+  /* ---------------------------------------------------------- map setup */
 
   useEffect(() => {
-    if (!apiKey) return;
-    // Google calls this for anything key-related: unauthorised referrer, an
-    // API that isn't enabled, billing off, or quota spent. Worth separating
-    // from a plain network failure — the fixes are completely different.
-    window.gm_authFailure = () => setStatus("keyrejected");
+    let cancelled = false;
 
-    const init = () => {
-      if (!canvasRef.current || !window.google?.maps) return;
-      const google = window.google;
-      const wide = window.matchMedia("(min-width: 1024px)").matches;
+    // Leaflet touches `window` at module scope, so it cannot be imported at
+    // the top of a file that Next also renders on the server.
+    void import("leaflet")
+      .then((mod) => {
+        const L = mod.default ?? mod;
+        if (cancelled || !canvasRef.current || mapRef.current) return;
+        LRef.current = L;
 
-      mapRef.current = new google.maps.Map(canvasRef.current, {
-        zoom: 8,
-        center: { lat: -1.94, lng: 29.87 },
-        styles: MAP_STYLE,
-        minZoom: MIN_ZOOM,
-        disableDefaultUI: true,
-        // Pinch handles zoom on a phone; on a desktop people expect buttons.
-        // Centre-right keeps them clear of both the filter row along the top
-        // and our own recentre/fit cluster above the card rail.
-        zoomControl: wide,
-        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
-        clickableIcons: false,
-        gestureHandling: "greedy",
+        mapRef.current = L.map(canvasRef.current, {
+          center: [-1.94, 29.87],
+          zoom: 8,
+          minZoom: MIN_ZOOM,
+          maxZoom: MAX_ZOOM,
+          // Pinch handles zoom on a phone; on a desktop people expect buttons.
+          zoomControl: window.matchMedia("(min-width: 1024px)").matches,
+          attributionControl: true,
+        });
+
+        L.tileLayer(TILE_URL, {
+          attribution: TILE_ATTRIBUTION,
+          maxZoom: MAX_ZOOM,
+        }).addTo(mapRef.current);
+
+        // Frame the results rather than opening on an arbitrary centre+zoom.
+        fitPlaces(INITIAL_FIT);
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("failed");
       });
 
-      // Frame the results rather than opening on an arbitrary centre+zoom.
-      // This waits for the first idle: called any earlier the map hasn't
-      // measured its container yet and fits against a default size, landing on
-      // the same zoom on a phone as on a desktop.
-      google.maps.event.addListenerOnce(mapRef.current, "idle", () => fitPlaces(INITIAL_FIT));
-
-      setStatus("ready");
+    return () => {
+      cancelled = true;
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
-
-    if (window.google?.maps) {
-      init();
-      return;
-    }
-
-    if (document.querySelector("script[data-tembera-maps]")) {
-      window.__temberaInitMap = init;
-      return;
-    }
-
-    window.__temberaInitMap = init;
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
-      apiKey,
-    )}&callback=__temberaInitMap&libraries=places&loading=async`;
-    script.async = true;
-    script.dataset.temberaMaps = "true";
-    script.onerror = () => setStatus("failed");
-    document.head.appendChild(script);
-    // The tag is left in place across mounts so a remount reuses the SDK.
+    // Mount only: fitPlaces reads its list through a ref precisely so this
+    // does not have to re-run and rebuild the map.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey]);
+  }, []);
 
   /* --------------------------------------------------------- place pins */
 
@@ -203,21 +181,19 @@ export default function MapScreen({ places, apiKey }: Props) {
   // instead — tearing down and recreating every marker on the map for each
   // click would stutter badly now that the whole catalogue is plotted.
   useEffect(() => {
-    if (status !== "ready" || !mapRef.current || !window.google?.maps) return;
-    const google = window.google;
+    const L = LRef.current;
+    if (status !== "ready" || !mapRef.current || !L) return;
     const map = mapRef.current;
 
-    for (const marker of markersRef.current) marker.setMap(null);
+    for (const marker of markersRef.current) marker.remove();
     markersRef.current = visible.map((place) => {
       const style = pinStyle.get(place.categoryId);
-      const marker = new google.maps.Marker({
-        position: { lat: place.lat!, lng: place.lng! },
-        map,
+      const marker = L.marker([place.lat!, place.lng!], {
         title: place.name,
-        icon: pinIcon(google, { icon: style?.icon, color: style?.fg }),
-        zIndex: 5,
-      });
-      marker.addListener("click", () => setSelectedId(place.id));
+        alt: place.name,
+        icon: pinIcon(L, { icon: style?.icon, color: style?.fg }),
+      }).addTo(map);
+      marker.on("click", () => setSelectedId(place.id));
       return marker;
     });
     // Fresh pins are all drawn unlit; the effect below re-lights the current
@@ -232,8 +208,8 @@ export default function MapScreen({ places, apiKey }: Props) {
    * repainted: sweeping all ~500 on every pointer move visibly stutters.
    */
   useEffect(() => {
-    const google = window.google;
-    if (status !== "ready" || !google?.maps) return;
+    const L = LRef.current;
+    if (status !== "ready" || !L) return;
 
     // Selection wins over hover. The rail is the only thing that sets a hover
     // id and it unmounts once a place is selected, so that id can go stale.
@@ -246,8 +222,8 @@ export default function MapScreen({ places, apiKey }: Props) {
       const marker = markersRef.current[i];
       if (!marker) return;
       const style = pinStyle.get(visible[i].categoryId);
-      marker.setIcon(pinIcon(google, { icon: style?.icon, color: style?.fg, active }));
-      marker.setZIndex(active ? 10 : 5);
+      marker.setIcon(pinIcon(L, { icon: style?.icon, color: style?.fg, active }));
+      marker.setZIndexOffset(active ? 1000 : 0);
     };
 
     paint(litRef.current, false);
@@ -273,22 +249,17 @@ export default function MapScreen({ places, apiKey }: Props) {
 
   /** Blue dot for the device position. */
   useEffect(() => {
-    if (status !== "ready" || !mapRef.current || !window.google?.maps || !coords) return;
-    const google = window.google;
-    userMarkerRef.current?.setMap(null);
-    userMarkerRef.current = new google.maps.Marker({
-      position: coords,
-      map: mapRef.current,
-      zIndex: 999,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        fillColor: "#1a73e8",
-        fillOpacity: 1,
-        strokeColor: "#ffffff",
-        strokeWeight: 3,
-      },
-    });
+    const L = LRef.current;
+    if (status !== "ready" || !mapRef.current || !L || !coords) return;
+    userMarkerRef.current?.remove();
+    userMarkerRef.current = L.circleMarker([coords.lat, coords.lng], {
+      radius: 8,
+      fillColor: "#1a73e8",
+      fillOpacity: 1,
+      color: "#ffffff",
+      weight: 3,
+      interactive: false,
+    }).addTo(mapRef.current);
   }, [coords, status]);
 
   /* ------------------------------------------------------------ actions */
@@ -297,13 +268,13 @@ export default function MapScreen({ places, apiKey }: Props) {
     setSelectedId(place.id);
     const map = mapRef.current;
     if (!map || place.lat === undefined || place.lng === undefined) return;
-    map.panTo({ lat: place.lat, lng: place.lng });
+    map.panTo([place.lat, place.lng]);
     if (map.getZoom() < PLACE_ZOOM) map.setZoom(PLACE_ZOOM);
   }, []);
 
   const recenter = useCallback(() => {
     if (coords) {
-      mapRef.current?.panTo(coords);
+      mapRef.current?.panTo([coords.lat, coords.lng]);
       if (mapRef.current?.getZoom() < 13) mapRef.current.setZoom(13);
     } else {
       requestLocation();
@@ -311,7 +282,7 @@ export default function MapScreen({ places, apiKey }: Props) {
   }, [coords, requestLocation]);
 
   const clearRoute = useCallback(() => {
-    routeLineRef.current?.setMap(null);
+    routeLineRef.current?.remove();
     routeLineRef.current = null;
     setRoute(null);
     setRouteError(null);
@@ -320,9 +291,9 @@ export default function MapScreen({ places, apiKey }: Props) {
   /** Draws the route on our own map — no hand-off to an external app. */
   const showDirections = useCallback(
     async (place: Place) => {
-      const google = window.google;
+      const L = LRef.current;
       const map = mapRef.current;
-      if (!google?.maps || !map || place.lat === undefined || place.lng === undefined) return;
+      if (!L || !map || place.lat === undefined || place.lng === undefined) return;
 
       setRouting(true);
       setRouteError(null);
@@ -335,19 +306,18 @@ export default function MapScreen({ places, apiKey }: Props) {
         return;
       }
 
-      routeLineRef.current?.setMap(null);
-      routeLineRef.current = new google.maps.Polyline({
-        map,
-        path: result.route.path,
-        strokeColor: "#11694a",
-        strokeWeight: 5,
-        strokeOpacity: 0.9,
-      });
+      routeLineRef.current?.remove();
+      const path = result.route.path.map(
+        (point: { lat: number; lng: number }) => [point.lat, point.lng] as [number, number],
+      );
+      routeLineRef.current = L.polyline(path, {
+        color: "#11694a",
+        weight: 5,
+        opacity: 0.9,
+      }).addTo(map);
 
       // Frame the whole trip, not just its end points.
-      const bounds = new google.maps.LatLngBounds();
-      for (const point of result.route.path) bounds.extend(point);
-      if (!bounds.isEmpty()) map.fitBounds(bounds, 64);
+      if (path.length) map.fitBounds(L.latLngBounds(path), { padding: [64, 64] });
 
       setRoute(result.route);
     },
@@ -382,35 +352,21 @@ export default function MapScreen({ places, apiKey }: Props) {
   );
 
   // With no drawable map there is nothing to overlay, so fall back to an
-  // ordinary browse page rather than a dead grey rectangle.
-  if (status === "nokey" || status === "failed" || status === "keyrejected") {
+  // ordinary browse page rather than a dead grey rectangle. There is no
+  // "no key" case any more — the map needs no account to draw — so the only
+  // way here is the bundle genuinely failing to arrive.
+  if (status === "failed") {
     return (
       <main className="t-main">
         <div className="t-page">
-          {status === "nokey" && (
-            <EmptyState
-              icon="map"
-              title="Map view isn't switched on"
-              text="Tembera needs a Google Maps key to draw the map. Everything is still browsable below, and directions open in your maps app."
-            />
-          )}
-          {status === "keyrejected" && (
-            <EmptyState
-              icon="lock"
-              title="The map key was rejected"
-              text="Google turned this key down — usually an unauthorised site, an API that isn't enabled, billing switched off, or a spent quota. Reloading won't help until the key is fixed. Everything below still works."
-            />
-          )}
-          {status === "failed" && (
-            <EmptyState
-              icon="alert"
-              title="The map couldn't load"
-              text="Google Maps didn't load — most likely a network problem or a blocker. Everything is still browsable below."
-              actions={[
-                { label: "Try again", onClick: () => window.location.reload(), variant: "primary" },
-              ]}
-            />
-          )}
+          <EmptyState
+            icon="alert"
+            title="The map couldn't load"
+            text="Most likely a network problem or a blocker. Everything is still browsable below."
+            actions={[
+              { label: "Try again", onClick: () => window.location.reload(), variant: "primary" },
+            ]}
+          />
 
           {filters}
 

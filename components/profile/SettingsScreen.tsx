@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/app/PageHeader";
 import Icon from "@/components/Icon";
 import AccountDataSection from "@/components/profile/AccountDataSection";
+import SettingsNav, { SETTINGS_SECTIONS } from "@/components/profile/SettingsNav";
 import Spinner from "@/components/ui/Spinner";
 import { useAccount } from "@/lib/client/account";
 import { useLocation } from "@/lib/client/location";
@@ -12,297 +13,483 @@ import { clearRecentSearches, readRecentSearches } from "@/lib/client/recentSear
 import { useSaved } from "@/lib/client/saved";
 import { useTheme } from "@/lib/client/theme";
 import { useVisited } from "@/lib/client/visited";
+import {
+  CURRENCIES,
+  LANGUAGES,
+  UNITS,
+  type Preferences,
+} from "@/lib/profile/preferences";
+import { updatePreferencesAction } from "@/lib/actions/user";
 
 /**
- * Everything that actually changes how the app behaves: where distances are
- * measured from, and the data held in this browser. Profile keeps the things
- * you *look at*; this screen holds the switches.
+ * Settings, as a settings screen rather than a column of cards.
+ *
+ * It used to be six stacked cards in a 760px column, so finding "clear my
+ * search history" meant scrolling and scanning, and two thirds of a desktop
+ * screen was empty. A category rail on the left turns it into a choice: pick
+ * the area, read the two switches in it — and the page uses the width it has.
+ *
+ * Everything that was here still is. What is new is language, currency,
+ * distance units and email preferences, which were stranded on their own
+ * screen under Profile where nobody would look for them.
  */
-export default function SettingsScreen() {
-  const { originLabel, status, requestLocation, coords, chosenCity, setCity } =
+
+type Status = "idle" | "saving" | "saved" | "error";
+
+export default function SettingsScreen({
+  initialPreferences,
+}: {
+  initialPreferences: Preferences;
+}) {
+  const { originLabel, status: locStatus, requestLocation, coords, chosenCity, setCity } =
     useLocation();
   const { ids, clear, ready } = useSaved();
   const { visits, clear: clearVisited } = useVisited();
   const { account, authed } = useAccount();
   const { theme, toggleTheme } = useTheme();
+
+  const [section, setSection] = useState("account");
   const [recentCount, setRecentCount] = useState(0);
+  const [prefs, setPrefs] = useState<Preferences>(initialPreferences);
+  const [prefStatus, setPrefStatus] = useState<Status>("idle");
+
   const visitedCount = visits.length;
 
   useEffect(() => {
     setRecentCount(readRecentSearches().length);
   }, []);
 
+  /**
+   * Preferences save on change rather than on a button.
+   *
+   * There is no half-set state to protect against — every control here is a
+   * single choice, and each is independently meaningful — so a Save button
+   * would only be a second thing to remember to press.
+   */
+  async function setPref<K extends keyof Preferences>(key: K, value: Preferences[K]) {
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    if (!authed) return;
+    setPrefStatus("saving");
+    const result = await updatePreferencesAction(next);
+    setPrefStatus("error" in result ? "error" : "saved");
+  }
+
+  const current = SETTINGS_SECTIONS.find((s) => s.id === section);
+
   return (
     <>
       <PageHeader title="Settings" fallbackHref="/profile" />
 
       <main className="t-main">
-        {/* Same rail-offset problem as Profile, smaller correction — Settings
-            is rows and toggles, not cards, so it doesn't need Profile's full
-            960px to avoid looking thin, just enough to close the worst of
-            the gap next to the rail on a real desktop screen. */}
-        <div className="t-page" style={{ maxWidth: 760 }}>
-          <div className="t-section">
-            <h1 className="t-display">Settings</h1>
-          </div>
+        <div className="t-page">
+          <div className="t-settings">
+            <aside className="t-settings__rail">
+              <h1 className="t-settings__h1">Settings</h1>
+              <SettingsNav active={section} onSelect={setSection} />
+            </aside>
 
-          {/* ------------------------------------------------- account -- */}
-          <section className="t-section">
-            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
-              Account
-            </h2>
-            <div className="t-card" style={{ padding: "var(--t-4)" }}>
-              {authed ? (
+            <div className="t-settings__pane">
+              <header className="t-settings__panehead">
+                <h2 className="t-settings__title">{current?.label}</h2>
+                <p className="t-settings__note">{current?.note}</p>
+              </header>
+
+              {/* ------------------------------------------- account -- */}
+              {section === "account" && (
                 <>
-                  <div className="t-fact" style={{ padding: 0, marginBottom: "var(--t-3)" }}>
-                    <span className="t-fact__icon t-fact__icon--accent">
-                      <Icon name="user" size={17} />
-                    </span>
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span className="t-fact__value" style={{ display: "block" }}>
-                        {account.name}
-                      </span>
-                      <span className="t-fact__label">{account.email}</span>
-                    </span>
-                  </div>
-                  <form action="/logout" method="post">
-                    <button
-                      type="submit"
-                      className="t-btn t-btn--secondary t-btn--sm t-btn--block"
-                    >
-                      <Icon name="external" size={16} />
-                      Sign out
-                    </button>
-                  </form>
+                  {authed ? (
+                    <>
+                      <Row
+                        icon="user"
+                        title={account.name}
+                        note={account.email}
+                        action={
+                          <Link href="/profile/edit" className="t-btn t-btn--secondary t-btn--sm">
+                            Edit profile
+                          </Link>
+                        }
+                      />
+                      <Row
+                        icon="external"
+                        title="Sign out"
+                        note="Ends this session on this device."
+                        action={
+                          <form action="/logout" method="post">
+                            <button type="submit" className="t-btn t-btn--secondary t-btn--sm">
+                              Sign out
+                            </button>
+                          </form>
+                        }
+                      />
+                    </>
+                  ) : (
+                    <Row
+                      icon="user"
+                      title="You are browsing as a guest"
+                      note="Sign in to sync your saves and reviews across devices."
+                      action={
+                        <Link href="/login" className="t-btn t-btn--primary t-btn--sm">
+                          Sign in
+                        </Link>
+                      }
+                    />
+                  )}
                 </>
-              ) : (
+              )}
+
+              {/* ---------------------------------------- appearance -- */}
+              {section === "appearance" && (
+                <Row
+                  icon={theme === "dark" ? "moon" : "sun"}
+                  title="Dark mode"
+                  note={theme === "dark" ? "On" : "Off"}
+                  action={
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={theme === "dark"}
+                      aria-label="Dark mode"
+                      className="t-toggle"
+                      onClick={toggleTheme}
+                    >
+                      <span className="t-toggle__knob" aria-hidden="true">
+                        <Icon name={theme === "dark" ? "moon" : "sun"} size={13} />
+                      </span>
+                    </button>
+                  }
+                />
+              )}
+
+              {/* -------------------------------------------- region -- */}
+              {section === "region" && (
                 <>
-                  <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
-                    You&apos;re browsing as a guest. Sign in to sync your saved places,
-                    visits and reviews across devices.
+                  <Choice
+                    label="Language"
+                    value={prefs.language}
+                    onChange={(v) => setPref("language", v as Preferences["language"])}
+                    options={LANGUAGES.map((l) => ({
+                      value: l.id,
+                      label: l.note ? `${l.label} — ${l.note}` : l.label,
+                    }))}
+                  />
+                  <Choice
+                    label="Currency"
+                    value={prefs.currency}
+                    onChange={(v) => setPref("currency", v as Preferences["currency"])}
+                    options={CURRENCIES.map((c) => ({ value: c.id, label: c.label }))}
+                  />
+                  <Choice
+                    label="Distance"
+                    value={prefs.units}
+                    onChange={(v) => setPref("units", v as Preferences["units"])}
+                    options={UNITS.map((u) => ({ value: u.id, label: u.label }))}
+                  />
+                  <SaveHint authed={authed} status={prefStatus} />
+                </>
+              )}
+
+              {/* ------------------------------------------ location -- */}
+              {section === "location" && (
+                <>
+                  <Row
+                    icon="pin"
+                    title={originLabel}
+                    note="Distances across the app are measured from here."
+                    action={
+                      (coords || chosenCity) && (
+                        <button
+                          type="button"
+                          className="t-btn t-btn--ghost t-btn--sm"
+                          onClick={() => setCity(null)}
+                        >
+                          Reset to Kigali
+                        </button>
+                      )
+                    }
+                  />
+                  {!coords && (
+                    <Row
+                      icon="navigate"
+                      title="Use my current location"
+                      note={
+                        locStatus === "denied"
+                          ? "Location is blocked in your browser."
+                          : "Tembera never asks on its own — only when you tap."
+                      }
+                      action={
+                        <button
+                          type="button"
+                          className="t-btn t-btn--secondary t-btn--sm"
+                          onClick={requestLocation}
+                          disabled={locStatus === "locating" || locStatus === "denied"}
+                        >
+                          {locStatus === "locating" ? (
+                            <>
+                              <Spinner size={16} tone="current" label="Finding your location" />
+                              Finding you…
+                            </>
+                          ) : (
+                            "Use my location"
+                          )}
+                        </button>
+                      }
+                    />
+                  )}
+                </>
+              )}
+
+              {/* ------------------------------------- notifications -- */}
+              {section === "notifications" && (
+                <>
+                  <Row
+                    icon="mail"
+                    title="Replies and decisions"
+                    note="A reply to your review, or an answer about a listing you claimed."
+                    action={
+                      <Switch
+                        label="Replies and decisions"
+                        checked={prefs.emailUpdates}
+                        onChange={(v) => setPref("emailUpdates", v)}
+                      />
+                    }
+                  />
+                  <Row
+                    icon="bell"
+                    title="New places near you"
+                    note="Occasional. Off unless you ask for it."
+                    action={
+                      <Switch
+                        label="New places near you"
+                        checked={prefs.emailDigest}
+                        onChange={(v) => setPref("emailDigest", v)}
+                      />
+                    }
+                  />
+                  <SaveHint authed={authed} status={prefStatus} />
+                </>
+              )}
+
+              {/* ------------------------------------------- privacy -- */}
+              {section === "privacy" && (
+                <>
+                  <p className="t-settings__lede">
+                    {authed
+                      ? `Your saved places (${ready ? ids.length : 0}) and visits (${visitedCount}) are synced to your account. Recent searches (${recentCount}) stay in this browser.`
+                      : `Your profile, saves (${ready ? ids.length : 0}), visits (${visitedCount}) and searches (${recentCount}) are stored in this browser. Sign in to sync them.`}
                   </p>
-                  <div className="t-inline t-wrap">
-                    <Link href="/login" className="t-btn t-btn--primary t-btn--sm">
-                      Sign in
-                    </Link>
-                    <Link href="/register" className="t-btn t-btn--secondary t-btn--sm">
-                      Create account
-                    </Link>
-                  </div>
+
+                  <Row
+                    icon="bookmark"
+                    title="Saved places"
+                    note={`${ready ? ids.length : 0} saved`}
+                    action={
+                      <button
+                        type="button"
+                        className="t-btn t-btn--secondary t-btn--sm"
+                        onClick={clear}
+                        disabled={!ready || ids.length === 0}
+                      >
+                        Clear
+                      </button>
+                    }
+                  />
+                  <Row
+                    icon="search"
+                    title="Recent searches"
+                    note={`${recentCount} in this browser`}
+                    action={
+                      <button
+                        type="button"
+                        className="t-btn t-btn--secondary t-btn--sm"
+                        onClick={() => {
+                          clearRecentSearches();
+                          setRecentCount(0);
+                        }}
+                        disabled={recentCount === 0}
+                      >
+                        Clear
+                      </button>
+                    }
+                  />
+                  <Row
+                    icon="compass"
+                    title="Visit history"
+                    note={`${visitedCount} places`}
+                    action={
+                      <button
+                        type="button"
+                        className="t-btn t-btn--secondary t-btn--sm"
+                        onClick={clearVisited}
+                        disabled={visitedCount === 0}
+                      >
+                        Clear
+                      </button>
+                    }
+                  />
+
+                  {/* Export, sign-out-everywhere and deletion. Only meaningful
+                      signed in — there is nothing on the server to erase for a
+                      guest, and the clears above already cover them. */}
+                  {authed && <AccountDataSection />}
+                </>
+              )}
+
+              {/* --------------------------------------------- about -- */}
+              {section === "about" && (
+                <>
+                  <Row
+                    icon="basket"
+                    title="For business"
+                    note="Claim your listing and keep it current."
+                    action={
+                      <Link href="/business/register" className="t-btn t-btn--secondary t-btn--sm">
+                        Open
+                      </Link>
+                    }
+                  />
+                  <Row
+                    icon="info"
+                    title="About Tembera"
+                    note="What this is and who makes it."
+                    action={
+                      <Link href="/about" className="t-btn t-btn--secondary t-btn--sm">
+                        Read
+                      </Link>
+                    }
+                  />
+                  <Row
+                    icon="lock"
+                    title="Privacy policy"
+                    note="What we hold, and your rights over it."
+                    action={
+                      <Link href="/privacy" className="t-btn t-btn--secondary t-btn--sm">
+                        Read
+                      </Link>
+                    }
+                  />
+                  <Row
+                    icon="list"
+                    title="Terms of use"
+                    note="The rules for using Tembera."
+                    action={
+                      <Link href="/terms" className="t-btn t-btn--secondary t-btn--sm">
+                        Read
+                      </Link>
+                    }
+                  />
                 </>
               )}
             </div>
-          </section>
-
-          {/* --------------------------------------------------- theme -- */}
-          <section className="t-section">
-            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
-              Appearance
-            </h2>
-            <div className="t-card" style={{ padding: "var(--t-1) var(--t-4)" }}>
-              <div className="t-fact" style={{ padding: "var(--t-3) 0" }}>
-                <span className="t-fact__icon t-fact__icon--accent">
-                  <Icon name={theme === "dark" ? "moon" : "sun"} size={17} />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="t-fact__value" style={{ display: "block" }}>
-                    Dark mode
-                  </span>
-                  <span className="t-small t-muted">{theme === "dark" ? "On" : "Off"}</span>
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={theme === "dark"}
-                  aria-label="Dark mode"
-                  className="t-toggle"
-                  onClick={toggleTheme}
-                >
-                  <span className="t-toggle__knob" aria-hidden="true">
-                    <Icon name={theme === "dark" ? "moon" : "sun"} size={13} />
-                  </span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          {/* ------------------------------------------------ location -- */}
-          <section className="t-section">
-            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
-              Location
-            </h2>
-            <div className="t-card">
-              <div className="t-fact" style={{ padding: "var(--t-3) var(--t-4)" }}>
-                <span className="t-fact__icon t-fact__icon--accent">
-                  <Icon name="pin" size={17} />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="t-fact__label">Distances measured from</span>
-                  <span className="t-fact__value" style={{ display: "block" }}>
-                    {originLabel}
-                  </span>
-                </span>
-              </div>
-
-              <div style={{ padding: "0 var(--t-4) var(--t-4)" }} className="t-stack-2">
-                {!coords && (
-                  <button
-                    type="button"
-                    className="t-btn t-btn--secondary t-btn--sm t-btn--block"
-                    onClick={requestLocation}
-                    disabled={status === "locating" || status === "denied"}
-                  >
-                    {status === "locating" ? (
-                      <>
-                        <Spinner size={16} tone="current" label="Finding your location" />
-                        Finding you…
-                      </>
-                    ) : (
-                      <>
-                        <Icon name="navigate" size={16} />
-                        {status === "denied"
-                          ? "Location is blocked in your browser"
-                          : "Use my current location"}
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {(coords || chosenCity) && (
-                  <button
-                    type="button"
-                    className="t-btn t-btn--ghost t-btn--sm t-btn--block"
-                    onClick={() => setCity(null)}
-                  >
-                    Reset to Kigali
-                  </button>
-                )}
-              </div>
-            </div>
-            <p className="t-small t-muted" style={{ marginTop: "var(--t-2)" }}>
-              You can also change the city from the pin in the header. Tembera
-              never asks for your location on its own — only when you tap.
-            </p>
-          </section>
-
-          {/* ---------------------------------------------------- data -- */}
-          <section className="t-section">
-            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
-              Data on this device
-            </h2>
-            <div className="t-card" style={{ padding: "var(--t-4)" }}>
-              <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
-                {authed
-                  ? `Your saved places (${ready ? ids.length : 0}) and visited places (${visitedCount}) are synced to your account. Recent searches (${recentCount}) stay in this browser.`
-                  : `Your profile, saved places (${ready ? ids.length : 0}), visited places (${visitedCount}) and recent searches (${recentCount}) are stored in this browser. Sign in to sync them to an account.`}
-              </p>
-              <div className="t-inline t-wrap">
-                <button
-                  type="button"
-                  className="t-btn t-btn--secondary t-btn--sm"
-                  onClick={clear}
-                  disabled={!ready || ids.length === 0}
-                >
-                  Clear saved places
-                </button>
-                <button
-                  type="button"
-                  className="t-btn t-btn--secondary t-btn--sm"
-                  onClick={() => {
-                    clearRecentSearches();
-                    setRecentCount(0);
-                  }}
-                  disabled={recentCount === 0}
-                >
-                  Clear recent searches
-                </button>
-                <button
-                  type="button"
-                  className="t-btn t-btn--secondary t-btn--sm"
-                  onClick={clearVisited}
-                  disabled={visitedCount === 0}
-                >
-                  Clear visit history
-                </button>
-              </div>
-            </div>
-          </section>
-
-          {/* Server-side account controls. Only meaningful when signed in —
-              there is nothing on the server to change, export or erase for a
-              guest, and the localStorage clears above already cover them. */}
-          {authed && <AccountDataSection />}
-
-          {/* --------------------------------------------------- legal -- */}
-          <section className="t-section">
-            <h2 className="t-label" style={{ marginBottom: "var(--t-2)" }}>
-              About
-            </h2>
-            <div className="t-card">
-              <Link
-                href="/business"
-                className="t-fact"
-                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
-              >
-                <span className="t-fact__icon">
-                  <Icon name="basket" size={17} />
-                </span>
-                <span className="t-row__name" style={{ flex: 1 }}>
-                  For business
-                </span>
-                <span className="t-row__chev">
-                  <Icon name="chevronRight" size={18} />
-                </span>
-              </Link>
-              <Link
-                href="/privacy"
-                className="t-fact"
-                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
-              >
-                <span className="t-fact__icon">
-                  <Icon name="info" size={17} />
-                </span>
-                <span className="t-row__name" style={{ flex: 1 }}>
-                  Privacy policy
-                </span>
-                <span className="t-row__chev">
-                  <Icon name="chevronRight" size={18} />
-                </span>
-              </Link>
-              <Link
-                href="/terms"
-                className="t-fact"
-                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
-              >
-                <span className="t-fact__icon">
-                  <Icon name="info" size={17} />
-                </span>
-                <span className="t-row__name" style={{ flex: 1 }}>
-                  Terms of use
-                </span>
-                <span className="t-row__chev">
-                  <Icon name="chevronRight" size={18} />
-                </span>
-              </Link>
-              <Link
-                href="/about"
-                className="t-fact"
-                style={{ padding: "var(--t-3) var(--t-4)", alignItems: "center" }}
-              >
-                <span className="t-fact__icon">
-                  <Icon name="sparkle" size={17} />
-                </span>
-                <span className="t-row__name" style={{ flex: 1 }}>
-                  About Tembera
-                </span>
-                <span className="t-row__chev">
-                  <Icon name="chevronRight" size={18} />
-                </span>
-              </Link>
-            </div>
-          </section>
+          </div>
         </div>
       </main>
     </>
   );
+}
+
+/** One setting: what it is, what it currently says, and the control. */
+function Row({
+  icon,
+  title,
+  note,
+  action,
+}: {
+  icon: Parameters<typeof Icon>[0]["name"];
+  title: string;
+  note?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="t-setrow">
+      <span className="t-setrow__icon">
+        <Icon name={icon} size={18} />
+      </span>
+      <span className="t-setrow__body">
+        <span className="t-setrow__title">{title}</span>
+        {note && <span className="t-setrow__note">{note}</span>}
+      </span>
+      {action && <span className="t-setrow__action">{action}</span>}
+    </div>
+  );
+}
+
+function Choice({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="t-setrow">
+      <span className="t-setrow__body">
+        <span className="t-setrow__title">{label}</span>
+      </span>
+      <span className="t-setrow__action">
+        <select
+          className="t-input t-setrow__select"
+          value={value}
+          aria-label={label}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </span>
+    </div>
+  );
+}
+
+function Switch({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      className="t-toggle"
+      onClick={() => onChange(!checked)}
+    >
+      <span className="t-toggle__knob" aria-hidden="true" />
+    </button>
+  );
+}
+
+/** Says what happened to a change that saved itself. */
+function SaveHint({ authed, status }: { authed: boolean; status: Status }) {
+  if (!authed) {
+    return (
+      <p className="t-settings__hint">
+        <Link href="/login">Sign in</Link> to keep these across devices.
+      </p>
+    );
+  }
+  if (status === "saving") return <p className="t-settings__hint">Saving…</p>;
+  if (status === "error") {
+    return <p className="t-settings__hint t-settings__hint--bad">That did not save. Try again.</p>;
+  }
+  if (status === "saved") {
+    return (
+      <p className="t-settings__hint">
+        <Icon name="check" size={14} /> Saved
+      </p>
+    );
+  }
+  return <p className="t-settings__hint">Changes save as you make them.</p>;
 }

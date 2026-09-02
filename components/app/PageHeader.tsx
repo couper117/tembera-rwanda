@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import Icon from "@/components/Icon";
-import { useTheme } from "@/lib/client/theme";
 import { useScrolled } from "./AppHeader";
 
 interface Props {
@@ -12,6 +11,13 @@ interface Props {
   fallbackHref?: string;
   /** Keep the title hidden until scrolled — used when the page has its own H1. */
   revealTitleOnScroll?: boolean;
+  /**
+   * Float the bar over the content instead of sitting above it, with no
+   * background of its own until the reader scrolls. For screens that open on
+   * a full-bleed image: an opaque bar there wastes the top of the photo and
+   * reads as chrome bolted on above the page.
+   */
+  overlay?: boolean;
   actions?: ReactNode;
 }
 
@@ -20,15 +26,23 @@ export default function PageHeader({
   title,
   fallbackHref = "/",
   revealTitleOnScroll = false,
+  overlay = false,
   actions,
 }: Props) {
   const router = useRouter();
   const scrolled = useScrolled(24);
-  const { theme, toggleTheme } = useTheme();
   const showTitle = revealTitleOnScroll ? scrolled : true;
 
   return (
-    <header className={`t-header${scrolled ? " t-header--bordered" : ""}`}>
+    <header
+      className={[
+        "t-header",
+        overlay ? "t-header--overlay" : "",
+        scrolled ? "t-header--bordered" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <button
         type="button"
         className="t-iconbtn"
@@ -54,18 +68,10 @@ export default function PageHeader({
         {title}
       </h1>
 
-      <div className="t-header__actions">
-        <button
-          type="button"
-          className="t-iconbtn"
-          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          title={theme === "dark" ? "Light mode" : "Dark mode"}
-          onClick={toggleTheme}
-        >
-          <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
-        </button>
-        {actions}
-      </div>
+      {/* No theme switch here. It is a setting, not a page action — it lives
+          in the main header and in Settings, and on a sub-screen it only
+          crowded the one control that matters, which is Back. */}
+      {actions && <div className="t-header__actions">{actions}</div>}
     </header>
   );
 }

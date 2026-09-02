@@ -6,6 +6,7 @@ import PlaceImage from "@/components/ui/PlaceImage";
 import { useCategoryMap } from "@/lib/client/categories";
 import { useLocation } from "@/lib/client/location";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
+import { isPromoted } from "@/lib/places/ranking";
 import type { Coords, Place } from "@/lib/places/types";
 
 interface Props {
@@ -54,7 +55,12 @@ export default function PlaceRow({
       </div>
 
       <div className="t-row__body">
-        <div className="t-row__name t-truncate">{place.name}</div>
+        <div className="t-row__name t-truncate">
+          {place.name}
+          {/* Disclosed here too. A label that appears on the tile and not in
+              the list is a label the reader learns to stop believing. */}
+          {isPromoted(place) && <span className="t-row__ad">Sponsored</span>}
+        </div>
         <div className="t-place__meta">
           <span>{place.subcategory ?? groupLabel}</span>
           <span className="t-place__sep" aria-hidden="true" />

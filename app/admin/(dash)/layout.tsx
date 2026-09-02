@@ -1,35 +1,45 @@
 import AdminShell from "@/components/admin/AdminShell";
-import { requireAdmin } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/client/theme";
-import { prisma } from "@/lib/prisma";
-import { PENDING_SUBMISSIONS } from "@/lib/admin/placeholder";
+import { pendingSubmissionCount } from "@/lib/data/business";
+import { openReportCount } from "@/lib/data/moderation";
+import { requireStaff } from "@/lib/auth";
 import "../admin.css";
 
 // Counts change with every approval, so the chrome cannot be cached.
 export const dynamic = "force-dynamic";
 
 /**
- * Every authenticated admin screen sits under this layout. The guard runs here
- * once instead of being repeated by each page as it was before, and the shell
- * is mounted once rather than re-wrapped nine times.
+ * Every admin screen sits under this layout, which makes it the one place that
+ * gates the whole dashboard. The guard runs here rather than being repeated by
+ * each page, so a new screen added to this group is protected by existing.
  *
- * /admin/login deliberately sits outside this group so it can render bare.
+ * This covers READS. It does not cover writes: a server action is a POST
+ * endpoint reachable by anyone who can craft a request, whether or not the
+ * button that calls it was ever rendered. Every mutating action therefore
+ * calls requireStaff() or requireAdmin() as its own first line.
+ *
+ * ADMIN and EDITOR both get in. The screens only an ADMIN may use — accounts,
+ * roles, settings, business standing — enforce that themselves via
+ * requireAdmin(); the nav hides them, but hiding is presentation, not
+ * permission.
  */
 export default async function AdminDashLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const admin = await requireAdmin();
+  const staff = await requireStaff();
 
-  // Bookings are real; submissions have no table yet, so the badge counts the
-  // sample queue. Both read the same way to the shell.
-  const bookings = await prisma.booking.count({ where: { status: "pending" } });
+  const [reports, submissions] = await Promise.all([
+    openReportCount(),
+    pendingSubmissionCount(),
+  ]);
 
   return (
     <ThemeProvider>
       <AdminShell
-        email={admin.email}
-        name={admin.name}
-        counts={{ submissions: PENDING_SUBMISSIONS, bookings }}
+        email={staff.email}
+        name={staff.name}
+        role={staff.role}
+        counts={{ submissions, reports }}
       >
         {children}
       </AdminShell>

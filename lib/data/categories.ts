@@ -58,3 +58,50 @@ export async function groupTitle(id: string): Promise<string> {
 export async function groupLabel(id: string): Promise<string> {
   return (await getGroup(id))?.label ?? id;
 }
+
+/* ------------------------------------------------------------------ admin */
+
+export interface AdminSubcategory {
+  id: number;
+  name: string;
+  sortOrder: number;
+}
+
+export interface AdminCategory {
+  id: string;
+  label: string;
+  title: string;
+  icon: string;
+  primary: boolean;
+  sensitive: boolean;
+  sortOrder: number;
+  subcategories: AdminSubcategory[];
+}
+
+/**
+ * The taxonomy in the shape the admin screen edits, with real subcategory row
+ * ids so the rename and remove forms have a stable key to submit.
+ *
+ * Uncached, unlike getCategories(): an editor must see their own change on the
+ * next request, not at the next revalidation.
+ */
+export async function adminCategories(): Promise<AdminCategory[]> {
+  const rows = await prisma.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: { subcategories: { orderBy: [{ sortOrder: "asc" }, { name: "asc" }] } },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    label: r.label,
+    title: r.title,
+    icon: r.icon,
+    primary: r.primary,
+    sensitive: r.sensitive,
+    sortOrder: r.sortOrder,
+    subcategories: r.subcategories.map((s) => ({
+      id: s.id,
+      name: s.name,
+      sortOrder: s.sortOrder,
+    })),
+  }));
+}

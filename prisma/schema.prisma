@@ -1,11 +1,14 @@
 // Tembera — production schema.
 //
-// Everything the app renders now lives here: the catalog (places), the
-// taxonomy (categories + subcategories), the geography (cities/districts),
-// real user accounts with per-user saved/visited/reviews, and bookings.
-// Nothing the UI depends on is hardcoded in application code any more — the
-// seed migrates the original catalog into these tables once, and from then on
-// the admin dashboard is the source of truth.
+// Everything the app renders lives here: the catalog (places), the taxonomy
+// (categories + subcategories), the geography (cities/districts), and real
+// user accounts with per-user saved/visited/reviews.
+//
+// Nothing the UI depends on is hardcoded in application code — the seed
+// migrates the original static catalog into these tables ONCE, and from then
+// on the admin dashboard is the source of truth. The seed is one-way: place
+// ids are derived from source array order, so prisma/seed-ids.json freezes
+// them and the seed refuses to run against a catalog that no longer matches.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,26 +16,33 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
   USER
+  /// Owns or works for a listed business. Sees /business, never /admin.
+  BUSINESS
+  /// Staff who maintain the catalogue but cannot touch accounts or settings.
+  EDITOR
   ADMIN
 }
 
 /// How well we actually know where a place is (mirrors the domain type).
+/// Where a listing is in its life. A business edit lands as a draft for
+/// review; retiring a listing archives it rather than deleting it, so its id
+/// and its public URL survive — see the note on Place.status.
+enum PlaceStatus {
+  draft
+  published
+  archived
+}
+
 enum CoordsPrecision {
   exact
   district
   unknown
 }
 
-enum BookingStatus {
-  pending
-  confirmed
-  cancelled
-}
 
 /// One account table for everyone; admins are simply users with role ADMIN.
 /// Replaces the old separate, unauthenticated admin and the localStorage
@@ -52,15 +62,93 @@ model User {
   /// "signed out". Raised on password change so a stolen cookie dies with the
   /// password it outlived.
   tokenVersion Int      @default(0) @map("token_version")
+  /// Set when the address is confirmed. Auth.js owns this column; a BUSINESS
+  /// must be verified before it can submit a listing, while an ordinary
+  /// visitor may browse and save without it.
+  emailVerified DateTime? @map("email_verified")
+  /// Auth.js writes an avatar URL here for OAuth providers. Unused today —
+  /// the only provider is credentials — but the adapter expects the column.
+  image        String?
+  /// Travel interests, chosen by the reader. Structured as a list of stable
+  /// ids rather than free text so the recommendation work can join on them
+  /// later without having to guess what "food" and "Food" have in common.
+  interests    String[] @default([])
+  /// Language, currency, distance units and notification choices. JSON because
+  /// this list will grow and each addition would otherwise be a migration —
+  /// and none of it is ever queried, only read back for the person it belongs
+  /// to. Shape and defaults live in lib/profile/preferences.ts.
+  preferences  Json?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  saves    SavedPlace[]
-  visits   VisitedPlace[]
-  reviews  Review[]
-  bookings Booking[]
+  saves       SavedPlace[]
+  visits      VisitedPlace[]
+  reviews     Review[]
+  accounts    Account[]
+  sessions    Session[]
+  auditEvents AuditEvent[]
+  /// The business this person works for, if any. A BUSINESS account without
+  /// one has signed up but not yet been given a business by an admin.
+  membership  BusinessMember?
+  submissions Submission[]
+  /// Paid sign-ups this person confirmed or refused, as staff.
+  registrationsDecided BusinessRegistration[] @relation("registrationDecider")
 
   @@map("users")
+}
+
+/* --------------------------------------------------------------- Auth.js */
+//
+// The three models below are Auth.js's own, kept at its expected field names
+// (snake_case columns aside) so the Prisma adapter can drive them unchanged.
+//
+// Sessions are JWTs, not database rows, so the Session table stays empty in
+// normal use: the Credentials provider requires the JWT strategy, and a JWT
+// avoids a database round trip on every request in a serverless deployment.
+// Revocation still works, via User.tokenVersion above.
+//
+// The adapter is mounted anyway because it owns VerificationToken, which
+// password reset and email verification both need — and because keeping
+// Account here means a Google provider can be added later without a migration.
+
+model Account {
+  userId            Int     @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  sessionToken String   @id @map("session_token")
+  userId       Int      @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("auth_verification_tokens")
 }
 
 /// Top level of the taxonomy ("dining", "stays", …). Admin-editable.
@@ -106,14 +194,14 @@ model Subcategory {
 /// Districts/cities, with a centre coordinate and an optional display group
 /// (Kigali's three districts read as one city). Admin-editable directory.
 model City {
-  id        Int     @id @default(autoincrement())
-  name      String  @unique
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
   group     String?
   province  String?
   lat       Float?
   lng       Float?
   image     String?
-  sortOrder Int     @default(0) @map("sort_order")
+  sortOrder Int      @default(0) @map("sort_order")
 
   @@map("cities")
 }
@@ -148,18 +236,44 @@ model Place {
   /// Admin override to hide ratings/reviews out of respect. OR'd at render
   /// time with `categoryId === "memorials"` — see isSensitivePlace().
   sensitive       Boolean         @default(false)
+  /// Only `published` rows are visible to the public. Deleting a listing sets
+  /// `archived` instead of removing the row, because the id is also its public
+  /// URL and a foreign key from saves, visits, reviews and reports — a hard
+  /// delete would break bookmarks and orphan people's history.
+  status          PlaceStatus     @default(published)
+  /// Editorial override for the promoted rows, which are otherwise ranked by
+  /// the pure functions in lib/places/engine.ts.
+  featured        Boolean         @default(false)
+  /// The business that owns this listing, once one claims it. Null for every
+  /// seeded row: ownership is only ever granted by an admin approving a claim
+  /// or a submission, never taken. The relation lands with the Business model;
+  /// the column exists now so a later migration does not have to rewrite this
+  /// table.
+  businessId      Int?            @map("business_id")
+  /// Structured opening hours, keyed by weekday. `hours` above stays as the
+  /// free-text fallback for the rows that predate this and for the odd place
+  /// whose hours genuinely do not fit a grid ("dawn to dusk").
+  hoursJson       Json?           @map("hours_json")
+  /// Kinyarwanda copy. Reserved so translation is later a UI job rather than a
+  /// migration; nothing reads these yet. Rwanda has three official languages
+  /// and an English-only national directory is a stopgap, not a destination.
+  nameRw          String?         @map("name_rw")
+  descriptionRw   String?         @map("description_rw")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 
-  category Category        @relation(fields: [categoryId], references: [id])
-  saves    SavedPlace[]
-  visits   VisitedPlace[]
-  reviews  Review[]
-  reports  Report[]
-  claims   BusinessClaim[]
+  category    Category        @relation(fields: [categoryId], references: [id])
+  business    Business?       @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  saves       SavedPlace[]
+  visits      VisitedPlace[]
+  reviews     Review[]
+  reports     Report[]
+  claims      BusinessClaim[]
+  submissions Submission[]
 
   @@index([categoryId])
   @@index([city])
+  @@index([status])
   @@map("places")
 }
 
@@ -202,6 +316,10 @@ model Review {
   placeId   String   @map("place_id")
   rating    Int
   body      String   @default("")
+  /// Hidden by a moderator. The row survives so the author still sees their
+  /// own review and the decision is reversible; it is simply not shown to
+  /// anyone else and no longer counts towards the place's rating.
+  hidden    Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -269,29 +387,227 @@ model Report {
   @@map("reports")
 }
 
-/// Trip booking requests. Price is derived server-side from a trusted table.
-/// Linked to a user when placed while signed in.
-model Booking {
-  id          Int           @id @default(autoincrement())
-  experience  String
-  preferredAt DateTime      @map("preferred_at")
-  guests      Int
-  fullName    String        @map("full_name")
-  email       String
-  totalPrice  Int           @map("total_price")
-  status      BookingStatus @default(pending)
-  userId      Int?          @map("user_id")
-  createdAt   DateTime      @default(now()) @map("created_at")
+/// Who changed what, and when.
+///
+/// The admin dashboard is for a body that has to answer for its decisions, so
+/// every write from it lands here. Deliberately append-only: nothing in the
+/// application updates or deletes a row, because a tamperable audit trail is
+/// worse than none — it invites trust it has not earned.
+///
+/// `actorId` is nullable and set null on delete, so removing a staff account
+/// does not erase the history of what they did.
+model AuditEvent {
+  id        Int      @id @default(autoincrement())
+  actorId   Int?     @map("actor_id")
+  /// Free-form but conventional: "place.update", "review.hide", "user.role".
+  action    String
+  /// The kind of thing acted on ("place", "review") and its id, kept as
+  /// strings so this table needs no foreign key to everything in the schema —
+  /// and so a row survives the thing it describes being deleted.
+  entity    String
+  entityId  String   @map("entity_id")
+  /// What changed, or anything worth reading later. Small by convention.
+  meta      Json?
+  createdAt DateTime @default(now()) @map("created_at")
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
-  @@map("bookings")
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+/// Deployment settings an administrator can change without a code deploy.
+///
+/// Key/value rather than a column per setting: these are a handful of strings
+/// read once per render, and every new one would otherwise be a migration.
+/// Anything that needs a type, a relation or a constraint does not belong
+/// here — it belongs in a real column.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+/* ------------------------------------------------------------- businesses */
+
+enum BusinessStatus {
+  /// Signed up, not yet checked by anybody.
+  unverified
+  /// Confirmed as who they say they are. Only these may edit a live listing.
+  verified
+  /// Barred, without deleting their record or their listings.
+  suspended
+}
+
+/// Where a paid sign-up has got to.
+///
+/// The whole point of this enum is that `active` is the only state in which a
+/// User and a Business exist. A paid plan buys the right to edit a listing and
+/// carry a verified tick; handing that over the moment somebody picks "Top"
+/// from a dropdown gives away the product to anyone who can type.
+enum RegistrationStatus {
+  /// Details captured, money not received. No account exists yet.
+  awaiting_payment
+  /// Payment recorded. The account is created from this row and it becomes
+  /// `active` in the same transaction, so this is normally a moment, not a
+  /// state you find rows sitting in.
+  paid
+  /// The account and business were created. Terminal, and the audit trail for
+  /// how that business came to exist.
+  active
+  /// Refused — a reference that never matched a payment, or an obvious
+  /// duplicate. Keeps the row rather than deleting the evidence.
+  rejected
+  /// Nobody ever paid. Swept up rather than left to look like a live queue.
+  expired
+}
+
+/// A paid sign-up that has not been paid for yet.
+///
+/// Free sign-ups do not come through here at all: they create their User and
+/// Business immediately, because nothing is owed and an empty account costs
+/// nobody anything. This model exists only for Checked and Top, where an
+/// account has to be earned before it is issued.
+///
+/// It holds a password hash rather than a password. The person chose their
+/// password before paying, so it has to survive the wait, and it must survive
+/// it the same way every other password in this database does.
+model BusinessRegistration {
+  id           Int                @id @default(autoincrement())
+  businessName String             @map("business_name")
+  contactName  String             @map("contact_name")
+  email        String
+  phone        String
+  city         String
+  /// Chosen before payment, hashed on arrival. Never stored in the clear.
+  passwordHash String             @map("password_hash")
+  /// "checked" or "top" — see lib/business/plans.ts. Never "free".
+  plan         String
+  /// Rwandan francs owed, copied from the plan at sign-up time. Frozen on
+  /// purpose: a price change must not silently alter what somebody was quoted.
+  amountRwf    Int                @map("amount_rwf")
+  /// The code the payer types as their mobile-money reference, and the thing
+  /// an admin matches against the statement. Short, unambiguous, unique.
+  reference    String             @unique
+  status       RegistrationStatus @default(awaiting_payment)
+  /// RwandaPay's id for the hosted checkout we opened for this sign-up.
+  /// Null when the gateway is not configured and payment is being taken by
+  /// hand — that fallback is deliberate, see lib/business/payments.ts.
+  sessionId    String?            @map("session_id")
+  /// Where to send the payer. Sessions expire, so this is a record of what we
+  /// opened rather than a link to be reused indefinitely.
+  paymentUrl   String?            @map("payment_url")
+  /// When the hosted session stops accepting payment.
+  sessionExpiresAt DateTime?      @map("session_expires_at")
+  /// The origin the session was opened from, because the gateway is told at
+  /// that moment where to send the payer back to. A session opened against
+  /// localhost:4100 returns the payer to localhost:4100 whatever they are
+  /// using now — so a stored session is only reusable from the same origin.
+  sessionOrigin    String?        @map("session_origin")
+  /// The gateway-facing `tx_ref` of the CURRENT attempt. Not the same as
+  /// `reference`: tx_ref must be globally unique so a retry gets a suffixed
+  /// one, and verify is keyed on it. Without storing it there is no way to ask
+  /// the gateway about the attempt that is actually open.
+  sessionTxRef     String?        @map("session_tx_ref")
+  /// "test" or "live", as the GATEWAY reported it when the session was opened.
+  /// Never taken from the browser. In test mode RwandaPay's hosted page
+  /// declares success without confirming anything and records no transaction,
+  /// so there is nothing to verify — and nothing at stake either, since no
+  /// money moves. See the return page.
+  sessionMode      String?        @map("session_mode")
+  /// How the money was confirmed: "gateway" when RwandaPay told us, "manual"
+  /// when an admin matched it on a statement. Worth keeping — the two have
+  /// very different levels of evidence behind them.
+  confirmedVia String?            @map("confirmed_via")
+  /// What the payer said they sent it from, if they told us. A hint for the
+  /// person reconciling, never a credential.
+  payerNote    String?            @map("payer_note")
+  /// Set when an admin confirms or refuses. Basic audit trail.
+  decidedAt    DateTime?          @map("decided_at")
+  decidedById  Int?               @map("decided_by_id")
+  /// The business this became, once it became one.
+  businessId   Int?               @unique @map("business_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  decidedBy User?     @relation("registrationDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  business  Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("business_registrations")
 }
 
 enum ClaimStatus {
   pending
   approved
   rejected
+}
+
+enum SubmissionKind {
+  /// A listing that does not exist yet.
+  create
+  /// A change to one this business already owns.
+  edit
+}
+
+enum SubmissionStatus {
+  pending
+  approved
+  rejected
+}
+
+/// A hotel, restaurant or operator with an account on Tembera.
+///
+/// Ownership of a listing is only ever GRANTED, by an admin approving a claim
+/// or a submission — a business can never assign itself a place. All 495
+/// seeded listings start unowned.
+model Business {
+  id          Int            @id @default(autoincrement())
+  name        String
+  contactName String         @map("contact_name")
+  email       String
+  phone       String
+  city        String
+  /// Rwanda Revenue Authority taxpayer id. Optional at signup: asking for it
+  /// before anyone has seen value would cost more sign-ups than it prevents
+  /// bad ones, and an admin checks it before verifying.
+  tin         String?
+  /// Which plan they asked for — see lib/business/plans.ts. Nothing here
+  /// charges anybody; money is a conversation had afterwards.
+  plan        String         @default("free")
+  status      BusinessStatus @default(unverified)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  members      BusinessMember[]
+  places       Place[]
+  submissions  Submission[]
+  registration BusinessRegistration?
+
+  @@index([status])
+  @@map("businesses")
+}
+
+/// Somebody who may act for a business.
+///
+/// A join table rather than a single owner column, because a hotel is not one
+/// person: the manager who signs up leaves, and the account has to survive
+/// them. `owner` marks who may invite and remove others.
+model BusinessMember {
+  id         Int      @id @default(autoincrement())
+  businessId Int      @map("business_id")
+  userId     Int      @unique @map("user_id")
+  owner      Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@map("business_members")
 }
 
 /// A business asking to take ownership of its own listing.
@@ -337,4 +653,34 @@ model SystemSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
+}
+
+/// A listing a business is proposing, or a change to one it owns.
+///
+/// The proposal lives in `payload` as JSON rather than in twenty mirrored
+/// columns. It is validated by the same zod schema on the way in and on the
+/// way out, so its shape is already enforced by code that exists — whereas
+/// mirroring Place's columns would mean editing two models every time a field
+/// is added, forever.
+model Submission {
+  id                Int              @id @default(autoincrement())
+  kind              SubmissionKind
+  businessId        Int              @map("business_id")
+  submittedByUserId Int              @map("submitted_by_user_id")
+  /// Set when kind = edit: the listing being changed.
+  placeId           String?          @map("place_id")
+  payload           Json
+  status            SubmissionStatus @default(pending)
+  rejectionReason   String           @default("") @map("rejection_reason")
+  reviewedByUserId  Int?             @map("reviewed_by_user_id")
+  reviewedAt        DateTime?        @map("reviewed_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  submittedBy User     @relation(fields: [submittedByUserId], references: [id], onDelete: Cascade)
+  place       Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([businessId])
+  @@map("submissions")
 }

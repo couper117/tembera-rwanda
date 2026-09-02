@@ -7,6 +7,7 @@
 
 import type { Coords, Place, PlaceWithDistance } from "./types";
 import { distanceKm } from "./geo";
+import { isPromoted } from "./ranking";
 import type { CategoryGroup } from "./taxonomy";
 
 /**
@@ -114,7 +115,7 @@ export interface CitySummary {
  * city" and the /explore "Cities & districts" grid; anything not yet covered
  * here still falls back to a listing's own image below.
  */
-const CITY_IMAGES: Record<string, string> = {
+export const CITY_IMAGES: Record<string, string> = {
   Kigali: "https://images.unsplash.com/photo-1687986261123-b17f08f2796c?auto=format&fit=crop&w=800&q=80",
   Musanze: "/assets/images/wonder_volcanoes_national_park.jpg",
   Huye: "/assets/images/historic_ethnographic_museum.jpg",
@@ -269,6 +270,52 @@ export function featured(
     .slice(0, limit);
 }
 
+/**
+ * Listings whose owners pay for placement.
+ *
+ * Its own row, with its own label, rather than salted through "Top rated".
+ * "Top rated" is a claim about ratings; if paying could put a listing there
+ * the label would be false, and a directory that lies about small things is
+ * not trusted about large ones. This row says what it is, so a business gets
+ * real visibility and a visitor keeps an honest map of the country.
+ *
+ * Ordered by rating within the promoted set, so paying buys the row rather
+ * than a specific spot in it — one business cannot outbid another for first
+ * place.
+ */
+export function sponsored(
+  places: Place[],
+  limit = 8,
+  sensitive: ReadonlySet<string> = EMPTY_SET,
+  categoryId?: string,
+): Place[] {
+  return places
+    .filter(
+      (p) =>
+        isPromoted(p) &&
+        !sensitive.has(p.categoryId) &&
+        isRenderableImage(p.image) &&
+        (!categoryId || p.categoryId === categoryId),
+    )
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, limit);
+}
+
+/**
+ * Promoted listings first, everything else in the order it arrived.
+ *
+ * For a browse list, where there is no relevance score to band against — the
+ * reader asked for a category, so every result is equally "relevant" and the
+ * only question is order. A stable partition rather than a sort, so the
+ * existing ordering survives underneath.
+ */
+export function withPromotedFirst(places: Place[]): Place[] {
+  const promoted: Place[] = [];
+  const rest: Place[] = [];
+  for (const place of places) (isPromoted(place) ? promoted : rest).push(place);
+  return promoted.length ? [...promoted, ...rest] : places;
+}
+
 /* ----------------------------------------------------------- search index */
 
 /**
@@ -296,5 +343,11 @@ export function buildSearchIndex(places: Place[]): Place[] {
     // fall back to the category check alone and would show a rating on a
     // memorial that an admin flagged sensitive from outside that category.
     sensitive: place.sensitive,
+    // Two more booleans-worth. Search runs in the browser off this index, so
+    // without them the search screen is the one place in the product that
+    // cannot see who is verified or who is paying — results would come back
+    // unranked and unlabelled while every other screen showed both.
+    verified: place.verified,
+    plan: place.plan,
   }));
 }

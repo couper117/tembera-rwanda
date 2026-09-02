@@ -5,19 +5,13 @@ import PlaceBrowser from "@/components/browse/PlaceBrowser";
 import Icon from "@/components/Icon";
 import { categoryColor, resolveIconName } from "@/components/ui/categoryIcon";
 import { placesInCategory } from "@/lib/data/places";
-import { getCategories, getGroup } from "@/lib/data/categories";
+import { getGroup } from "@/lib/data/categories";
 
-export async function generateStaticParams() {
-  const groups = await getCategories();
-  return groups.map((group) => ({ category: group.id }));
-}
-
-// Reject unknown categories with a real 404. generateStaticParams enumerates
-// every valid category id; dynamicParams=false makes any other /c/… return a
-// proper 404 status (not just the not-found screen with a 200). This validates
-// the route param and is independent of the `?type=` searchParam, which still
-// works for valid categories.
-export const dynamicParams = false;
+// Fully dynamic, like /place/[id]. The taxonomy is admin-editable, so
+// prerendering the category list would both open a DB connection at build time
+// and serve a stale set of categories until the next deploy. An unknown id
+// falls through to getGroup() -> notFound(), which returns a real 404.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -48,8 +42,7 @@ export default async function CategoryPage({
   const places = await placesInCategory(id);
 
   // The `?type=` filter is applied client-side by PlaceBrowser (it reads the
-  // URL on mount). Keeping it out of this server component is what lets
-  // dynamicParams=false return a real 404 for unknown categories.
+  // URL on mount).
 
   return (
     <>

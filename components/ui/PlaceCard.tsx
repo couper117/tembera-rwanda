@@ -6,12 +6,17 @@ import PlaceImage from "@/components/ui/PlaceImage";
 import SaveButton from "@/components/ui/SaveButton";
 import { useLocation } from "@/lib/client/location";
 import { distanceKm, formatDistanceFor } from "@/lib/places/geo";
+import { isPromoted } from "@/lib/places/ranking";
 import type { Place } from "@/lib/places/types";
 
 interface Props {
   place: Place;
-  /** Grid cards stretch to their column; rail cards keep a fixed width. */
-  variant?: "rail" | "grid";
+  /**
+   * Rail cards keep a fixed width; grid cards stretch to their column; tile
+   * cards are the landing page's photo-led form, where the caption sits over
+   * the image instead of under it.
+   */
+  variant?: "rail" | "grid" | "tile";
   /** Hide distance where it would be noise (e.g. a city-scoped list). */
   showDistance?: boolean;
 }
@@ -19,6 +24,11 @@ interface Props {
 /**
  * The primary discovery card: image, name, then the facts that help someone
  * decide — category, rating, distance. No marketing copy.
+ *
+ * The "tile" variant folds all of that onto the photograph. It exists because
+ * a places guide is chosen from pictures: the text block under the old card
+ * cost as much height as the thumbnail above it, which left the photo small on
+ * the one screen where photos should be doing the work.
  */
 export default function PlaceCard({
   place,
@@ -38,11 +48,57 @@ export default function PlaceCard({
   // A "~" prefix signals the pin is a district centre, not a surveyed address;
   // sub-kilometre readings are dropped entirely for those.
   const distance = formatDistanceFor(km, place.coordsPrecision);
+  const category = place.subcategory ?? place.city;
+
+  if (variant === "tile") {
+    return (
+      <Link href={`/place/${place.id}`} className="t-tile">
+        {/* The photo lives inside its own overflow:hidden box so that scaling
+            it on hover cannot clip the caption or the badges, which are
+            siblings of this wrapper rather than children. */}
+        <span className="t-tile__media">
+          <PlaceImage
+            src={place.image}
+            alt={place.name}
+            className="t-tile__img"
+            categoryId={place.categoryId}
+            seed={place.id}
+            sizes="(min-width: 1240px) 213px, (min-width: 560px) 22vw, 45vw"
+          />
+        </span>
+
+        {/* Dark at the bottom for the caption, and again at the top so the
+            badges hold up over a bright sky. */}
+        <span className="t-tile__scrim" aria-hidden="true" />
+
+        {place.rating !== undefined && (
+          <span className="t-tile__rating">
+            <Icon name="star" size={12} filled />
+            {place.rating.toFixed(1)}
+          </span>
+        )}
+
+        {/* Paid placement is always disclosed. A directory that quietly sells
+            its ordering is worth less to everyone, including the businesses
+            paying for it. See lib/places/ranking.ts. */}
+        {isPromoted(place) && <span className="t-tile__ad">Sponsored</span>}
+
+        <SaveButton placeId={place.id} placeName={place.name} />
+
+        <span className="t-tile__caption">
+          <span className="t-tile__name t-truncate">{place.name}</span>
+          <span className="t-tile__meta t-truncate">
+            {distance ? `${category} · ${distance}` : category}
+          </span>
+        </span>
+      </Link>
+    );
+  }
 
   return (
     <Link
       href={`/place/${place.id}`}
-      className={`t-place${variant === "grid" ? " t-place--grid" : ""}`}
+      className={`t-place${variant === "rail" ? "" : " t-place--grid"}`}
     >
       <div className="t-place__media">
         <PlaceImage
@@ -53,6 +109,9 @@ export default function PlaceCard({
           sizes="(min-width: 1100px) 240px, (min-width: 720px) 33vw, 45vw"
         />
         <SaveButton placeId={place.id} placeName={place.name} />
+        {/* Same disclosure as the tile — a label that only shows in one of
+            three layouts is one the reader learns to stop believing. */}
+        {isPromoted(place) && <span className="t-tile__ad">Sponsored</span>}
       </div>
 
       <div className="t-place__body">

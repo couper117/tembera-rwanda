@@ -1,0 +1,395 @@
+import "server-only";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { toLocalPhone } from "./phone";
+import { retryTxRef, sessionUsable } from "./session";
+
+export { toLocalPhone, retryTxRef, sessionUsable };
+
+/**
+ * RwandaPay, the payment gateway behind paid business plans.
+ *
+ * Everything here runs on the server. The secret key authorises every charge
+ * this application can make, so it is read from `RWANDAPAY_SECRET_KEY` with no
+ * `NEXT_PUBLIC_` prefix — a public-prefixed key is compiled into the browser
+ * bundle, where anybody can read it.
+ *
+ * The shape below was confirmed against the live test API rather than taken
+ * from the docs alone, because two things differ from a first reading:
+ *
+ *   1. **`Idempotency-Key` is mandatory** on financial calls. Without it the
+ *      API returns 400 IDEMPOTENCY_KEY_REQUIRED before looking at the body.
+ *   2. **Phone numbers must be local ten-digit** (`0788123456`). The
+ *      international form the sign-up form asks for (`+250 788 123 456`) is
+ *      rejected with a 422, so it is normalised on the way out.
+ *
+ * `verify` answers "has anybody paid this yet", and a reference nobody has
+ * paid against comes back as `{"status":"pending","message":"Transaction not
+ * found"}` — a 200, not a 404. So a not-found is not an error to report; it is
+ * simply "no".
+ */
+
+const BASE = process.env.RWANDAPAY_BASE_URL ?? "https://pay.rwandapay.rw/api/v1";
+
+/** Configured only when both keys are present. Half a key pair cannot charge. */
+export function gatewayConfigured(): boolean {
+  return Boolean(process.env.RWANDAPAY_PUBLIC_KEY && process.env.RWANDAPAY_SECRET_KEY);
+}
+
+/**
+ * Are we running on test keys?
+ *
+ * Belt to the braces on test-mode activation: the stored session mode is the
+ * gateway's own word, but a row written under test keys must not be able to
+ * grant a free account after somebody swaps in live ones.
+ */
+export function isTestKey(): boolean {
+  return (process.env.RWANDAPAY_SECRET_KEY ?? "").startsWith("sk_test_");
+}
+
+function authHeaders(): Record<string, string> {
+  return {
+    "X-Public-Key": process.env.RWANDAPAY_PUBLIC_KEY ?? "",
+    "X-Secret-Key": process.env.RWANDAPAY_SECRET_KEY ?? "",
+    Accept: "application/json",
+  };
+}
+
+export interface CheckoutSession {
+  /** Our own stable reference. Everything downstream reconciles on this. */
+  reference: string;
+  /** The gateway-facing id for this attempt. Verify is keyed on this one. */
+  txRef: string;
+  sessionId: string;
+  paymentUrl: string;
+  expiresAt: Date | null;
+  /** "test" or "live", straight from the gateway — worth surfacing. */
+  mode: string;
+}
+
+export type InitializeResult =
+  | { ok: true; session: CheckoutSession }
+  | { ok: false; error: string };
+
+/**
+ * Open a hosted checkout and get the URL to send the payer to.
+ *
+ * `reference` is ours and must be unique: it doubles as the idempotency key,
+ * so a resubmitted sign-up reuses the session it already opened rather than
+ * charging somebody twice.
+ */
+export async function initializeCheckout(input: {
+  reference: string;
+  amountRwf: number;
+  customer: { name: string; phone: string; email: string };
+  redirectUrl?: string;
+  webhookUrl?: string;
+  /**
+   * The gateway-facing id for THIS attempt. Defaults to `reference`.
+   *
+   * `tx_ref` has to be globally unique — reopening a checkout with one that
+   * has been used before is refused outright with a 409
+   * IDEMPOTENCY_KEY_CONFLICT, which is what a payer sees as "This payment link
+   * has expired" with no way forward. So a retry passes a fresh one.
+   *
+   * `reference` stays stable regardless, because that is what ties the payment
+   * back to the sign-up: it travels in `description` and `metadata`, which is
+   * where verifyPayment looks. The two identifiers do different jobs and had
+   * to stop being the same string.
+   */
+  txRef?: string;
+}): Promise<InitializeResult> {
+  if (!gatewayConfigured()) return { ok: false, error: "Payments are not configured." };
+
+  const phone = toLocalPhone(input.customer.phone);
+  if (!phone) {
+    return {
+      ok: false,
+      error: "That phone number is not a Rwandan mobile number we can charge.",
+    };
+  }
+
+  // One attempt, one tx_ref. See the note on the field.
+  const txRef = input.txRef ?? input.reference;
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/checkout/initialize`, {
+      method: "POST",
+      headers: {
+        ...authHeaders(),
+        "Content-Type": "application/json",
+        "Idempotency-Key": txRef,
+      },
+      body: JSON.stringify({
+        amount: input.amountRwf,
+        tx_ref: txRef,
+        // `tx_ref` identifies the checkout SESSION and does not survive onto
+        // the transaction — a paid transaction carries RwandaPay's own
+        // `PAY-...` reference and no field pointing back at ours. `description`
+        // and `metadata` do survive, so the reference travels in both. See
+        // verifyPayment, which reconciles on them.
+        description: `Tembera ${input.reference}`,
+        metadata: { tembera_reference: input.reference },
+        customer: { name: input.customer.name, phone, email: input.customer.email },
+        ...(input.redirectUrl ? { redirect_url: input.redirectUrl } : {}),
+        ...(input.webhookUrl ? { webhook_url: input.webhookUrl } : {}),
+      }),
+      cache: "no-store",
+    });
+  } catch {
+    // The network, not the payer. Say so, because "try again" is good advice
+    // here and terrible advice for a declined card.
+    return { ok: false, error: "We could not reach the payment service. Try again." };
+  }
+
+  const body = (await res.json().catch(() => null)) as
+    | { success?: boolean; message?: string; data?: Record<string, unknown> }
+    | null;
+
+  if (!res.ok || !body?.success || !body.data) {
+    return { ok: false, error: body?.message ?? "The payment service refused that request." };
+  }
+
+  const data = body.data;
+  const paymentUrl = typeof data.payment_url === "string" ? data.payment_url : null;
+  const sessionId = typeof data.session_id === "string" ? data.session_id : null;
+  if (!paymentUrl || !sessionId) {
+    return { ok: false, error: "The payment service returned an unusable session." };
+  }
+
+  return {
+    ok: true,
+    session: {
+      // Our stable reference, not the per-attempt tx_ref: everything
+      // downstream reconciles on this one.
+      reference: input.reference,
+      txRef,
+      sessionId,
+      paymentUrl,
+      expiresAt:
+        typeof data.expires_at === "string" ? new Date(data.expires_at) : null,
+      mode: typeof data.mode === "string" ? data.mode : "unknown",
+    },
+  };
+}
+
+export interface PaymentStatus {
+  /** True only when the gateway says the money is in. Nothing else grants it. */
+  paid: boolean;
+  /** The gateway's own word: pending / successful / failed. */
+  status: string;
+  /** Present when the call itself failed, as opposed to the payment. */
+  error?: string;
+  /** RwandaPay's own reference for the transaction, once one exists. */
+  gatewayReference?: string;
+}
+
+/**
+ * Has this reference been paid?
+ *
+ * Harder than it should be, and worth explaining, because the obvious
+ * implementation is wrong in a way that fails silently.
+ *
+ * `/checkout/{x}/verify` answers correctly — but only for **RwandaPay's own**
+ * transaction reference (`PAY-TEST-…`). Given the `tx_ref` we chose, it
+ * returns a 200 saying `{"status":"pending","message":"Transaction not
+ * found"}` forever, even after the money has arrived. Initialize echoes our
+ * `tx_ref` back as `data.reference`, which makes it look like the identifier
+ * to verify on; it is the checkout session's, not the transaction's, and a
+ * paid transaction carries no field pointing back at it.
+ *
+ * So there are two paths, tried in order:
+ *
+ *   1. **Direct.** Works when we are handed RwandaPay's reference — which is
+ *      what their webhook sends. Cheap, and exact.
+ *   2. **Reconcile.** Scan recent transactions for a successful one whose
+ *      `description` or `metadata` carries our reference. That is why
+ *      initializeCheckout puts it in both.
+ *
+ * Conservative throughout: a network failure, a malformed body and an unpaid
+ * reference all come back `paid: false`, because the only thing this answer
+ * decides is whether to issue a paid account, and the safe default is not to.
+ */
+export async function verifyPayment(
+  reference: string,
+  /**
+   * The tx_ref of the attempt currently open, when we have it. Verify is keyed
+   * on tx_ref, and a retry's tx_ref is not our reference — so without this,
+   * every retried payment is asked about under an identifier the gateway has
+   * never seen.
+   */
+  txRef?: string,
+): Promise<PaymentStatus> {
+  if (!gatewayConfigured()) return { paid: false, status: "unconfigured" };
+
+  const direct = await verifyDirect(reference);
+  if (direct.paid) return direct;
+
+  if (txRef && txRef !== reference) {
+    const byAttempt = await verifyDirect(txRef);
+    if (byAttempt.paid) return byAttempt;
+  }
+
+  const found = await findTransaction(reference);
+  if (found) {
+    return { paid: true, status: found.status, gatewayReference: found.reference };
+  }
+
+  return direct;
+}
+
+/** `/checkout/{reference}/verify`, keyed on RwandaPay's own reference. */
+async function verifyDirect(reference: string): Promise<PaymentStatus> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/checkout/${encodeURIComponent(reference)}/verify`, {
+      headers: authHeaders(),
+      cache: "no-store",
+    });
+  } catch {
+    return { paid: false, status: "unreachable", error: "Could not reach the payment service." };
+  }
+
+  const body = (await res.json().catch(() => null)) as
+    | { status?: string; completed?: boolean; success?: boolean; message?: string }
+    | null;
+
+  if (!body) return { paid: false, status: "unreadable" };
+
+  // Both flags, not either. `success` alone appears on a body that also says
+  // the transaction does not exist.
+  const paid = body.success === true && body.completed === true;
+  return { paid, status: body.status ?? "unknown" };
+}
+
+interface GatewayTransaction {
+  reference: string;
+  status: string;
+}
+
+/**
+ * Find a successful transaction carrying our reference.
+ *
+ * Matches on the two fields that survive from the checkout onto the
+ * transaction. Requires an explicitly successful status: `settled`, `pending`
+ * and `failed` rows all appear in this list, and only one of them means the
+ * money is in.
+ */
+async function findTransaction(reference: string): Promise<GatewayTransaction | null> {
+  // The list is OLDEST first, paginated, and ignores every sort parameter it
+  // was offered (`sort`, `order`, `sort_by`) — so page one is the account's
+  // first fifty transactions, from months ago, and a payment made a minute ago
+  // is on the LAST page. Scanning page one found nothing, ever, which is a
+  // failure that looks exactly like "the payment did not happen".
+  //
+  // So: read page one for the pagination header, then walk backwards from the
+  // last page. A payment we are asking about is minutes old, so it is at the
+  // end; two pages is a hundred transactions of slack.
+  const first = await fetchTransactions(1);
+  if (!first) return null;
+
+  const match = scan(first.rows, reference);
+  if (match) return match;
+
+  for (let page = first.lastPage; page > 1 && page >= first.lastPage - 1; page--) {
+    const later = await fetchTransactions(page);
+    if (!later) break;
+    const hit = scan(later.rows, reference);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+interface TransactionPage {
+  rows: Record<string, unknown>[];
+  lastPage: number;
+}
+
+async function fetchTransactions(page: number): Promise<TransactionPage | null> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/transactions?per_page=50&page=${page}`, {
+      headers: authHeaders(),
+      cache: "no-store",
+    });
+  } catch {
+    return null;
+  }
+
+  const body = (await res.json().catch(() => null)) as
+    | { data?: { data?: unknown[]; last_page?: number } | unknown[] }
+    | null;
+  if (!body?.data) return null;
+
+  if (Array.isArray(body.data)) {
+    return { rows: body.data as Record<string, unknown>[], lastPage: 1 };
+  }
+  const inner = body.data as { data?: unknown[]; last_page?: number };
+  return {
+    rows: (inner.data ?? []) as Record<string, unknown>[],
+    lastPage: typeof inner.last_page === "number" ? inner.last_page : 1,
+  };
+}
+
+/**
+ * A successful transaction carrying our reference.
+ *
+ * Matches on the two fields that survive the checkout onto the transaction.
+ * The status set seen on this account is `successful` and `completed`; both
+ * mean the money is in, and anything else does not.
+ */
+function scan(
+  rows: Record<string, unknown>[],
+  reference: string,
+): GatewayTransaction | null {
+  for (const row of rows) {
+    const status = typeof row.status === "string" ? row.status : "";
+    if (status !== "successful" && status !== "completed") continue;
+
+    const description = typeof row.description === "string" ? row.description : "";
+    const meta = row.metadata as Record<string, unknown> | null | undefined;
+    const tagged =
+      typeof meta?.tembera_reference === "string" ? meta.tembera_reference : "";
+    const txRef = typeof row.tx_ref === "string" ? row.tx_ref : "";
+
+    if (
+      description.includes(reference) ||
+      tagged === reference ||
+      txRef.startsWith(reference)
+    ) {
+      const ref = typeof row.reference === "string" ? row.reference : reference;
+      return { reference: ref, status };
+    }
+  }
+  return null;
+}
+
+/**
+ * Is this webhook really from RwandaPay?
+ *
+ * An unverified webhook endpoint is an open door that grants paid accounts to
+ * anyone who can POST to it, so this is not optional: with no configured
+ * secret the answer is no, and the endpoint falls back to asking the API
+ * directly rather than trusting the body.
+ *
+ * timingSafeEqual, because comparing signatures with `===` leaks how much of a
+ * guess was right through how long the comparison took.
+ */
+export function verifyWebhookSignature(rawBody: string, signature: string | null): boolean {
+  const secret = process.env.RWANDAPAY_WEBHOOK_SECRET;
+  if (!secret || !signature) return false;
+
+  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+  const given = signature.replace(/^sha256=/, "").trim();
+  const a = Buffer.from(expected, "utf8");
+  const b = Buffer.from(given, "utf8");
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/** A fresh idempotency key, for calls that are not keyed on our reference. */
+export function idempotencyKey(): string {
+  return randomUUID();
+}
+
+

@@ -1,7 +1,8 @@
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { PageHead, Panel } from "@/components/admin/ui";
-import { prisma } from "@/lib/prisma";
+import { getCities } from "@/lib/data/cities";
 import CityForm from "./CityForm";
 import { deleteCity } from "./actions";
 
@@ -10,20 +11,29 @@ export const dynamic = "force-dynamic";
 export default async function CitiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; error?: string }>;
 }) {
-  const { edit } = await searchParams;
+  const { edit, error } = await searchParams;
   const editId = edit ? Number(edit) : NaN;
 
-  const cities = await prisma.city.findMany({
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-  });
+  const cities = await getCities();
   const editing = Number.isInteger(editId)
     ? cities.find((c) => c.id === editId) ?? null
     : null;
 
   return (
     <>
+      {/* deleteCity refuses when listings still reference the district and
+          redirects back with a reason — which is invisible unless it is shown. */}
+      {error && (
+        <div className="t-notice t-notice--danger" style={{ marginBottom: "var(--t-4)" }}>
+          <span className="t-notice__icon">
+            <Icon name="alert" size={16} />
+          </span>
+          <div className="t-notice__body">{error}</div>
+        </div>
+      )}
+
       <PageHead
         title="Cities"
         sub={`${cities.length} districts and cities in the directory.`}

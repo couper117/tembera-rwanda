@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import Icon from "@/components/Icon";
+import { directionsFor } from "@/lib/places/directions";
 import { useSaved } from "@/lib/client/saved";
 import type { Place } from "@/lib/places/types";
 
@@ -11,21 +13,12 @@ interface Props {
   variant: "bar" | "panel";
 }
 
-/** Directions link: the source's own map link if it had one, else coordinates. */
-export function directionsHref(place: Place): string | null {
-  if (place.mapLink) return place.mapLink;
-  if (place.lat !== undefined && place.lng !== undefined) {
-    return `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
-  }
-  return null;
-}
-
 export default function PlaceActions({ place, variant }: Props) {
   const { isSaved, toggle, ready } = useSaved();
   const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
 
   const saved = isSaved(place.id);
-  const directions = directionsHref(place);
+  const directions = directionsFor(place);
 
   async function share() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -58,16 +51,14 @@ export default function PlaceActions({ place, variant }: Props) {
     return (
       <div className="t-actionbar">
         {directions ? (
-          <a
+          <DirectionsLink
+            to={directions}
             className="t-btn t-btn--primary"
             style={{ flex: 1 }}
-            href={directions}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             <Icon name="navigate" size={18} />
             Directions
-          </a>
+          </DirectionsLink>
         ) : (
           <span className="t-btn t-btn--secondary" style={{ flex: 1 }} aria-disabled="true">
             No location on file
@@ -100,15 +91,10 @@ export default function PlaceActions({ place, variant }: Props) {
   return (
     <div className="t-card t-stack-2" style={{ padding: "var(--t-4)" }}>
       {directions ? (
-        <a
-          className="t-btn t-btn--primary t-btn--block"
-          href={directions}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <DirectionsLink to={directions} className="t-btn t-btn--primary t-btn--block">
           <Icon name="navigate" size={18} />
           Get directions
-        </a>
+        </DirectionsLink>
       ) : (
         <p className="t-small t-muted">
           This listing has no coordinates, so we can&apos;t offer directions.
@@ -138,5 +124,40 @@ export default function PlaceActions({ place, variant }: Props) {
         </a>
       )}
     </div>
+  );
+}
+
+/**
+ * Routes to our own map, or opens the source's map link in a new tab when a
+ * listing has no coordinates of its own.
+ */
+function DirectionsLink({
+  to,
+  className,
+  style,
+  children,
+}: {
+  to: { href: string; external: boolean };
+  className: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  if (to.external) {
+    return (
+      <a
+        className={className}
+        style={style}
+        href={to.href}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link className={className} style={style} href={to.href}>
+      {children}
+    </Link>
   );
 }

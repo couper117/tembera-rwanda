@@ -1,44 +1,44 @@
 import Link from "next/link";
-import Icon from "@/components/Icon";
-import { PageHead, Panel, SampleNotice, StatusBadge } from "@/components/admin/ui";
-import { SUBMISSIONS, adminDate, type SubmissionStatus } from "@/lib/admin/placeholder";
+import { EmptyRow, PageHead, Panel, StatusBadge } from "@/components/admin/ui";
+import { adminDate } from "@/lib/admin/placeholder";
+import { requireStaff } from "@/lib/auth";
+import { adminSubmissions } from "@/lib/data/business";
 
 export const dynamic = "force-dynamic";
 
-const TABS: { key: SubmissionStatus | "all"; label: string }[] = [
+const TABS = [
   { key: "pending", label: "Pending" },
   { key: "approved", label: "Approved" },
   { key: "rejected", label: "Rejected" },
   { key: "all", label: "All" },
-];
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
 
 export default async function SubmissionsPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
+  await requireStaff();
   const { status } = await searchParams;
-  const active = (TABS.find((t) => t.key === status)?.key ?? "pending") as
-    | SubmissionStatus
-    | "all";
 
-  const rows =
-    active === "all" ? SUBMISSIONS : SUBMISSIONS.filter((s) => s.status === active);
+  const active = (TABS.find((t) => t.key === status)?.key ?? "pending") as TabKey;
+  const rows = await adminSubmissions(active === "all" ? undefined : active);
+  const all = await adminSubmissions();
 
-  const count = (key: SubmissionStatus) =>
-    SUBMISSIONS.filter((s) => s.status === key).length;
+  const count = (key: TabKey) =>
+    key === "all" ? all.length : all.filter((s) => s.status === key).length;
 
   return (
     <>
       <PageHead
         title="Submissions"
-        sub="Listings sent in by businesses, waiting on a decision before they go live."
+        sub="Listings and changes sent in by businesses, waiting on a decision."
       />
 
-      <SampleNotice what="Business submissions" />
-
       <Panel
-        title={`${rows.length} ${active === "all" ? "total" : active}`}
+        title={`${rows.length} ${active === "all" ? "in total" : active}`}
         action={
           <div className="t-inline t-wrap">
             {TABS.map((tab) => (
@@ -48,64 +48,76 @@ export default async function SubmissionsPage({
                 className="t-chip t-chip--sm"
                 aria-pressed={active === tab.key}
               >
-                {tab.label}
-                {tab.key !== "all" && ` (${count(tab.key as SubmissionStatus)})`}
+                {tab.label} ({count(tab.key)})
               </Link>
             ))}
           </div>
         }
         flush
       >
-        {rows.length === 0 ? (
-          <p className="a-empty">Nothing here. The queue is clear.</p>
-        ) : (
-          <div className="a-tablewrap">
-            <table className="a-table">
-              <thead>
-                <tr>
-                  <th>Listing</th>
-                  <th>Business</th>
-                  <th>Category</th>
-                  <th>City</th>
-                  <th>Submitted</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: "right" }}>Review</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <span className="a-table__strong">{s.placeName}</span>
-                      <span className="a-table__sub">{s.id}</span>
-                    </td>
-                    <td>
-                      {s.businessName}
-                      <span className="a-table__sub">{s.submittedBy}</span>
-                    </td>
-                    <td>{s.subcategory}</td>
-                    <td>{s.city}</td>
-                    <td>{adminDate(s.submittedAt)}</td>
-                    <td>
-                      <StatusBadge status={s.status} />
-                    </td>
-                    <td>
-                      <div className="a-table__actions">
-                        <Link
-                          href={`/admin/submissions/${s.id}`}
-                          className="t-btn t-btn--secondary t-btn--sm"
-                        >
-                          Open
-                          <Icon name="chevronRight" size={14} />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="a-tablewrap">
+          <table className="a-table">
+            <thead>
+              <tr>
+                <th>What</th>
+                <th>Business</th>
+                <th>Sent by</th>
+                <th>Received</th>
+                <th>Status</th>
+                <th style={{ textAlign: "right" }}>Review</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <EmptyRow colSpan={6}>
+                  {active === "pending"
+                    ? "Nothing waiting. The queue is clear."
+                    : "Nothing here."}
+                </EmptyRow>
+              ) : (
+                rows.map((s) => {
+                  const payload = s.payload as { name?: string } | null;
+                  return (
+                    <tr key={s.id}>
+                      <td>
+                        <span className="a-table__strong">
+                          {s.kind === "create"
+                            ? payload?.name ?? "A new listing"
+                            : "A change"}
+                        </span>
+                        <span className="a-table__sub">
+                          {s.kind === "create" ? "new listing" : s.placeId}
+                        </span>
+                      </td>
+                      <td>
+                        {s.business.name}
+                        <span className="a-table__sub">{s.business.status}</span>
+                      </td>
+                      <td>
+                        {s.submittedBy.name}
+                        <span className="a-table__sub">{s.submittedBy.email}</span>
+                      </td>
+                      <td>{adminDate(s.createdAt)}</td>
+                      <td>
+                        <StatusBadge status={s.status} />
+                      </td>
+                      <td>
+                        <div className="a-table__actions" style={{ justifyContent: "flex-end" }}>
+                          <Link
+                            href={`/admin/submissions/${s.id}`}
+                            className="t-btn t-btn--secondary t-btn--sm"
+                          >
+                            Open
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </Panel>
     </>
   );

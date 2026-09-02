@@ -59,6 +59,47 @@
   border-bottom-color: var(--t-border);
 }
 
+/* A bar that floats over the page rather than sitting above it, for screens
+   that open on a full-bleed photograph. The negative margin is what makes it
+   float: the header still participates in the sticky layout, but the content
+   below slides up underneath it. It stays constant whether or not the reader
+   has scrolled, so taking a background on scroll cannot shift the page. */
+.t-header--overlay {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  margin-bottom: calc(var(--t-header-h) * -1);
+}
+
+/* The back arrow sits on an unknown photograph, so it carries its own ground
+   instead of trusting the image to be dark where the icon lands. */
+.t-header--overlay .t-iconbtn {
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.t-header--overlay .t-iconbtn:hover {
+  background: rgba(0, 0, 0, 0.58);
+  color: #fff;
+}
+
+/* Scrolled past the photo, it becomes an ordinary bar — the title has to be
+   readable against the page, not against an image that is no longer there. */
+.t-header--overlay.t-header--bordered {
+  background: var(--t-bg);
+  backdrop-filter: saturate(150%) blur(12px);
+  -webkit-backdrop-filter: saturate(150%) blur(12px);
+}
+
+.t-header--overlay.t-header--bordered .t-iconbtn {
+  background: none;
+  color: var(--t-ink-2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .t-header__brand {
   display: flex;
   align-items: center;
@@ -85,11 +126,22 @@
   display: none;
 }
 
+/* Stands in for the search field on the landing page, where the hero owns the
+   only search box. Same job as its `margin-right: auto`. */
+.t-header__gap {
+  display: none;
+}
+
 @media (min-width: 1024px) {
   /* The rail is fixed and paints above the header, so the header's content has
      to start clear of it — otherwise the search field slides underneath. */
   .t-header {
     padding-left: calc(var(--t-rail-w) + var(--t-gutter));
+  }
+
+  .t-header__gap {
+    display: block;
+    flex: 1;
   }
 
   .t-header__search {
@@ -554,8 +606,7 @@
   /* Labels collapse by animating their width away rather than being switched
      off — display:none popped, which is what made the toggle feel cheap. */
   .t-railrow__label,
-  .t-rail__brandtext,
-  .t-railpromo__body {
+  .t-rail__brandtext {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -568,8 +619,7 @@
     max-width: 200px;
   }
 
-  .t-rail__brandtext,
-  .t-railpromo__body {
+  .t-rail__brandtext {
     max-width: 200px;
   }
 
@@ -592,13 +642,6 @@
     flex-direction: column;
     gap: 1px;
     padding: 0 var(--t-3) var(--t-2);
-  }
-
-  .t-rail__sectionlabel {
-    flex: none;
-    padding: var(--t-3) var(--t-3) 6px 15px;
-    white-space: nowrap;
-    overflow: hidden;
   }
 
   .t-rail__sep {
@@ -632,46 +675,6 @@
   .t-railmore__chev {
     flex: none;
     margin-left: auto;
-  }
-
-  /* -- Promo card --------------------------------------------------------- */
-
-  .t-railpromo {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: var(--t-3);
-    margin: var(--t-2) var(--t-3) 0;
-    padding: 10px;
-    border-radius: var(--t-r-md);
-    background: var(--t-surface-2);
-    transition: background var(--t-fast) var(--t-ease), gap var(--t-rail-anim);
-  }
-
-  .t-railpromo:hover {
-    background: var(--t-surface-3);
-  }
-
-  .t-railpromo__art {
-    flex: none;
-  }
-
-  .t-railpromo__title {
-    display: block;
-    font-size: var(--t-text-small);
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    color: var(--t-ink);
-    white-space: nowrap;
-  }
-
-  .t-railpromo__text {
-    display: block;
-    font-size: 12px;
-    color: var(--t-ink-3);
-    line-height: 1.35;
-    margin-top: 1px;
-    white-space: nowrap;
   }
 
   /* -- Pinned footer ------------------------------------------------------ */
@@ -715,26 +718,13 @@
 
   .t-app[data-rail="collapsed"] .t-railrow__label,
   .t-app[data-rail="collapsed"] .t-rail__brandtext,
-  .t-app[data-rail="collapsed"] .t-railpromo__body,
   .t-app[data-rail="collapsed"] .t-railrow__count {
     max-width: 0;
     opacity: 0;
   }
 
-  .t-app[data-rail="collapsed"] .t-railmore__chev,
-  .t-app[data-rail="collapsed"] .t-rail__sectionlabel {
+  .t-app[data-rail="collapsed"] .t-railmore__chev {
     display: none;
-  }
-
-  .t-app[data-rail="collapsed"] .t-railpromo {
-    justify-content: center;
-    padding: 8px;
-    gap: 0;
-  }
-
-  .t-app[data-rail="collapsed"] .t-railpromo__art svg {
-    width: 34px;
-    height: 28px;
   }
 
   /* ==================================== fit-to-height category trimming == */
@@ -821,10 +811,6 @@
       display: none;
     }
 
-    .t-rail__sectionlabel {
-      display: none;
-    }
-
     .t-railrow {
       height: 36px;
     }
@@ -835,10 +821,9 @@
     }
   }
 
-  /* Last resort on a very short window: the promo and More go too — Explore
-     in the primary nav still reaches the full list. */
+  /* Last resort on a very short window: More goes too — Explore in the
+     primary nav still reaches the full list. */
   @media (max-height: 470px) {
-    .t-railpromo,
     .t-railmore,
     .t-rail__sep {
       display: none;
@@ -1260,6 +1245,47 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* -- Category chips (landing page) --------------------------------------
+   These replaced a six-tile "Explore" grid. They carry the same icon, label
+   and count, and they filter the rows below rather than navigating away. */
+
+.t-catchips {
+  margin-top: var(--t-4);
+  /* Runs to the screen edge like a rail, so it reads as scrollable on a phone
+     instead of looking like a row that happens to be cut off. */
+  margin-inline: calc(var(--t-gutter) * -1);
+  padding-inline: var(--t-gutter);
+  scroll-padding-inline: var(--t-gutter);
+  overscroll-behavior-x: contain;
+}
+
+.t-catchip {
+  padding-left: 6px;
+  gap: var(--t-2);
+}
+
+.t-catchip__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+}
+
+/* The default pressed chip inverts to solid ink, which fights the coloured
+   icon tile. Accent-on-soft keeps the tile readable and still reads as on. */
+.t-catchip[aria-pressed="true"] {
+  background: var(--t-accent-soft);
+  border-color: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.t-catchip--ghost {
+  padding-left: var(--t-3);
+  border-style: dashed;
+  color: var(--t-ink-3);
+}
+
 /* Second-level filter row — visually subordinate to the subcategory chips. */
 .t-chip--sm {
   height: 32px;
@@ -1456,6 +1482,126 @@
   width: 100%;
 }
 
+/* -- Place tile: the landing page's photo card -------------------------
+   Everything the old card put in a text block under the thumbnail now sits on
+   the photograph, which buys the photograph roughly double the area in the
+   same row height. Badges and caption are siblings of the media box, not
+   children of it, so scaling the photo can never clip them. */
+
+.t-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 19px;
+  overflow: hidden;
+  background: var(--t-surface-3);
+  /* Keeps the scrim and the badges in one stacking context, so a card can
+     never paint over the card beside it. */
+  isolation: isolate;
+  transition: transform var(--t-base) var(--t-ease);
+}
+
+.t-tile__media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.t-tile__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark at the foot for the caption, dark again at the head for the badges,
+   and out of the way across the middle third where the picture is. */
+.t-tile__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 9, 13, 0.42) 0%,
+    rgba(6, 9, 13, 0) 34%,
+    rgba(6, 9, 13, 0.3) 58%,
+    rgba(6, 9, 13, 0.86) 100%
+  );
+}
+
+.t-tile__caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: block;
+  padding: var(--t-3) var(--t-3) 13px;
+  color: #fff;
+}
+
+.t-tile__name {
+  display: block;
+  font-size: var(--t-text-body);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.t-tile__meta {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  /* Not a token: these sit on the photograph, not on a surface. */
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Rating and bookmark share one treatment — a blurred dark pill — so the two
+   top corners read as a pair rather than two unrelated controls. */
+.t-tile__rating,
+.t-tile .t-save {
+  position: absolute;
+  top: 10px;
+  height: 28px;
+  border-radius: var(--t-r-pill);
+  background: rgba(9, 13, 18, 0.55);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.t-tile__rating {
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px 0 8px;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fixed, not --t-gold: the pill is dark in both themes, and the light theme's
+   gold is too dark to read on it. */
+.t-tile__rating svg {
+  color: #edc253;
+}
+
+.t-tile .t-save {
+  right: 10px;
+  width: 28px;
+}
+
+/* .t-save:hover sets ink-on-light and is declared further down the file at the
+   same specificity, so it needs beating explicitly rather than by order. */
+.t-tile .t-save:hover {
+  color: #fff;
+}
+
+.t-tile .t-save[aria-pressed="true"] {
+  color: var(--t-accent-ink);
+}
+
 /* -- Place row: landscape, used in lists and search results ------------- */
 
 .t-row {
@@ -1510,32 +1656,10 @@
   color: var(--t-ink-3);
 }
 
-/* -- Category tile ------------------------------------------------------ */
-
-.t-cattile {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--t-4);
-  min-height: 96px;
-  padding: var(--t-3);
-  background: var(--t-surface);
-  border: 1px solid var(--t-border);
-  border-radius: var(--t-r-md);
-  box-shadow: var(--t-shadow-card);
-  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-base) var(--t-ease),
-    transform var(--t-fast) var(--t-ease);
-}
-
-.t-cattile:hover {
-  border-color: var(--t-border-strong);
-  box-shadow: var(--t-shadow-raised);
-}
-
-.t-cattile:active {
-  transform: scale(0.97);
-}
+/* -- Category icon tile -------------------------------------------------
+   The six-tile category grid this belonged to is gone from the landing page;
+   the icon chip survives because the category pages still head themselves
+   with one. */
 
 .t-cattile__icon {
   display: grid;
@@ -1545,41 +1669,6 @@
   border-radius: var(--t-r-sm);
   background: var(--t-accent-soft);
   color: var(--t-accent-ink);
-}
-
-.t-cattile__label {
-  display: block;
-  font-size: var(--t-text-small);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  line-height: 1.25;
-}
-
-.t-cattile__count {
-  display: block;
-  font-size: var(--t-text-micro);
-  color: var(--t-ink-3);
-  font-weight: 600;
-  margin-top: 1px;
-}
-
-.t-catgrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--t-2);
-}
-
-@media (min-width: 560px) {
-  .t-catgrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--t-3);
-  }
-}
-
-@media (min-width: 900px) {
-  .t-catgrid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
 }
 
 /* -- Category card (explore screen: a group plus its subcategories) -----
@@ -1952,13 +2041,16 @@
 
 /* Several legacy image URLs are dead. Rather than a broken-image glyph, the
    card shows a calm branded placeholder with the category icon. */
+/* The gradient itself is set inline, per listing — see placeholderGradient in
+   components/ui/categoryIcon.ts. It is always dark, so the glyph is a faint
+   white watermark rather than a grey icon asking to be looked at. */
 .t-imgfallback {
   width: 100%;
   height: 100%;
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, var(--t-surface-2), var(--t-surface-3));
-  color: var(--t-ink-3);
+  color: rgba(255, 255, 255, 0.22);
 }
 
 /* ============================================================ spinner == */
@@ -2311,6 +2403,21 @@ a.t-notice:hover {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* The landing page's photo rows. auto-fill rather than a fixed column count so
+   the same rule gives five across a desktop and two on a phone; the narrow
+   minimum below 560px is what keeps it at two instead of dropping to one. */
+.t-tilegrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+  gap: 17px;
+}
+
+@media (min-width: 560px) {
+  .t-tilegrid {
+    grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  }
+}
+
 @media (min-width: 720px) {
   .t-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2332,35 +2439,6 @@ a.t-notice:hover {
 
 /* ======================================================= place detail == */
 
-.t-detail__hero {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: var(--t-surface-3);
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .t-detail__hero {
-    aspect-ratio: 21 / 9;
-    border-radius: var(--t-r-xl);
-    margin-top: var(--t-4);
-  }
-}
-
-.t-detail__hero img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.t-detail__floaters {
-  position: absolute;
-  inset: var(--t-3) var(--t-3) auto;
-  display: flex;
-  justify-content: space-between;
-  gap: var(--t-2);
-}
-
 .t-detail__body {
   position: relative;
   background: var(--t-bg);
@@ -2375,16 +2453,6 @@ a.t-notice:hover {
     padding-inline: 0;
     border-radius: 0;
   }
-}
-
-.t-detail__metarow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-2);
-  margin-top: var(--t-2);
-  font-size: var(--t-text-small);
-  color: var(--t-ink-2);
 }
 
 /* Two-column detail layout on desktop: content + sticky action panel. */
@@ -2833,18 +2901,6 @@ a.t-notice:hover {
 .t-nav__canvas {
   position: absolute;
   inset: 0;
-}
-
-.t-nav__nomap {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: var(--t-2);
-  padding: var(--t-4);
-  text-align: center;
-  color: var(--t-ink-3);
 }
 
 .t-nav__panel {
@@ -3633,4 +3689,2039 @@ button.t-profile__stat:active {
 .t-cal-monthlabel:first-child {
   border-top-left-radius: var(--t-r-lg);
   border-top-right-radius: var(--t-r-lg);
+}
+
+/* ------------------------------------------------------------------ toasts */
+/*
+ * Brief failure messages, anchored bottom-centre on mobile and bottom-right on
+ * wider screens. Sits above the bottom nav so it never covers it.
+ */
+.t-toasts {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom) + var(--t-3));
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+  width: min(420px, calc(100vw - var(--t-4)));
+  pointer-events: none;
+}
+
+.t-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-2);
+  padding: var(--t-3);
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  color: var(--t-ink);
+  box-shadow: var(--t-shadow-raised);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  animation: t-toast-in 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-toast {
+    animation: none;
+  }
+}
+
+@keyframes t-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.t-toast--error {
+  background: var(--t-danger-soft);
+  border-color: color-mix(in srgb, var(--t-danger) 34%, transparent);
+}
+
+.t-toast__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 1px;
+}
+
+.t-toast--error .t-toast__icon {
+  color: var(--t-danger);
+}
+
+.t-toast__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-toast__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--t-ink-3);
+  cursor: pointer;
+}
+
+.t-toast__close:hover {
+  background: var(--t-surface-2);
+  color: var(--t-ink);
+}
+
+@media (min-width: 900px) {
+  .t-toasts {
+    left: auto;
+    right: var(--t-4);
+    transform: none;
+    bottom: var(--t-4);
+  }
+}
+
+
+/* ==================================================== place hero (v2) ==
+
+   The old detail hero was a letterboxed strip with the name in the body
+   below it, so the fold showed a photo and nothing else. This one carries
+   the name, rating, open-state and the three actions a visitor arrives
+   wanting: directions, phone, website.
+
+   Full-bleed on a phone (it is the cover of the page), inset and rounded
+   from tablet up where the page has margins to sit inside. */
+
+/* The hero sizes itself from its own content, not from the photo's aspect
+   ratio. A fixed ratio looked right until a long name wrapped to three lines
+   and the title block overflowed off the top of the image; growing the box
+   instead means no name can ever break the layout. The photo fills whatever
+   height results. */
+.t-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(320px, 56vh, 480px);
+  overflow: hidden;
+  background: var(--t-surface-3);
+
+  /* Full-bleed on a phone: this is the cover of the page, and the page
+     gutter around it made it read as just another card. */
+  margin-inline: calc(var(--t-gutter) * -1);
+}
+
+.t-hero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.t-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The scrim exists so white text over an unknown photo is always legible.
+   Two stops rather than one: a light wash at the top keeps the back button
+   readable, the heavy foot carries the title block. */
+.t-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0) 30%),
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.66) 26%,
+      rgba(0, 0, 0, 0.3) 52%,
+      rgba(0, 0, 0, 0) 78%
+    );
+  pointer-events: none;
+}
+
+/* Top-right, clear of the sticky header's own buttons — the bottom-right
+   corner belongs to the title block. */
+.t-hero__count {
+  position: absolute;
+  right: var(--t-3);
+  top: calc(var(--t-header-h) + var(--t-2));
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--t-r-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--t-text-small);
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+}
+
+.t-hero__count:hover {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+/* On a phone the title block sits on the photo; there is no room to give it
+   its own band without pushing the facts below the fold. */
+.t-hero__body {
+  position: relative;
+  padding: var(--t-gutter);
+  padding-top: var(--t-6);
+  color: #fff;
+}
+
+.t-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  margin-bottom: var(--t-2);
+}
+
+/* Badges default to a light surface, which vanishes on a photo. */
+.t-hero__body .t-badge {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+.t-hero__body .t-badge--accent {
+  background: var(--t-accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.t-hero__name {
+  font-size: clamp(1.65rem, 6vw, 2.6rem);
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
+}
+
+.t-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-2) var(--t-3);
+  margin-top: var(--t-2);
+  font-size: var(--t-text-small);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.t-hero__meta .t-rating {
+  color: #fff;
+}
+
+.t-hero__where {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.t-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  margin-top: var(--t-4);
+}
+
+.t-hero__actions .t-btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+  justify-content: center;
+}
+
+/* Secondary buttons are designed for a page background, not a photograph. */
+.t-hero__actions .t-btn--secondary {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+.t-hero__actions .t-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* A memorial gets a calmer cover: no actions bar, a shorter crop, and a
+   darker scrim so the photograph reads as a record rather than a poster. */
+.t-hero--quiet {
+  min-height: clamp(260px, 40vh, 380px);
+}
+
+.t-hero--quiet .t-hero__scrim {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.45) 60%, rgba(0, 0, 0, 0.2));
+}
+
+@media (min-width: 768px) {
+  /* Full-width buttons are a phone convention: with 900px of hero they read
+     as three banners rather than three actions. */
+  .t-hero__actions .t-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding-inline: var(--t-5);
+  }
+
+  .t-hero {
+    margin-top: var(--t-4);
+    margin-inline: 0;
+    min-height: clamp(360px, 52vh, 520px);
+    border-radius: var(--t-r-xl);
+  }
+
+  .t-hero__body {
+    padding: var(--t-6);
+  }
+}
+
+/* -------------------------------------------------------- open state -- */
+
+/* Grey by default and green only when actually open: the pill is read at a
+   glance, so colour has to carry the answer, not just decorate it. */
+.t-openstate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 600;
+}
+
+.t-openstate__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.t-openstate--on {
+  background: var(--t-open-soft);
+  color: var(--t-open);
+}
+
+/* On the photo the neutral pill needs its own surface. */
+.t-hero__meta .t-openstate {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+.t-hero__meta .t-openstate--on {
+  background: var(--t-open);
+  color: #fff;
+}
+
+.t-rating--lg {
+  font-size: var(--t-text-body);
+}
+
+/* ---------------------------------------------------- opening hours -- */
+
+.t-hours__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-2);
+  margin-bottom: var(--t-3);
+}
+
+.t-hours {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-text-body);
+}
+
+.t-hours th,
+.t-hours td {
+  padding: var(--t-2) 0;
+  text-align: left;
+  border-bottom: 1px solid var(--t-border);
+  font-weight: 400;
+  color: var(--t-ink-2);
+}
+
+.t-hours td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.t-hours tr:last-child th,
+.t-hours tr:last-child td {
+  border-bottom: none;
+}
+
+.t-hours__today th,
+.t-hours__today td {
+  color: var(--t-ink);
+  font-weight: 700;
+}
+
+.t-hours__mark {
+  color: var(--t-accent-ink);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- map --- */
+
+.t-placemap {
+  height: 300px;
+  border-radius: var(--t-r-lg);
+  overflow: hidden;
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+/* Leaflet gives its panes and controls hard z-indexes in the 400-1000 range,
+   which put the zoom buttons over the sticky header and straight through the
+   action bar. `isolation` makes the map its own stacking context so none of
+   that can escape the box. */
+.t-placemap {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* Leaflet's divIcon ships with a white box and a border unless overridden. */
+.t-mappin {
+  background: none;
+  border: none;
+}
+
+.t-mappin__dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--t-accent);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* -------------------------------------------------------- why visit -- */
+
+.t-why {
+  display: grid;
+  gap: var(--t-2);
+  margin-top: var(--t-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .t-why {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.t-why__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  min-width: 0;
+  padding: var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  font-size: var(--t-text-body);
+  color: var(--t-ink);
+}
+
+.t-why__icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+/* The quick-facts strip sits directly under the hero, so it carries a card
+   rather than floating as a bare list. */
+.t-facts--quick {
+  padding: 0 var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+}
+
+/* Grid and flex children default to min-width:auto, so a long URL in a fact
+   row can force the whole column wider than the viewport. */
+.t-detail__main {
+  min-width: 0;
+}
+
+/* =============================================== place page, on a phone == */
+
+@media (max-width: 767px) {
+  /* Sections are plain, with only whitespace and their headings to separate
+     them. Boxing each one made the page read as a stack of unrelated widgets;
+     the quick-facts strip stays a card because it genuinely is a distinct
+     block of reference data, not prose.
+
+     Sections still need room to breathe once the borders are gone: whitespace
+     is now the only thing separating them, so it has to be generous.
+     (The scale has no --t-7; using one silently computed to 0.) */
+  .t-detail__main > .t-section {
+    margin-top: var(--t-10);
+  }
+
+  .t-hero__act--dup {
+    display: none;
+  }
+
+  /* With Directions gone there may be nothing left to show; an empty row
+     would still take its margin. */
+  .t-hero__actions:not(:has(.t-btn:not(.t-hero__act--dup))) {
+    display: none;
+  }
+
+  .t-hero__actions .t-btn {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* .t-detail__body rides 20px up over the hero to get its rounded top edge,
+     which clipped the last line of the title block. Clear it. */
+  .t-hero__body {
+    padding-bottom: calc(var(--t-gutter) + 24px);
+  }
+}
+
+/* ------------------------------------------------------------ read more -- */
+
+/* Line-clamp rather than max-height: cutting on a line boundary never leaves
+   half a row of text, and it adapts to whatever the type size ends up being. */
+.t-readmore {
+  line-height: 1.7;
+  margin-top: var(--t-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.t-readmore[data-open] {
+  display: block;
+  overflow: visible;
+}
+
+.t-readmore__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--t-2);
+  padding: 4px 0;
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-accent);
+}
+
+.t-readmore__toggle:hover {
+  text-decoration: underline;
+}
+
+.t-readmore__toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+/* Leaflet's own panes and controls sit at z-index 400-1000, which is above the
+   sticky header and the bottom nav. Both full-screen maps are their own
+   stacking context so none of it escapes, the same containment the place-page
+   map uses. */
+.t-map__canvas,
+.t-nav__canvas {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* The tile credit is a licence requirement, so it must stay legible — but it
+   is not content, and Leaflet's default styling shouts. */
+.t-map__canvas .leaflet-control-attribution,
+.t-nav__canvas .leaflet-control-attribution {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+/* Our pins are SVG data URIs; Leaflet's default marker styling would add a
+   box around them. */
+.t-pin {
+  background: none;
+  border: none;
+}
+
+/* ------------------------------------------------------------ verified -- */
+
+/* The tick, beside a place's name. Deliberately not the brand green: this is
+   a statement about trust rather than a piece of Tembera's identity, and the
+   blue is the convention every reader already knows from elsewhere. */
+.t-verified {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: baseline;
+  margin-left: 8px;
+  color: #4ba3f5;
+}
+
+/* On the hero the tick sits on a photograph, so it carries a dark keyline the
+   way the rest of the title block does. */
+.t-hero__name .t-verified {
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Available to a screen reader, absent from the page. */
+.t-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Paid placement, disclosed. Quiet on purpose: it is a label, not a prize —
+   it tells a reader how the listing got here, which is all it should do. */
+.t-tile__ad {
+  position: absolute;
+  left: var(--t-2);
+  top: var(--t-2);
+  padding: 3px 8px;
+  border-radius: var(--t-r-pill);
+  background: rgba(0, 0, 0, 0.58);
+  color: #fff;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(6px);
+}
+
+/* The list-row twin of .t-tile__ad — inline, because a row has no media to
+   float a badge over. */
+.t-row__ad {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  vertical-align: 1px;
+}
+
+/* ------------------------------------------------------ owning business -- */
+
+/* Who keeps this listing current, on the place page. A row rather than a
+   badge: it is a destination, and it has to look like one. */
+.t-owner {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  margin-top: var(--t-5);
+  padding: var(--t-3) var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  color: var(--t-ink);
+  transition: border-color var(--t-fast) var(--t-ease);
+}
+
+.t-owner:hover {
+  border-color: var(--t-border-strong);
+}
+
+.t-owner > svg:last-child {
+  color: var(--t-ink-3);
+  flex: none;
+}
+
+.t-owner__mark,
+.t-bizhead__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.t-owner__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-owner__label {
+  display: block;
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.t-owner__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.t-owner__name svg {
+  color: #4ba3f5;
+}
+
+/* ------------------------------------------------- business profile head -- */
+
+.t-bizhead {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+}
+
+.t-bizhead__mark {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25rem;
+}
+
+.t-bizhead__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-2);
+  margin-top: var(--t-2);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+/* Each fact is one unbreakable unit — the pin was wrapping onto its own line
+   above the district it labels. */
+.t-bizhead__meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.t-bizhead__meta svg {
+  color: var(--t-ink-3);
+}
+
+.t-bizhead__verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-weight: 700;
+}
+
+.t-bizhead__verified svg {
+  color: #4ba3f5;
+}
+
+/* The header search arriving on the landing page as the hero scrolls away.
+   Fades and lifts rather than appearing, so it reads as the same field moving
+   up rather than a new one materialising. */
+.t-header__search--arrive {
+  animation: t-search-arrive 220ms var(--t-ease) both;
+}
+
+@keyframes t-search-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-header__search--arrive {
+    animation: none;
+  }
+}
+
+/* ==================================================================== profile
+ *
+ * Rebuilt around identity rather than around a form.
+ *
+ * The rules that shape everything below:
+ *   - one card on the page, for the stats, because four numbers only mean
+ *     anything together. Nothing else gets a box;
+ *   - sections are separated by a hairline and a lot of air, not by borders;
+ *   - the avatar is the anchor and the name is the loudest thing on screen —
+ *     typography does the work that boxes were doing;
+ *   - green appears on the avatar ring and the active pill, and nowhere else.
+ */
+
+/* --------------------------------------------------------------- header -- */
+
+.t-prof__head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--t-4) var(--t-5);
+  align-items: start;
+  padding: var(--t-6) 0 var(--t-6);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-prof__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  /* The one deliberate flash of brand on the page. */
+  box-shadow: 0 0 0 3px var(--t-bg), 0 0 0 5px var(--t-accent-soft);
+}
+
+.t-prof__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.t-prof__id {
+  min-width: 0;
+}
+
+.t-prof__name {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.t-prof__handle {
+  margin-top: 2px;
+  font-size: var(--t-text-body);
+  color: var(--t-ink-3);
+}
+
+.t-prof__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2) var(--t-4);
+  margin-top: var(--t-3);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.t-prof__meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.t-prof__meta svg {
+  color: var(--t-ink-3);
+}
+
+.t-prof__bio {
+  margin-top: var(--t-3);
+  max-width: 62ch;
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.t-prof__headactions {
+  grid-column: 2;
+}
+
+@media (min-width: 860px) {
+  .t-prof__head {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+
+  .t-prof__avatar {
+    width: 112px;
+    height: 112px;
+    font-size: 2.25rem;
+  }
+
+  .t-prof__headactions {
+    grid-column: 3;
+  }
+}
+
+/* -------------------------------------------------------------- sections -- */
+
+/* Air and a hairline. A border around a heading and three rows is a box drawn
+   for the sake of drawing a box. */
+.t-prof__section {
+  padding: var(--t-6) 0;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-prof__section:last-child {
+  border-bottom: none;
+}
+
+.t-prof__h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--t-4);
+}
+
+.t-prof__h2row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  margin-bottom: var(--t-4);
+}
+
+.t-prof__h2row .t-prof__h2 {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------- journey -- */
+
+/* One card, four figures. Four separate cards for four integers is the layout
+   that made this read as a dashboard. */
+.t-journey {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--t-4);
+  padding: var(--t-5);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+}
+
+@media (min-width: 720px) {
+  .t-journey {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* Hairlines between, rather than four boxes. */
+  .t-figure + .t-figure {
+    border-left: 1px solid var(--t-border);
+    padding-left: var(--t-5);
+  }
+}
+
+.t-figure__value {
+  display: block;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.t-figure__label {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-2);
+}
+
+.t-figure__note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+/* ------------------------------------------------------------- districts -- */
+
+.t-districts {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .t-districts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--t-6);
+  }
+}
+
+.t-district {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-2);
+  margin-inline: calc(var(--t-2) * -1);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-district:hover {
+  background: var(--t-surface-2);
+}
+
+.t-district__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 650;
+}
+
+.t-district__count {
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-district > svg {
+  color: var(--t-ink-3);
+  flex: none;
+}
+
+/* ----------------------------------------------------------------- pills -- */
+
+.t-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+}
+
+.t-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--t-r-pill);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  transition: border-color var(--t-fast) var(--t-ease), background var(--t-fast) var(--t-ease);
+}
+
+button.t-pill:hover {
+  border-color: var(--t-border-strong);
+}
+
+.t-pill svg {
+  color: var(--t-ink-3);
+}
+
+.t-pill--on {
+  border-color: var(--t-accent);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-pill--on svg {
+  color: var(--t-accent);
+}
+
+/* ------------------------------------------------------------------ feed -- */
+
+.t-feed {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+.t-feed__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) 0;
+}
+
+.t-feed__item + .t-feed__item {
+  border-top: 1px solid var(--t-border);
+}
+
+.t-feed__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-feed__icon--reviewed {
+  color: var(--t-gold);
+}
+
+.t-feed__icon--visited {
+  color: var(--t-accent);
+  background: var(--t-accent-soft);
+}
+
+.t-feed__body {
+  min-width: 0;
+}
+
+.t-feed__name {
+  display: block;
+  font-weight: 650;
+  color: var(--t-ink);
+}
+
+.t-feed__name:hover {
+  text-decoration: underline;
+}
+
+.t-feed__what {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+/* --------------------------------------------------------- account links -- */
+
+.t-prof__links {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .t-prof__links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--t-4);
+  }
+}
+
+.t-proflink {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-2);
+  margin-inline: calc(var(--t-2) * -1);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-proflink:hover {
+  background: var(--t-surface-2);
+}
+
+.t-proflink__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-proflink__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-proflink__title {
+  display: block;
+  font-weight: 650;
+}
+
+.t-proflink__note {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-proflink > svg {
+  color: var(--t-ink-3);
+  flex: none;
+}
+
+/* Sign out is a button, not a link: it needs the row's full width, and it
+   carries no chevron because it goes nowhere. */
+button.t-proflink {
+  width: 100%;
+  text-align: left;
+}
+
+.t-proflink--quiet .t-proflink__title {
+  color: var(--t-ink-2);
+}
+
+/* ---------------------------------------------------------- empty states -- */
+
+/* Deliberate, not broken. Left-aligned with the section it belongs to rather
+   than centred in a dashed box. */
+.t-profempty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-4) 0;
+  color: var(--t-ink-3);
+}
+
+.t-profempty p {
+  flex: 1;
+  min-width: 12rem;
+  margin: 0;
+  font-size: var(--t-text-small);
+}
+
+/* ---------------------------------------------------------------- editor -- */
+
+/* Wide enough to hold two columns, narrow enough that a text field is not a
+   metre across. The overview fills the page; a form should not. */
+.t-prof__editwrap {
+  max-width: 780px;
+}
+
+.t-formgrid {
+  display: grid;
+  gap: var(--t-4);
+}
+
+@media (min-width: 720px) {
+  .t-formgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .t-formfield--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.t-formfield {
+  min-width: 0;
+}
+
+.t-formfield__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink);
+}
+
+.t-formfield__hint,
+.t-formfield__error {
+  margin-top: 5px;
+  font-size: var(--t-text-small);
+}
+
+.t-formfield__hint {
+  color: var(--t-ink-3);
+}
+
+.t-formfield__error {
+  color: var(--t-danger);
+}
+
+.t-input {
+  width: 100%;
+  padding: 11px var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface);
+  color: var(--t-ink);
+  font: inherit;
+  font-size: var(--t-text-body);
+  transition: border-color var(--t-fast) var(--t-ease), box-shadow var(--t-fast) var(--t-ease);
+}
+
+.t-input:focus-visible {
+  outline: none;
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 3px var(--t-accent-soft);
+}
+
+.t-textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.t-inputwrap {
+  position: relative;
+  display: block;
+}
+
+.t-inputwrap__prefix {
+  position: absolute;
+  left: var(--t-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t-ink-3);
+  pointer-events: none;
+}
+
+.t-input--prefixed {
+  padding-left: 28px;
+}
+
+.t-prof__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-3);
+  margin-top: var(--t-6);
+}
+
+.t-prof__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-prof__status svg {
+  color: var(--t-open, #1f7a3d);
+}
+
+/* --------------------------------------------------------------- avatar -- */
+
+.t-avpick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-5);
+}
+
+.t-avpick__stage {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.t-avpick__img,
+.t-avpick__canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+/* Grab, because it is: dragging the canvas is what positions the crop. */
+.t-avpick__canvas {
+  cursor: grab;
+  touch-action: none;
+}
+
+.t-avpick__canvas:active {
+  cursor: grabbing;
+}
+
+.t-avpick__initials {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+/* Sits on the rim rather than inside it — a badge tucked into a circle reads
+   as clipped. `overflow: hidden` on the stage would cut it, so it lives on the
+   wrapper instead. */
+.t-avpick__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--t-bg);
+  background: var(--t-accent);
+  color: #fff;
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-avpick__badge:hover {
+  background: var(--t-accent-hover);
+}
+
+.t-avpick__controls {
+  display: grid;
+  gap: var(--t-3);
+  min-width: 12rem;
+}
+
+.t-avpick__zoom {
+  display: grid;
+  gap: 4px;
+  max-width: 15rem;
+}
+
+.t-avpick__zoom input {
+  accent-color: var(--t-accent);
+}
+
+.t-avpick__err {
+  color: var(--t-danger);
+}
+
+/* -------------------------------------------------------------- switches -- */
+
+.t-switches {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+.t-switchrow {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  padding: var(--t-3) 0;
+}
+
+.t-switchrow + .t-switchrow {
+  border-top: 1px solid var(--t-border);
+}
+
+.t-switchrow__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-switchrow__label {
+  display: block;
+  font-weight: 650;
+}
+
+.t-switchrow__note {
+  display: block;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+
+/* A focused flow: its own chrome, no rail, no tab bar. Every navigation
+   control on screen is an invitation to leave an onboarding half-finished. */
+.t-flow {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-bg);
+  color: var(--t-ink);
+}
+
+.t-flow__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  padding: var(--t-4) var(--t-gutter);
+}
+
+.t-flow__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.t-flow__brand svg {
+  color: var(--t-accent);
+}
+
+.t-flow__main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--t-6) var(--t-gutter) var(--t-10);
+}
+
+/* Bigger than a form. This is the whole screen, so the question should read
+   like one thing being asked rather than a field on a page. */
+.t-welcome {
+  width: 100%;
+  max-width: 860px;
+}
+
+.t-welcome__step {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-accent);
+}
+
+.t-welcome__title {
+  margin-top: var(--t-2);
+  font-size: clamp(2.1rem, 6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.t-welcome__lede {
+  margin-top: var(--t-3);
+  max-width: 46ch;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.t-welcome__pills {
+  margin-top: var(--t-6);
+  gap: var(--t-3);
+}
+
+.t-welcome__pills .t-pill {
+  padding: 11px 20px;
+  font-size: var(--t-text-body);
+}
+
+.t-welcome__pills .t-pill svg {
+  width: 18px;
+  height: 18px;
+}
+
+.t-welcome__field {
+  margin-top: var(--t-6);
+  max-width: 26rem;
+}
+
+.t-welcome__field .t-input {
+  padding: 14px var(--t-4);
+  font-size: 1.05rem;
+}
+
+.t-welcome__recap {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: var(--t-5);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.t-welcome__recap svg {
+  margin-top: 2px;
+  flex: none;
+  color: var(--t-open, #1f7a3d);
+}
+
+.t-welcome__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-3);
+  margin-top: var(--t-10);
+}
+
+.t-welcome__skip {
+  margin-left: auto;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-welcome__skip:hover {
+  color: var(--t-ink-2);
+  text-decoration: underline;
+}
+
+/* ================================================= settings & the menu ==
+ *
+ * A settings screen rather than a column of cards. The old one was six
+ * stacked cards in a 760px column, so finding one switch meant scrolling and
+ * scanning while two thirds of a desktop screen sat empty. The rail on the
+ * left picks the area; the pane shows the handful of switches in it.
+ */
+
+.t-settings {
+  display: grid;
+  gap: var(--t-6);
+  padding: var(--t-5) 0 var(--t-10);
+}
+
+@media (min-width: 900px) {
+  .t-settings {
+    grid-template-columns: 288px minmax(0, 1fr);
+    gap: var(--t-8);
+    align-items: start;
+  }
+
+  .t-settings__rail {
+    position: sticky;
+    top: calc(var(--t-header-h) + var(--t-4));
+  }
+
+  .t-settings__pane {
+    padding-left: var(--t-8);
+    border-left: 1px solid var(--t-border);
+    min-height: 62vh;
+  }
+}
+
+.t-settings__h1 {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--t-4);
+}
+
+.t-settings__panehead {
+  margin-bottom: var(--t-4);
+  padding-bottom: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-settings__title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.t-settings__note {
+  margin-top: 3px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-settings__lede {
+  margin-bottom: var(--t-2);
+  font-size: var(--t-text-small);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+  max-width: 62ch;
+}
+
+.t-settings__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--t-4);
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.t-settings__hint--bad {
+  color: var(--t-danger);
+}
+
+/* -------------------------------------------------------- the rail -- */
+
+.t-setnav {
+  display: grid;
+  gap: 2px;
+}
+
+.t-setnav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  width: 100%;
+  padding: var(--t-3);
+  border-radius: var(--t-r-md);
+  text-align: left;
+  color: var(--t-ink-2);
+  transition:
+    background var(--t-fast) var(--t-ease),
+    color var(--t-fast) var(--t-ease);
+}
+
+.t-setnav__item:hover {
+  background: var(--t-surface-2);
+}
+
+.t-setnav__item--on {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.t-setnav__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-setnav__item--on .t-setnav__icon {
+  background: var(--t-surface);
+  color: var(--t-accent);
+}
+
+.t-setnav__body {
+  min-width: 0;
+}
+
+.t-setnav__label {
+  display: block;
+  font-weight: 650;
+}
+
+.t-setnav__note {
+  display: block;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+@media (max-width: 899px) {
+  /* On a phone the rail cannot be a rail — seven stacked rows means scrolling
+     past the whole menu to reach the one pane you asked for. So it becomes a
+     row of chips: the categories stay visible, and the settings start at the
+     top of the screen where they belong. */
+  .t-setnav {
+    display: flex;
+    gap: var(--t-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(var(--t-4) * -1);
+    padding-inline: var(--t-4);
+  }
+
+  .t-setnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .t-setnav__item {
+    flex: none;
+    width: auto;
+    gap: var(--t-2);
+    padding: 7px var(--t-3);
+    border: 1px solid var(--t-border);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .t-setnav__item--on {
+    border-color: transparent;
+  }
+
+  .t-setnav__icon {
+    width: 20px;
+    height: 20px;
+    background: none;
+  }
+
+  .t-setnav__item--on .t-setnav__icon {
+    background: none;
+  }
+
+  .t-setnav__note {
+    display: none;
+  }
+
+  .t-settings__h1 {
+    font-size: 1.6rem;
+    margin-bottom: var(--t-3);
+  }
+}
+
+/* --------------------------------------------------------- one row -- */
+
+.t-setrow {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-4) 0;
+}
+
+.t-setrow + .t-setrow {
+  border-top: 1px solid var(--t-border);
+}
+
+.t-setrow__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.t-setrow__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-setrow__title {
+  display: block;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.t-setrow__note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--t-text-small);
+  line-height: 1.5;
+  color: var(--t-ink-3);
+}
+
+.t-setrow__action {
+  flex: none;
+}
+
+.t-setrow__select {
+  /* Fixed rather than content-sized: three selects of three different widths
+     down the right edge of the pane read as a layout mistake. */
+  width: 16rem;
+}
+
+/* The signed-in-only forms (password, export, delete) keep their cards — they
+   are forms, not switches — but a password field 760px wide is nobody's idea
+   of a settings screen. */
+.t-settings__pane .t-section {
+  max-width: 720px;
+}
+
+@media (max-width: 560px) {
+  /* Narrow enough that a label and a select cannot share a line without one
+     of them being unreadable, so the control drops under its label. */
+  .t-setrow {
+    flex-wrap: wrap;
+  }
+
+  .t-setrow__action {
+    flex: 1 0 100%;
+  }
+
+  /* Line the control up under the title, but only in rows that have an
+     icon — a Choice row has none and would be indented against nothing. */
+  .t-setrow__icon ~ .t-setrow__action {
+    padding-left: calc(38px + var(--t-3));
+  }
+
+  .t-setrow__select {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------- account menu -- */
+
+.t-menu {
+  display: grid;
+  gap: 2px;
+}
+
+/* A grid item's default `min-width: auto` refuses to shrink below its content,
+   so one long event summary pushed the whole row past the panel edge and took
+   the day badge with it. The ellipsis rules below only work once this is set. */
+.t-menu > * {
+  min-width: 0;
+}
+
+.t-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  width: 100%;
+  padding: 10px var(--t-3);
+  border-radius: var(--t-r-md);
+  color: var(--t-ink);
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-menu__item:hover {
+  background: var(--t-surface-2);
+}
+
+.t-menu__item svg {
+  flex: none;
+  color: var(--t-ink-3);
+}
+
+/* Signing out sits below a rule: it is the one item here you do not want to
+   hit on the way to Settings. */
+.t-menu__foot {
+  margin-top: var(--t-2);
+  padding-top: var(--t-2);
+  border-top: 1px solid var(--t-border);
+}
+
+.t-menu__item--quiet {
+  color: var(--t-ink-2);
+  font-weight: 550;
+}
+
+/* A menu can carry a title when it is a list of things rather than a list of
+   destinations — "Saved places · 6" is the answer to why you opened it. */
+.t-menu__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--t-2);
+  padding: var(--t-2) var(--t-3) var(--t-3);
+  margin-bottom: var(--t-2);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.t-menu__headtitle {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.t-menu__headnote {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  text-align: right;
+}
+
+.t-menu__empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--t-2);
+  padding: var(--t-5) var(--t-4);
+  text-align: center;
+}
+
+.t-menu__emptyicon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+}
+
+.t-menu__emptytext {
+  font-size: var(--t-text-small);
+  line-height: 1.5;
+  color: var(--t-ink-3);
+  max-width: 30ch;
+}
+
+.t-menu__hint {
+  padding: var(--t-2) var(--t-3) 0;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+/* ------------------------------------------------ a place in a menu -- */
+
+.t-menuplace {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-2);
+  border-radius: var(--t-r-md);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-menuplace:hover {
+  background: var(--t-surface-2);
+}
+
+.t-menuplace__img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--t-r-md);
+  object-fit: cover;
+}
+
+.t-menuplace__body {
+  min-width: 0;
+}
+
+.t-menuplace__name,
+.t-menuevent__name {
+  display: block;
+  font-weight: 620;
+  color: var(--t-ink);
+  /* One long name must not widen the panel — the popover is a fixed width. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.t-menuplace__note,
+.t-menuevent__note {
+  display: block;
+  margin-top: 1px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------ an event in a menu -- */
+
+.t-menuevent {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-2);
+  border-radius: var(--t-r-md);
+  transition: background var(--t-fast) var(--t-ease);
+}
+
+.t-menuevent:hover {
+  background: var(--t-surface-2);
+}
+
+.t-menuevent__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--t-r-md);
+  /* --tag / --tag-soft come from kindStyleVars(), the same pair the calendar
+     screen uses, so an Umuganda here is the colour it is there. */
+  background: var(--tag-soft, var(--t-surface-2));
+  color: var(--tag, var(--t-ink-2));
+}
+
+.t-menuevent__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-menuevent__when {
+  flex: none;
 }

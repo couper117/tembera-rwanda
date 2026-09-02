@@ -215,8 +215,8 @@ function ExportData() {
     <div className="t-card" style={{ padding: "var(--t-4)" }}>
       <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
         Download everything Tembera holds about you — your account details,
-        saved places, visit history, reviews and bookings — as a file you can
-        keep or take elsewhere.
+        saved places, visit history and reviews — as a file you can keep or
+        take elsewhere.
       </p>
 
       {error && (
@@ -263,8 +263,7 @@ function DeleteAccount() {
       <div className="t-card" style={{ padding: "var(--t-4)" }}>
         <p className="t-small t-muted" style={{ marginBottom: "var(--t-3)" }}>
           Permanently erase your account, saved places, visit history and
-          reviews. Past bookings are kept as business records but are no longer
-          linked to you. This cannot be undone.
+          reviews. This cannot be undone.
         </p>
         <button
           type="button"

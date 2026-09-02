@@ -47,7 +47,7 @@ export default function ClaimListing({
         <p className="t-small t-muted" style={{ marginBottom: "var(--t-4)" }}>
           Take control of <strong>{placeName}</strong> — fix your own hours and
           photos, and show visitors it is current.{" "}
-          <Link href="/business">See what you get</Link>.
+          <Link href="/business/register">See what you get</Link>.
         </p>
 
         <ClaimForm placeId={placeId} placeName={placeName} />

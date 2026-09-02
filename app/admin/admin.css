@@ -248,32 +248,114 @@
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: var(--t-2);
+  gap: var(--t-3);
   height: var(--t-header-h);
   padding: 0 var(--t-4);
-  background: var(--t-surface);
+  background: color-mix(in srgb, var(--t-surface) 88%, transparent);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--t-border);
 }
 
-.a-topbar__title {
-  flex: none;
-  font-size: var(--t-text-heading);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+/* Where you are: the nav section above, the page below. One word repeated
+   from the heading underneath said nothing; this says something. */
+.a-topbar__where {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.15;
 }
 
-.a-search {
-  flex: 1;
+.a-topbar__section {
+  font-size: var(--t-text-micro);
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-topbar__title {
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-topbar__tools {
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  max-width: 420px;
-  margin-inline: auto;
-  height: 38px;
-  padding: 0 var(--t-3);
-  border-radius: var(--t-r-pill);
+  margin-left: auto;
+}
+
+.a-topbar__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--t-r-md);
+  background: transparent;
+  color: var(--t-ink-2);
+  cursor: pointer;
+}
+
+.a-topbar__icon:hover {
   background: var(--t-surface-2);
+  border-color: var(--t-border);
+  color: var(--t-ink);
+}
+
+/* A count, not a dot. "There is something" is less use than "there are four",
+   and the queue it points at is the one thing this bar is for. */
+.a-topbar__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--t-surface);
+}
+
+.a-topbar__rule {
+  width: 1px;
+  height: 22px;
+  background: var(--t-border);
+  margin: 0 2px;
+}
+
+/* Narrower than it was, and no longer centred: it searches the catalogue, not
+   the application, and should not read as the main event on every screen. */
+.a-search {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  width: 260px;
+  height: 36px;
+  padding: 0 var(--t-3);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  border: 1px solid transparent;
   color: var(--t-ink-3);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.a-search:focus-within {
+  background: var(--t-surface);
+  border-color: var(--t-accent);
 }
 
 .a-search input {
@@ -283,37 +365,154 @@
   background: none;
   color: var(--t-ink);
   font: inherit;
+  font-size: 0.86rem;
   outline: none;
 }
 
-.a-who {
+/* --- account --- */
+.a-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--t-accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.a-avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+.a-usermenu {
+  position: relative;
+}
+
+.a-usermenu__trigger {
   display: flex;
   align-items: center;
   gap: var(--t-2);
-  margin-left: auto;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--t-r-pill);
+  background: transparent;
+  color: var(--t-ink-3);
+  cursor: pointer;
+  font: inherit;
 }
 
-.a-who__text {
+.a-usermenu__trigger:hover,
+.a-usermenu__trigger[aria-expanded="true"] {
+  background: var(--t-surface-2);
+  border-color: var(--t-border);
+}
+
+.a-usermenu__who {
   display: none;
   flex-direction: column;
   line-height: 1.2;
-  text-align: right;
+  text-align: left;
 }
 
-@media (min-width: 768px) {
-  .a-who__text {
+@media (min-width: 900px) {
+  .a-usermenu__who {
     display: flex;
   }
 }
 
-.a-who__name {
+.a-usermenu__name {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink);
+}
+
+/* The role, not the email address. Which powers you are holding matters every
+   day; the address matters when you check, which is what the menu is for. */
+.a-usermenu__role {
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+.a-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 252px;
+  padding: 6px;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow-raised);
+}
+
+.a-menu__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  padding: var(--t-3);
+  border-bottom: 1px solid var(--t-border);
+  margin-bottom: 6px;
+}
+
+.a-menu__id {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.a-menu__name {
   font-size: var(--t-text-small);
   font-weight: 700;
 }
 
-.a-who__mail {
+.a-menu__mail {
   font-size: var(--t-text-micro);
   color: var(--t-ink-3);
+  overflow-wrap: anywhere;
+}
+
+.a-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  width: 100%;
+  padding: 9px var(--t-3);
+  border: 0;
+  border-radius: var(--t-r-sm);
+  background: transparent;
+  color: var(--t-ink);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.a-menu__item:hover {
+  background: var(--t-surface-2);
+}
+
+.a-menu__foot {
+  border-top: 1px solid var(--t-border);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.a-menu__item--danger {
+  color: var(--t-danger);
+}
+
+.a-menu__item--danger:hover {
+  background: var(--t-danger-soft);
 }
 
 .a-main {
@@ -398,9 +597,16 @@
   }
 }
 
-@media (min-width: 1200px) {
-  .a-stats {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+/* Was `repeat(6, 1fr)` while every row on the dashboard holds four cards, so
+   two columns' worth of the screen sat empty to the right of each row. The
+   count is declared per row now, by the row itself. */
+@media (min-width: 1100px) {
+  .a-stats--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .a-stats--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -426,11 +632,12 @@ a.a-stat:hover {
   color: var(--t-ink-3);
 }
 
+/* Sentence case. Ten shouted micro-labels on one screen made the dashboard
+   read as a warning panel; none of these are warnings. */
 .a-stat__label {
-  font-size: var(--t-text-micro);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-2);
 }
 
 .a-stat__value {
@@ -449,6 +656,88 @@ a.a-stat:hover {
   font-size: var(--t-text-micro);
   color: var(--t-ink-3);
   font-weight: 600;
+}
+
+/* A queue tile. Zero is good news, so it recedes; anything waiting takes a
+   tint and a heavier number. An editor should be able to see where the work is
+   from across the room, which eight identical white cards never allowed. */
+.a-stat--attention {
+  position: relative;
+}
+
+.a-stat--clear .a-stat__value {
+  color: var(--t-ink-3);
+  font-weight: 700;
+}
+
+.a-stat--waiting {
+  border-color: color-mix(in srgb, var(--t-accent) 34%, var(--t-border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--t-accent-soft) 70%, var(--t-surface)),
+    var(--t-surface) 62%
+  );
+}
+
+.a-stat--waiting .a-stat__top {
+  color: var(--t-accent-ink);
+}
+
+.a-stat--waiting .a-stat__value {
+  color: var(--t-accent-ink);
+}
+
+/* ---------------------------------------------------------- count strip -- */
+
+.a-counts {
+  display: grid;
+  gap: var(--t-3) var(--t-6);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.a-count {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  column-gap: var(--t-2);
+  row-gap: 2px;
+  padding: var(--t-2) 0;
+  color: var(--t-ink);
+}
+
+a.a-count:hover .a-count__label {
+  text-decoration: underline;
+}
+
+.a-count__icon {
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+}
+
+.a-count__value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.a-count__label {
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-2);
+}
+
+.a-count__note {
+  grid-column: 2 / -1;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
 }
 
 /* --------------------------------------------------------------- panel -- */
@@ -487,6 +776,33 @@ a.a-stat:hover {
   padding: var(--t-4);
 }
 
+/* A secondary strip below a flush panel's content — a chart or a caption that
+   belongs to the list above rather than to a panel of its own. */
+.a-panel__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  padding: var(--t-3) var(--t-4);
+  border-top: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+/* The caption names the line beside it, so they sit on one row rather than
+   the caption floating above a band of empty plot. */
+.a-panel__foot .a-hint {
+  flex: none;
+  max-width: 46%;
+}
+
+.a-panel__foot .a-chart {
+  margin-block: 4px;
+}
+
+.a-panel__foot .a-chart {
+  flex: 1;
+  min-width: 0;
+}
+
 .a-cols {
   display: grid;
   gap: var(--t-5);
@@ -496,6 +812,12 @@ a.a-stat:hover {
 @media (min-width: 1100px) {
   .a-cols {
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+
+  /* Two panels that carry the same weight. The 1.6/1 split left a short list
+     stranded next to a tall column, with the screen empty underneath it. */
+  .a-cols--even {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -513,7 +835,7 @@ a.a-stat:hover {
 }
 
 .a-table th {
-  padding: var(--t-3) var(--t-4);
+  padding: var(--t-2) var(--t-4);
   text-align: left;
   font-size: var(--t-text-micro);
   font-weight: 700;
@@ -525,7 +847,7 @@ a.a-stat:hover {
 }
 
 .a-table td {
-  padding: var(--t-3) var(--t-4);
+  padding: var(--t-2) var(--t-4);
   border-bottom: 1px solid var(--t-border);
   color: var(--t-ink-2);
   vertical-align: middle;
@@ -620,10 +942,15 @@ a.a-stat:hover {
 
 /* --------------------------------------------------------------- chart -- */
 
+/* A sparkline, not a chart. 140px of mostly-empty plot for eight numbers read
+   as a graph that had failed to load. */
 .a-chart {
   display: block;
   width: 100%;
-  height: 140px;
+  height: 56px;
+  /* The endpoint dot sits on the top edge of the viewBox, and .a-panel clips
+     its overflow — without this the marker for the latest week is shaved. */
+  overflow: visible;
 }
 
 .a-chart__line {
@@ -669,12 +996,14 @@ a.a-stat:hover {
   min-width: 0;
 }
 
+/* Sentence case, and dark enough to read. A field label is prose that names
+   the thing you are typing into; setting it in small shouted caps made every
+   form look like a compliance notice and cost legibility for nothing. Table
+   column headers keep their caps — those are structure, not prose. */
 .a-label {
-  font-size: var(--t-text-micro);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--t-ink-3);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink);
 }
 
 .a-input,
@@ -704,9 +1033,13 @@ a.a-stat:hover {
   box-shadow: 0 0 0 3px var(--t-accent-soft);
 }
 
+/* Help text under a field. It was set at the smallest size in the palest ink
+   in the system, which is how you write something you do not want read — and
+   these lines explain what a setting actually does. */
 .a-hint {
-  font-size: var(--t-text-micro);
-  color: var(--t-ink-3);
+  font-size: var(--t-text-small);
+  line-height: 1.5;
+  color: var(--t-ink-2);
 }
 
 /* Server-action feedback. Both sit at the top of a form and are announced,
@@ -845,4 +1178,1489 @@ a.a-stat:hover {
   background: var(--t-surface);
   border: 1px solid var(--t-border);
   box-shadow: var(--t-shadow-float);
+}
+
+/* A row whose record is present but not in force — a hidden review, an
+   archived listing. Dimmed rather than removed, because the moderator still
+   has to be able to find it and put it back. */
+.a-row--muted {
+  opacity: 0.55;
+}
+
+.a-row--muted:hover {
+  opacity: 1;
+}
+
+/* --- list thumbnails ---
+   A photo is the fastest way to see that a listing is wrong: the name reads
+   fine, the picture is of a different building. Small, square, and with an
+   explicit placeholder so "no photo" is visible at a glance rather than a
+   blank cell that looks like a rendering bug. */
+.a-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--t-r-sm);
+  object-fit: cover;
+  background: var(--t-surface-2);
+  border: 1px solid var(--t-border);
+  display: block;
+}
+
+.a-thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t-ink-3);
+  border-style: dashed;
+}
+
+/* Visible to a screen reader, not to the eye — for a column whose heading is
+   obvious visually but would otherwise be announced as nothing. */
+.a-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- form sections ---
+   Twenty-one fields in one column is a wall. Grouped by the job being done,
+   it is five short ones. */
+.a-formsection {
+  border-top: 1px solid var(--t-border);
+  padding-top: var(--t-4);
+  margin-top: var(--t-4);
+}
+
+.a-formsection:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.a-formsection__head {
+  margin-bottom: var(--t-3);
+}
+
+.a-formsection__title {
+  font-size: 0.95rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.a-formsection__sub {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--t-ink-3);
+}
+
+.a-formsection__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+/* A field whose value was rejected. The border carries the state so it is
+   visible without reading, and the message says what to do about it. */
+.a-field--invalid .a-input,
+.a-field--invalid .a-select,
+.a-field--invalid .a-textarea {
+  border-color: var(--t-danger);
+}
+
+.a-fielderror {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--t-danger);
+}
+
+/* --- map picker ---
+   Sized so the whole of Rwanda is legible on open but the control does not
+   dominate the form it sits in. */
+.a-mapwrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-2);
+}
+
+.a-map {
+  height: 340px;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  overflow: hidden;
+  background: var(--t-surface-2);
+}
+
+/* Leaflet's own controls, tinted to sit inside the admin rather than on top
+   of it. */
+.a-map .leaflet-control-attribution {
+  font-size: 0.68rem;
+  background: color-mix(in srgb, var(--t-surface) 88%, transparent);
+  color: var(--t-ink-3);
+}
+
+/* The default marker is an image loaded by relative URL, which does not
+   survive bundling — this is drawn instead. */
+.a-mappin__dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--t-danger);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.4);
+}
+
+/* --- hours editor --- */
+.a-hours__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.a-hours__table th,
+.a-hours__table td {
+  padding: 6px 8px 6px 0;
+  text-align: left;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.a-hours__table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--t-ink-3);
+  font-weight: 600;
+}
+
+.a-hours__table tbody th {
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.a-hours__table .a-input,
+.a-hours__table .a-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.a-hours__table .a-input:disabled {
+  opacity: 0.45;
+}
+
+/* ============================================================ place editor */
+
+/* --- header: what you are editing, how finished it is, and how to save ---
+   Kept above the tabs and out of the scroll, so the save button is always
+   reachable and the preview always reflects what is in the fields. */
+.a-editorhead {
+  display: flex;
+  align-items: center;
+  gap: var(--t-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--t-4);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.a-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--t-3);
+  min-width: 0;
+}
+
+.a-preview__img {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--t-r-md);
+  object-fit: cover;
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+  flex: none;
+}
+
+.a-preview__img--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t-ink-3);
+  border-style: dashed;
+}
+
+.a-preview__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.a-preview__name {
+  font-weight: 650;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-preview__meta {
+  font-size: 0.82rem;
+  color: var(--t-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- completeness ---
+   A listing is "done" when a visitor can see it, find it, reach it and know
+   what it is — not when every column is non-null. */
+.a-complete {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.a-complete__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--t-surface-3);
+  overflow: hidden;
+}
+
+.a-complete__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--t-accent);
+  transition: width 160ms ease-out;
+}
+
+.a-complete__label {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--t-ink-3);
+}
+
+.a-editorhead__actions {
+  display: flex;
+  gap: var(--t-2);
+  margin-left: auto;
+}
+
+/* --- tabs --- */
+.a-tabs {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--t-border);
+  margin: var(--t-4) 0 var(--t-4);
+}
+
+.a-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--t-ink-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--t-r-sm) var(--t-r-sm) 0 0;
+}
+
+.a-tab:hover {
+  color: var(--t-ink);
+  background: var(--t-surface-2);
+}
+
+.a-tab--on {
+  color: var(--t-ink);
+  border-bottom-color: var(--t-accent);
+}
+
+/* A tab holding a rejected field. Without this, an error on a hidden tab is
+   invisible and the form just refuses to save without saying where. */
+.a-tab--bad {
+  color: var(--t-danger);
+}
+
+.a-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--t-danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.a-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-4);
+}
+
+/* `display: flex` above beats the browser's own [hidden] { display: none },
+   so an inactive panel stays on screen without this. The panels are hidden
+   rather than unmounted so their inputs still submit — which means the only
+   thing keeping them out of sight is this rule. */
+.a-tabpanel[hidden] {
+  display: none;
+}
+
+.a-formactions {
+  margin-top: var(--t-5);
+  padding-top: var(--t-4);
+  border-top: 1px solid var(--t-border);
+}
+
+/* --- roomier inputs ---
+   Same visual language, more air. A form somebody spends their working day in
+   should not feel like a tax return. */
+.a-form--roomy .a-input,
+.a-form--roomy .a-select,
+.a-form--roomy .a-textarea {
+  padding: 11px 13px;
+  font-size: 0.95rem;
+}
+
+.a-form--roomy .a-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.a-form--roomy .a-hours__table .a-input,
+.a-form--roomy .a-hours__table .a-select {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+/* A heading over a row of stats. Work waiting on somebody and the size of the
+   catalogue are different questions; putting them under one row makes a
+   number nobody can act on sit beside one that needs doing today. */
+.a-statsgroup {
+  margin: var(--t-5) 0 var(--t-3);
+  font-size: var(--t-text-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+}
+
+.a-statsgroup:first-of-type {
+  margin-top: var(--t-4);
+}
+
+/* --- submission diff ---
+   What is proposed, beside what the listing says now. Approving a change you
+   cannot see is not reviewing it. */
+.a-difflist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-3);
+}
+
+.a-diff {
+  display: grid;
+  gap: 2px;
+}
+
+.a-diff__label {
+  font-size: var(--t-text-micro);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-diff__old {
+  font-size: 0.85rem;
+  color: var(--t-ink-3);
+  text-decoration: line-through;
+  overflow-wrap: anywhere;
+}
+
+.a-diff__new {
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.a-diff--changed .a-diff__new {
+  font-weight: 600;
+  color: var(--t-accent);
+}
+
+/* ========================================================= mobile: the app */
+/*
+ * On a phone these dashboards should behave like an app, not like a desktop
+ * page that has been squeezed. That means: no sidebar, a thumb-reachable
+ * bottom bar, a compact header, and content that fills the width.
+ */
+
+.a-bottomnav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .a-bottomnav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 68;
+    display: flex;
+    align-items: stretch;
+    height: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: color-mix(in srgb, var(--t-surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--t-border);
+  }
+
+  .a-bottomnav__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 6px 2px;
+    color: var(--t-ink-3);
+    text-decoration: none;
+  }
+
+  .a-bottomnav__item[aria-current="page"] {
+    color: var(--t-accent);
+  }
+
+  .a-bottomnav__glyph {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .a-bottomnav__badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--t-accent);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 750;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--t-surface);
+  }
+
+  .a-bottomnav__label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* Room for the bar, so the last row of a table is not sitting under it. */
+  .a-main {
+    padding: var(--t-4) var(--t-3)
+      calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom) + var(--t-6));
+  }
+
+  /* A phone header carries where you are and who you are, and nothing else.
+     The catalogue search moves into the page it searches. */
+  .a-topbar {
+    gap: var(--t-2);
+    padding: 0 var(--t-3);
+  }
+
+  /* Several components set their own `display`, at the same specificity as
+     the .t-show-desktop utility — so which one won came down to stylesheet
+     order, and the catalogue search stayed on screen squashing the page
+     title. Anything inside the top bar marked desktop-only is hidden here,
+     whatever it sets for itself. */
+  .a-topbar .t-show-desktop {
+    display: none !important;
+  }
+
+  .a-topbar__title {
+    font-size: 0.98rem;
+  }
+
+  /* Cards and panels go full width rather than sitting in a narrow column. */
+  .a-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .a-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .a-grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Two columns of tiny buttons in a table cell wrap into a mess; stack them. */
+  .a-table__actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  /* Tabs scroll sideways instead of wrapping into four ragged rows. */
+  .a-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .a-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .a-tab {
+    flex: none;
+  }
+
+  /* The editor header stacks: preview, then progress, then the actions as a
+     full-width row so Save is a thumb target rather than a corner. */
+  .a-editorhead {
+    gap: var(--t-3);
+  }
+
+  .a-editorhead__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .a-editorhead__actions .t-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .a-map {
+    height: 260px;
+  }
+}
+
+/* Two per row on a phone, not one. A single column turned four short numbers
+   into four full-width cards and most of a screen of scrolling; the figures
+   are two or three digits and never needed the width. */
+@media (max-width: 600px) {
+  .a-stats {
+    gap: var(--t-2);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .a-stat {
+    padding: var(--t-3);
+  }
+
+  .a-stat__value {
+    font-size: 1.5rem;
+  }
+
+  .a-stat__note {
+    display: none;
+  }
+}
+
+/* --- sidebar summary card ---
+   Five nav items left most of a 248px column empty. This is the thing the
+   reader actually wants from that space: where they stand, and what is
+   outstanding. Not decoration. */
+.a-sidecard {
+  margin: var(--t-4) var(--t-3) 0;
+  padding: var(--t-3);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+}
+
+.a-sidecard__title {
+  margin: 0 0 var(--t-2);
+  font-size: var(--t-text-micro);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-ink-3);
+}
+
+.a-sidecard__rows {
+  margin: 0 0 var(--t-3);
+  display: grid;
+  gap: 7px;
+}
+
+.a-sidecard__rows > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-2);
+}
+
+.a-sidecard__rows dt {
+  font-size: 0.78rem;
+  color: var(--t-ink-3);
+}
+
+.a-sidecard__rows dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+/* Hidden when the rail is collapsed to icons — a card of labels in a 72px
+   column is unreadable. */
+.a-shell[data-rail="collapsed"] .a-sidecard {
+  display: none;
+}
+
+/* --- the grid overflow fix ---
+ * Grid and flex children default to `min-width: auto`, which means a child is
+ * never allowed to be narrower than its content. A table 557px wide therefore
+ * forces its column to 557px, the column forces the page wider than the
+ * screen, and `overflow-x: auto` on the wrapper never gets a chance to engage
+ * — the table does not overflow its parent, the parent grew instead.
+ *
+ * Setting min-width: 0 lets the column shrink to the viewport, at which point
+ * the wrapper scrolls the table as intended. This is the whole reason the
+ * dashboards scrolled sideways on a phone.
+ */
+.a-cols > *,
+.a-panel,
+.a-tablewrap,
+.a-stats > *,
+.a-body {
+  min-width: 0;
+}
+
+.a-tablewrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Nothing should ever scroll the page sideways. If something does, it is a
+   bug, and clipping it is better than shipping a page that slides. */
+@media (max-width: 1023px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* --- form feedback ---
+   A form that refuses has to say how many things are wrong, name them, and
+   let the reader jump to each. One line of red text at the top of a tabbed
+   form leaves them hunting. */
+.a-feedback {
+  display: flex;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-4);
+  margin-bottom: var(--t-4);
+  border-radius: var(--t-r-md);
+  border: 1px solid;
+  scroll-margin-top: calc(var(--t-header-h) + var(--t-4));
+}
+
+.a-feedback--bad {
+  border-color: var(--t-danger);
+  background: var(--t-danger-soft);
+  color: var(--t-danger);
+}
+
+.a-feedback--ok {
+  border-color: var(--t-accent-ink);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.a-feedback__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 1px;
+}
+
+.a-feedback__body {
+  min-width: 0;
+}
+
+.a-feedback__title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.a-feedback__list {
+  margin: var(--t-2) 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 4px;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* The field name is the actionable part, so it looks like the control it is. */
+.a-feedback__jump {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.a-feedback__jump:hover {
+  text-decoration-thickness: 2px;
+}
+
+.a-feedback__note {
+  margin: var(--t-2) 0 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* A rejected field should be obvious from the label down, not only by its
+   border — someone scanning a long form reads labels, not outlines. */
+.a-field--invalid .a-label {
+  color: var(--t-danger);
+}
+
+.a-field--invalid .a-input:focus,
+.a-field--invalid .a-select:focus,
+.a-field--invalid .a-textarea:focus {
+  outline-color: var(--t-danger);
+}
+
+/* ================================================ business sign-up flow == */
+/*
+ * A funnel, not a page in the app. It has no rail and no tab bar — it lives in
+ * the (business) route group for exactly that reason — so it brings its own
+ * bar and its own progress indicator.
+ */
+
+.b-flow {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-bg);
+  color: var(--t-ink);
+}
+
+.b-flow__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  padding: var(--t-3) var(--t-gutter);
+  border-bottom: 1px solid var(--t-border);
+  background: var(--t-surface);
+}
+
+.b-flow__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-2);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+}
+
+.b-flow__brand > svg {
+  color: var(--t-accent);
+}
+
+.b-flow__for {
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-3);
+}
+
+.b-flow__signin--short {
+  display: none;
+}
+
+/* At 390px the bar had three things in it and two of them wrapped. The tag
+   after the wordmark and the long sign-in label are both decoration here. */
+@media (max-width: 479px) {
+  .b-flow__for,
+  .b-flow__signin--long {
+    display: none;
+  }
+
+  .b-flow__signin--short {
+    display: inline;
+  }
+}
+
+/* ------------------------------------------------------------ progress -- */
+
+.b-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--t-3);
+  padding: var(--t-4) var(--t-gutter) 0;
+}
+
+.b-steps__list {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+  list-style: none;
+}
+
+.b-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 5px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-3);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+}
+
+.b-step__dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--t-border);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-micro);
+  font-weight: 800;
+}
+
+.b-step--now {
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.b-step--now .b-step__dot,
+.b-step--done .b-step__dot {
+  background: var(--t-accent);
+  color: #fff;
+}
+
+/* On a phone the labels do not fit, and a truncated progress indicator is
+   worse than an honest counter. */
+.b-steps__count {
+  display: none;
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-3);
+}
+
+@media (max-width: 599px) {
+  .b-step__label {
+    display: none;
+  }
+
+  .b-step {
+    padding: 5px;
+  }
+
+  .b-steps__count {
+    display: block;
+  }
+}
+
+/* --------------------------------------------------------------- panel -- */
+
+.b-flow__main {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--t-6) var(--t-gutter) var(--t-10);
+}
+
+.b-panel__title {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.b-panel__lede {
+  margin-top: var(--t-2);
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.b-flow__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+  margin-top: var(--t-6);
+}
+
+.b-flow__actions .t-btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .b-flow__actions .t-btn {
+    flex: 0 0 auto;
+  }
+}
+
+/* ------------------------------------------------------------ benefits -- */
+
+.b-benefits {
+  display: grid;
+  gap: var(--t-3);
+  margin-top: var(--t-5);
+  list-style: none;
+}
+
+.b-benefit {
+  display: flex;
+  gap: var(--t-3);
+  align-items: flex-start;
+  padding: var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+}
+
+.b-benefit__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--t-r-md);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+}
+
+.b-benefit__title {
+  display: block;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.b-benefit__body {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+/* --------------------------------------------------------------- plans -- */
+
+.b-plans {
+  display: grid;
+  gap: var(--t-3);
+  margin-top: var(--t-5);
+}
+
+.b-plan {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface);
+  transition: border-color var(--t-fast) var(--t-ease),
+    box-shadow var(--t-fast) var(--t-ease);
+}
+
+.b-plan:hover {
+  border-color: var(--t-border-strong);
+}
+
+/* The chosen plan has to be unmistakable: it is the one decision on the
+   screen, and it is carried silently into the next step. */
+.b-plan--on {
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--t-accent) 26%, transparent);
+}
+
+.b-plan__head {
+  display: flex;
+  align-items: center;
+  gap: var(--t-2);
+}
+
+.b-plan__name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.b-plan__price {
+  display: block;
+  margin-top: var(--t-2);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.b-plan__per {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-3);
+}
+
+.b-plan__tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--t-3);
+  padding: 5px 10px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-accent-soft);
+  color: var(--t-accent-ink);
+  font-size: var(--t-text-small);
+  font-weight: 700;
+}
+
+.b-plan__tagline {
+  display: block;
+  margin-top: var(--t-3);
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+.b-plan__perks {
+  display: grid;
+  gap: 6px;
+  margin-top: var(--t-3);
+  list-style: none;
+  font-size: var(--t-text-small);
+  color: var(--t-ink-2);
+}
+
+.b-plan__perks li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: var(--t-2);
+  align-items: start;
+  line-height: 1.5;
+}
+
+.b-plan__perks svg {
+  margin-top: 3px;
+  color: var(--t-accent);
+}
+
+.b-plan__pick {
+  display: block;
+  margin-top: var(--t-4);
+  padding-top: var(--t-3);
+  border-top: 1px solid var(--t-border);
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-ink-3);
+}
+
+.b-plan--on .b-plan__pick {
+  color: var(--t-accent-ink);
+}
+
+@media (min-width: 860px) {
+  .b-flow__main {
+    max-width: 1040px;
+  }
+
+  .b-plans {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* --------------------------------------------------------------- notes -- */
+
+.b-note {
+  display: flex;
+  gap: var(--t-2);
+  align-items: flex-start;
+  margin-top: var(--t-5);
+  padding: var(--t-3) var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-lg);
+  background: var(--t-surface-2);
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+  color: var(--t-ink-2);
+}
+
+.b-note > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--t-ink-3);
+}
+
+/* ------------------------------------------------------------- payment -- */
+
+.b-pay {
+  margin-top: var(--t-5);
+  padding: var(--t-5);
+  border: 1px solid var(--t-accent);
+  border-radius: var(--t-r-lg);
+  background: var(--t-accent-soft);
+  text-align: center;
+}
+
+.b-pay__label {
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  color: var(--t-accent-ink);
+}
+
+.b-pay__ref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--t-3);
+  margin-top: var(--t-2);
+}
+
+/* The one string on this screen that gets copied by hand into a phone. Wide
+   letter-spacing so two similar characters cannot be mistaken for each other. */
+.b-pay__ref code {
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--t-accent-ink);
+}
+
+.b-pay__hint {
+  margin-top: var(--t-3);
+  font-size: var(--t-text-small);
+  color: var(--t-accent-ink);
+  opacity: 0.85;
+}
+
+/* Block, not grid: a grid container turns its children into grid items, which
+   drops `display: list-item` and takes the numbers away with it — and the
+   numbers are the point of an ordered list. */
+.b-pay__steps {
+  margin: var(--t-5) 0 0;
+  padding-left: 1.35rem;
+  font-size: var(--t-text-body);
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.b-pay__steps li + li {
+  margin-top: var(--t-3);
+}
+
+.b-pay__steps li::marker {
+  font-weight: 800;
+  color: var(--t-accent);
+}
+
+/* A payment reference in a table: matched by eye against a statement, so it
+   is set apart from the prose around it. */
+.a-ref {
+  padding: 2px 6px;
+  border-radius: var(--t-r-sm, 6px);
+  background: var(--t-surface-2);
+  font-size: var(--t-text-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------------ payment success -- */
+
+.b-success {
+  text-align: center;
+  padding-top: var(--t-6);
+}
+
+.b-success__title {
+  margin-top: var(--t-4);
+}
+
+/* The tick draws itself: the ring sweeps round, then the mark is written into
+   it. Motion is what the eye reads as confirmation — a tick that is simply
+   present is just another piece of layout, and this is the one moment in the
+   product where somebody is actively worried it did not work. */
+.b-tick {
+  display: inline-block;
+  width: 84px;
+  height: 84px;
+}
+
+.b-tick svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.b-tick__ring {
+  stroke: var(--t-open, #1f7a3d);
+  stroke-width: 2.5;
+  /* 2πr for r=24, rounded up so no sliver is left undrawn. */
+  stroke-dasharray: 152;
+  stroke-dashoffset: 152;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+  animation: b-ring 620ms var(--t-ease, cubic-bezier(0.4, 0, 0.2, 1)) forwards;
+}
+
+.b-tick__mark {
+  stroke: var(--t-open, #1f7a3d);
+  stroke-width: 3.5;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  /* Starts as the ring closes, so the two read as one gesture rather than two. */
+  animation: b-mark 380ms var(--t-ease, cubic-bezier(0.4, 0, 0.2, 1)) 460ms forwards;
+}
+
+@keyframes b-ring {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes b-mark {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* A confirmation nobody can read is worse than no animation. Reduced motion
+   gets the finished tick immediately rather than a shorter version of the
+   same movement. */
+@media (prefers-reduced-motion: reduce) {
+  .b-tick__ring,
+  .b-tick__mark {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+.b-success__next {
+  margin-top: var(--t-5);
+  font-size: var(--t-text-small);
+  font-weight: 650;
+  color: var(--t-ink-3);
+  /* Fixed height: the countdown loses a digit as it runs, and letting the
+     buttons jump a pixel every second undoes the calm this screen is for. */
+  min-height: 1.4em;
+}
+
+.b-success .b-flow__actions {
+  justify-content: center;
+  margin-top: var(--t-3);
+}
+
+.b-success__test {
+  text-align: left;
+}
+
+/* -------------------------------------------- submission review sections -- */
+
+/* Grouped fields. Eighteen equal rows is a record dump; a reviewer reads in
+   an order, and the headings are what give it one. */
+.a-subsection + .a-subsection {
+  margin-top: var(--t-5);
+}
+
+.a-subsection__title {
+  margin-bottom: var(--t-2);
+  font-size: var(--t-text-small);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--t-ink);
+}
+
+/* Proposed photos, shown rather than linked: a reviewer is deciding whether
+   the picture is of the place, and a URL cannot answer that. */
+.a-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-2);
+}
+
+.a-shot {
+  width: 108px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+.a-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.a-chip {
+  padding: 2px 9px;
+  border-radius: var(--t-r-pill);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-size: var(--t-text-small);
+}
+
+/* A description is prose and wants to wrap like prose, not sit on one line. */
+.a-diff__prose {
+  display: block;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.a-shotwrap {
+  display: block;
+  width: 108px;
+}
+
+/* The address under the thumbnail: a dead link is a reason to reject, and a
+   blank grey box does not say whether the photo is wrong or just missing. */
+.a-shot__src {
+  display: block;
+  max-width: 108px;
+  margin-top: 4px;
+  font-size: var(--t-text-micro);
+  color: var(--t-ink-3);
+}
+
+.a-shot,
+.a-shotwrap .t-imgfallback {
+  display: block;
+  width: 108px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: var(--t-r-md);
+  border: 1px solid var(--t-border);
+  background: var(--t-surface-2);
+}
+
+/* ======================================================= admin dashboard ==
+ *
+ * Sections divided by hairlines, not panels inside a page. The previous
+ * version nested a bordered box inside a bordered layout, so an empty review
+ * queue rendered as a large box containing three words and a chart nailed to
+ * its floor. Whitespace and a rule do the same job without the boxes.
+ */
+
+.a-board {
+  display: grid;
+  gap: var(--t-6);
+  margin-top: var(--t-6);
+  padding-top: var(--t-6);
+  border-top: 1px solid var(--t-border);
+}
+
+@media (min-width: 1100px) {
+  .a-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--t-8);
+    align-items: start;
+  }
+
+  /* A hairline between the columns rather than a border around each. */
+  .a-board__col + .a-board__col {
+    padding-left: var(--t-8);
+    border-left: 1px solid var(--t-border);
+  }
+}
+
+.a-board__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--t-3);
+  margin-bottom: var(--t-3);
+}
+
+.a-board__title {
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.a-board__foot {
+  margin-top: var(--t-6);
+  padding-top: var(--t-6);
+  border-top: 1px solid var(--t-border);
+}
+
+/* An empty queue is good news, so it reads as good news rather than as a
+   section that failed to load. */
+.a-clear {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-3);
+  padding: var(--t-4) 0;
+  color: var(--t-ink-3);
+}
+
+.a-clear svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--t-open, #1f7a3d);
+}
+
+.a-clear p {
+  margin: 0;
+  font-size: var(--t-text-small);
+  line-height: 1.55;
+}
+
+.a-clear strong {
+  color: var(--t-ink-2);
+}
+
+/* Counts and the trend on one line: the sparkline is a fact about the
+   catalogue, so it sits with the catalogue. */
+.a-summary {
+  display: grid;
+  gap: var(--t-5);
+}
+
+@media (min-width: 900px) {
+  .a-summary {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    align-items: center;
+    gap: var(--t-8);
+  }
+}
+
+.a-summary__chart {
+  min-width: 0;
 }

@@ -10,9 +10,15 @@ export interface AdminNavItem {
   label: string;
   icon: IconName;
   /** Which count, if any, rides on this row as a badge. */
-  badge?: "submissions" | "bookings";
+  badge?: "submissions" | "reports";
   /** Nothing behind it yet — shown, but marked as sample data. */
   sample?: boolean;
+  /**
+   * Hide the row from an EDITOR. Presentation only — the screen and its
+   * actions enforce the same rule with requireAdmin(), which is where the
+   * permission actually lives. Never rely on this alone.
+   */
+  adminOnly?: boolean;
 }
 
 export interface AdminNavGroup {
@@ -35,8 +41,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         badge: "submissions",
         sample: true,
       },
-      { href: "/admin/bookings", label: "Bookings", icon: "ticket", badge: "bookings" },
-      { href: "/admin/reports", label: "Reports", icon: "alert" },
+      { href: "/admin/reports", label: "Reports", icon: "alert", badge: "reports" },
     ],
   },
   {
@@ -50,9 +55,15 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     title: "Community",
     items: [
-      { href: "/admin/businesses", label: "Businesses", icon: "basket", sample: true },
+      {
+        href: "/admin/businesses",
+        label: "Businesses",
+        icon: "basket",
+        sample: true,
+        adminOnly: true,
+      },
       { href: "/admin/reviews", label: "Reviews", icon: "star" },
-      { href: "/admin/users", label: "Users", icon: "user" },
+      { href: "/admin/users", label: "Users", icon: "user", adminOnly: true },
     ],
   },
   {
@@ -61,18 +72,41 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { href: "/admin/chatbot", label: "AI Assistant", icon: "sparkle" },
       { href: "/admin/calendar", label: "Calendar", icon: "calendar" },
       { href: "/admin/activity", label: "Activity", icon: "clock", sample: true },
-      { href: "/admin/settings", label: "Settings", icon: "settings", sample: true },
+      {
+        href: "/admin/settings",
+        label: "Settings",
+        icon: "settings",
+        sample: true,
+        adminOnly: true,
+      },
     ],
   },
 ];
 
-/** The title shown in the topbar for the current path. */
+/**
+ * The nav item for the current path.
+ *
+ * Longest match wins. Every admin path begins with /admin, so a plain
+ * startsWith would resolve /admin/places to Dashboard.
+ */
+function matchNav(pathname: string) {
+  let best: { group: AdminNavGroup; item: AdminNavItem } | null = null;
+  for (const group of ADMIN_NAV) {
+    for (const item of group.items) {
+      const hit = pathname === item.href || pathname.startsWith(`${item.href}/`);
+      if (!hit) continue;
+      if (!best || item.href.length > best.item.href.length) best = { group, item };
+    }
+  }
+  return best;
+}
+
+/** The page name shown in the topbar. */
 export function adminPageTitle(pathname: string): string {
-  const all = ADMIN_NAV.flatMap((group) => group.items);
-  // Longest match wins, so /admin/places/new resolves to Places rather than
-  // Dashboard, which every path starts with.
-  const match = all
-    .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
-    .sort((a, b) => b.href.length - a.href.length)[0];
-  return match?.label ?? "Admin";
+  return matchNav(pathname)?.item.label ?? "Admin";
+}
+
+/** The nav group it sits in — "Catalogue", "Requests" — shown above the title. */
+export function adminSectionTitle(pathname: string): string {
+  return matchNav(pathname)?.group.title ?? "Admin";
 }

@@ -16,11 +16,11 @@ import {
   type Route,
 } from "@/lib/places/routing";
 import type { Place } from "@/lib/places/types";
-import { MAP_STYLE, MIN_ZOOM } from "./rwandaMap";
+import { MAX_ZOOM, MIN_ZOOM, TILE_ATTRIBUTION, TILE_URL } from "./rwandaMap";
+import "leaflet/dist/leaflet.css";
 
 interface Props {
   place: Place;
-  apiKey: string;
 }
 
 /**
@@ -33,13 +33,15 @@ const ARRIVED_AT_STEP_M = 40;
 /** Announce the upcoming turn once inside this range, the way a satnav does. */
 const ANNOUNCE_AHEAD_M = 200;
 
-export default function NavigateScreen({ place, apiKey }: Props) {
+export default function NavigateScreen({ place }: Props) {
   const { origin, coords, requestLocation } = useLocation();
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const meRef = useRef<any>(null);
   const lineRef = useRef<any>(null);
+  /** The Leaflet module, once its chunk has arrived. */
+  const LRef = useRef<any>(null);
 
   const [route, setRoute] = useState<Route | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -131,92 +133,91 @@ export default function NavigateScreen({ place, apiKey }: Props) {
   /* ---------------------------------------------------------------- map */
 
   useEffect(() => {
-    if (!apiKey) return;
+    let cancelled = false;
 
-    const init = () => {
-      if (!canvasRef.current || !window.google?.maps) return;
-      const google = window.google;
-      mapRef.current = new google.maps.Map(canvasRef.current, {
+    // Leaflet reads `window` at module scope, so it can only be imported here.
+    void import("leaflet").then((mod) => {
+      const L = mod.default ?? mod;
+      if (cancelled || !canvasRef.current || mapRef.current) return;
+      LRef.current = L;
+
+      mapRef.current = L.map(canvasRef.current, {
+        center: [origin.lat, origin.lng],
         zoom: 15,
-        center: origin,
-        styles: MAP_STYLE,
         minZoom: MIN_ZOOM,
-        disableDefaultUI: true,
-        clickableIcons: false,
-        gestureHandling: "greedy",
+        maxZoom: MAX_ZOOM,
+        zoomControl: false,
+        attributionControl: true,
       });
-      setMapReady(true);
-    };
 
-    if (window.google?.maps) {
-      init();
-      return;
-    }
-    if (document.querySelector("script[data-tembera-maps]")) {
-      window.__temberaInitMap = init;
-      return;
-    }
-    window.__temberaInitMap = init;
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
-      apiKey,
-    )}&callback=__temberaInitMap&libraries=places&loading=async`;
-    script.async = true;
-    script.dataset.temberaMaps = "true";
-    document.head.appendChild(script);
+      L.tileLayer(TILE_URL, {
+        attribution: TILE_ATTRIBUTION,
+        maxZoom: MAX_ZOOM,
+      }).addTo(mapRef.current);
+
+      setMapReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+    // Mount only: re-creating the map whenever the origin drifts would fight
+    // the driver, and the follow effects below already track them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey]);
+  }, []);
 
   // Draw the line once both the map and the route exist.
   useEffect(() => {
-    const google = window.google;
-    if (!mapReady || !route || !google?.maps || !mapRef.current) return;
+    const L = LRef.current;
+    if (!mapReady || !route || !L || !mapRef.current) return;
 
-    lineRef.current?.setMap(null);
-    lineRef.current = new google.maps.Polyline({
-      map: mapRef.current,
-      path: route.path,
-      strokeColor: "#11694a",
-      strokeWeight: 6,
-      strokeOpacity: 0.9,
-    });
+    const path = route.path.map((point) => [point.lat, point.lng] as [number, number]);
 
-    new google.maps.Marker({
-      position: route.path[route.path.length - 1],
-      map: mapRef.current,
-      title: place.name,
-    });
+    lineRef.current?.remove();
+    lineRef.current = L.polyline(path, {
+      color: "#11694a",
+      weight: 6,
+      opacity: 0.9,
+    }).addTo(mapRef.current);
 
-    const bounds = new google.maps.LatLngBounds();
-    for (const point of route.path) bounds.extend(point);
-    if (!bounds.isEmpty()) mapRef.current.fitBounds(bounds, 56);
+    // The destination. A plain circle rather than Leaflet's default marker,
+    // whose icon is a bundled PNG that resolves against the page URL and 404s
+    // under Next's asset pipeline.
+    L.circleMarker(path[path.length - 1], {
+      radius: 7,
+      fillColor: "#11694a",
+      fillOpacity: 1,
+      color: "#ffffff",
+      weight: 3,
+    })
+      .bindTooltip(place.name)
+      .addTo(mapRef.current);
+
+    if (path.length) mapRef.current.fitBounds(L.latLngBounds(path), { padding: [56, 56] });
   }, [mapReady, route, place.name]);
 
   // Keep a dot on the driver, and follow it while guiding.
   useEffect(() => {
-    const google = window.google;
-    if (!mapReady || !coords || !google?.maps || !mapRef.current) return;
-    meRef.current?.setMap(null);
-    meRef.current = new google.maps.Marker({
-      position: coords,
-      map: mapRef.current,
-      zIndex: 999,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        fillColor: "#1a73e8",
-        fillOpacity: 1,
-        strokeColor: "#ffffff",
-        strokeWeight: 3,
-      },
-    });
+    const L = LRef.current;
+    if (!mapReady || !coords || !L || !mapRef.current) return;
+    meRef.current?.remove();
+    meRef.current = L.circleMarker([coords.lat, coords.lng], {
+      radius: 8,
+      fillColor: "#1a73e8",
+      fillOpacity: 1,
+      color: "#ffffff",
+      weight: 3,
+      interactive: false,
+    }).addTo(mapRef.current);
   }, [coords, mapReady]);
 
   /** Centre on the current manoeuvre, so the map matches the instruction. */
   const showStep = useCallback((at: LatLng) => {
     const map = mapRef.current;
     if (!map) return;
-    map.panTo(at);
+    map.panTo([at.lat, at.lng]);
     if (map.getZoom() < 16) map.setZoom(16);
   }, []);
 
@@ -228,12 +229,6 @@ export default function NavigateScreen({ place, apiKey }: Props) {
     <div className="t-nav">
       <div className="t-nav__map">
         <div className="t-nav__canvas" ref={canvasRef} />
-        {!apiKey && (
-          <div className="t-nav__nomap">
-            <Icon name="map" size={26} />
-            <p className="t-small t-muted">The map isn&apos;t switched on, but the directions below still work.</p>
-          </div>
-        )}
       </div>
 
       <div className="t-nav__panel">

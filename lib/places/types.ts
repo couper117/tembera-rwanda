@@ -14,6 +14,21 @@ export type CoordsPrecision =
   /** No usable location at all. */
   | "unknown";
 
+/**
+ * Where a listing is in its life.
+ *
+ * Declared here rather than imported from Prisma so this module stays free of
+ * the database layer — the public screens render this type, and dragging an
+ * ORM type into them would drag it into the browser bundle.
+ */
+export type PlaceStatus =
+  /** Not yet public: a new listing, or an edit awaiting review. */
+  | "draft"
+  /** Live in the catalogue. */
+  | "published"
+  /** Retired. The row and its public URL survive; it is out of the catalogue. */
+  | "archived";
+
 export interface Place {
   /** Stable, URL-safe. Derived from category + name, so links survive edits. */
   id: string;
@@ -58,6 +73,42 @@ export interface Place {
   /** Admin override to hide ratings/reviews. Use isSensitivePlace(), which
    *  also treats every "memorials" category place as sensitive by default. */
   sensitive?: boolean;
+  /** Where the listing is in its life. Only the staff reads care: the public
+   *  ones return published rows and nothing else. */
+  status?: PlaceStatus;
+  /** Structured opening hours. `hours` above stays the free-text fallback for
+   *  the imported listings and for the ones that genuinely do not fit a grid.
+   *  Shaped by lib/places/hours.ts; unknown here because the column is JSON. */
+  hoursJson?: unknown;
+  /**
+   * The owner has a paid plan and has been checked by Tembera.
+   *
+   * A claim the product makes to a visitor, not a property of the business —
+   * which is why it is computed at the source from two facts that both have to
+   * hold (a plan that includes the tick, and a business an admin has verified)
+   * rather than being a column anybody could set. Stripped from sensitive
+   * categories with the ratings and prices: a tick on a memorial would be
+   * promotion.
+   */
+  verified?: boolean;
+  /**
+   * The owning business's plan, when that business is verified.
+   *
+   * Drives placement — see lib/places/ranking.ts, which is where the rules
+   * about what money may and may not change are written down. Derived at the
+   * source like `verified`, and stripped from sensitive categories with it: a
+   * memorial cannot be promoted at any price.
+   */
+  plan?: "free" | "checked" | "top";
+  /**
+   * The business that keeps this listing up to date, when a verified one does.
+   *
+   * Only set for a verified owner: naming an unchecked business beside a
+   * listing would be Tembera vouching for somebody nobody has looked at.
+   * Stripped from sensitive categories with the rest — a memorial has
+   * custodians, not proprietors, and the public page must not imply otherwise.
+   */
+  owner?: { id: number; name: string };
 }
 
 /** A place plus the distance from wherever the user currently is. */

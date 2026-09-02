@@ -19,6 +19,7 @@ export type IconName =
   | "list"
   | "chevronRight"
   | "chevronLeft"
+  | "chevronDown"
   | "arrowLeft"
   | "close"
   | "sliders"
@@ -140,6 +141,7 @@ const PATHS: Record<IconName, React.ReactNode> = {
   ),
   chevronRight: <path d="m9.5 5 7 7-7 7" />,
   chevronLeft: <path d="m14.5 5-7 7 7 7" />,
+  chevronDown: <path d="m5 9.5 7 7 7-7" />,
   arrowLeft: (
     <>
       <path d="M20 12H4" />

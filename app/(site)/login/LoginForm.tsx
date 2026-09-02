@@ -8,7 +8,7 @@ import { loginAction, type AuthState } from "@/lib/actions/auth";
 
 const initial: AuthState = {};
 
-export default function LoginForm() {
+export default function LoginForm({ email }: { email?: string }) {
   const [state, action, pending] = useActionState(loginAction, initial);
 
   return (
@@ -60,6 +60,10 @@ export default function LoginForm() {
                   name="email"
                   autoComplete="email"
                   placeholder="name@example.com"
+                  // Filled when we already know who is arriving — straight
+                  // after a business sign-up, retyping the address they just
+                  // gave us is a small insult.
+                  defaultValue={email}
                   required
                 />
               </label>
@@ -97,6 +101,22 @@ export default function LoginForm() {
 
             <Link href="/register" className="t-btn t-btn--secondary t-btn--block">
               Create a free account
+            </Link>
+
+            {/* The business funnel is a different door, and somebody who owns
+                a restaurant should not have to find it from the visitor
+                sign-up. Same pattern as above so it reads as a second option
+                rather than an advert. */}
+            <div className="t-authcard__divider">
+              <span>Are you a business?</span>
+            </div>
+
+            <Link
+              href="/business/register"
+              className="t-btn t-btn--secondary t-btn--block"
+            >
+              <Icon name="basket" size={17} />
+              Register now
             </Link>
           </form>
         </div>

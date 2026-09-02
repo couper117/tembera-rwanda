@@ -29,10 +29,5 @@ export default async function NavigatePage({
   const place = await getPlace(id);
   if (!place) notFound();
 
-  return (
-    <NavigateScreen
-      place={place}
-      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? ""}
-    />
-  );
+  return <NavigateScreen place={place} />;
 }

@@ -37,3 +37,6 @@ next-env.d.ts.timestamp
 
 # TypeScript incremental build cache (produced by `tsc --noEmit`)
 *.tsbuildinfo
+
+# Production builds from scripts/serve.sh, kept out of the dev server way.
+.next-serve/

@@ -1,5 +1,47 @@
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  /**
+   * Where the build goes.
+   *
+   * `next dev` and `next build` both write `.next` by default, so a production
+   * build run while a dev server is up rips the ground out from under it: the
+   * running server keeps its old routing manifest and server-action ids in
+   * memory while serving freshly built client chunks off disk. What the browser
+   * then reports is "Server Action was not found on the server", a 404 on a
+   * route that exists, and "RSC payload created by a development version of
+   * React ... while using a production version on the client" — three errors
+   * that all look like application bugs and none of which are.
+   *
+   * scripts/serve.sh sets this so its builds land somewhere else entirely and
+   * cannot touch a dev server's `.next`.
+   */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
+  /**
+   * This project is the workspace root.
+   *
+   * There is a stray package-lock.json in the user home directory, and Next
+   * walks upward looking for one — so it was inferring that as the root and
+   * warning about it on every start. Not only noise: output file tracing
+   * follows that root when working out which files a serverless function
+   * needs, and a wrong one gives you a deploy that is either missing files or
+   * absurdly large.
+   */
+  outputFileTracingRoot: dirname(fileURLToPath(import.meta.url)),
+
+  /**
+   * Keep the database driver out of the bundler.
+   *
+   * `ws` is a Node package with native-ish internals and conditional requires;
+   * bundling it produces a "Cannot find module for page" at runtime, which is
+   * why an earlier attempt at the WebSocket fix was reverted. Listing these
+   * leaves them as plain runtime requires, which is what they expect to be.
+   */
+  serverExternalPackages: ["ws", "@prisma/adapter-neon", "@neondatabase/serverless"],
+
   // Legacy PHP kept for reference only — never build it.
   eslint: { ignoreDuringBuilds: false },
   images: {

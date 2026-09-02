@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icon, { type IconName } from "@/components/Icon";
-import { resolveIconName, categoryTint } from "@/components/ui/categoryIcon";
+import { resolveIconName, placeholderGradient } from "@/components/ui/categoryIcon";
 import { useCategoryMap } from "@/lib/client/categories";
 import type { CategoryId } from "@/lib/places/types";
 
@@ -10,10 +10,21 @@ interface Props {
   src?: string;
   alt: string;
   className?: string;
-  /** Drives the placeholder glyph when the image is missing or fails. */
+  /** Drives the placeholder glyph and hue when the image is missing or fails. */
   categoryId?: CategoryId;
   fallbackIcon?: IconName;
   sizes?: string;
+  /**
+   * Varies the placeholder gradient between neighbouring cards. Pass something
+   * stable and per-listing (the id); it falls back to the alt text.
+   */
+  seed?: string;
+  /**
+   * Load immediately instead of lazily. For the one image that is above the
+   * fold on arrival — a page hero is the LCP element, and deferring it leaves
+   * the reader watching a grey box while the browser decides it is needed.
+   */
+  eager?: boolean;
 }
 
 /**
@@ -28,6 +39,8 @@ export default function PlaceImage({
   categoryId,
   fallbackIcon,
   sizes,
+  seed,
+  eager = false,
 }: Props) {
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -44,14 +57,14 @@ export default function PlaceImage({
   if (!src || failed) {
     return (
       <div
-        className="t-imgfallback"
+        className={`t-imgfallback${className ? ` ${className}` : ""}`}
         role="img"
         aria-label={alt}
-        style={{ background: categoryTint(categoryId) }}
+        style={{ background: placeholderGradient(categoryId, seed ?? alt) }}
       >
         <Icon
           name={fallbackIcon ?? (categoryId ? resolveIconName(group?.icon) : "image")}
-          size={26}
+          size={44}
         />
       </div>
     );
@@ -66,7 +79,8 @@ export default function PlaceImage({
       src={src}
       alt={alt}
       className={className}
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
+      fetchPriority={eager ? "high" : undefined}
       decoding="async"
       sizes={sizes}
       onError={() => setFailed(true)}
