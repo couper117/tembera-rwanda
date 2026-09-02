@@ -60,6 +60,7 @@ export default function ChatbotWidget() {
   const [suggestions, setSuggestions] = useState<string[]>(OPENING_PROMPTS);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slow, setSlow] = useState(false);
 
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -109,6 +110,17 @@ export default function ChatbotWidget() {
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  // A reasoning model takes 15-30s on a real question. Three bouncing dots for
+  // half a minute reads as broken, so say what is happening instead.
+  useEffect(() => {
+    if (!loading) {
+      setSlow(false);
+      return;
+    }
+    const timer = setTimeout(() => setSlow(true), 9000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     if (!open || !bodyRef.current) return;
@@ -245,7 +257,8 @@ export default function ChatbotWidget() {
                 <span className="t-chatbot__dot" />
                 <span className="t-chatbot__dot" />
                 <span className="t-chatbot__dot" />
-                <span className="t-sr-only">Assistant is typing</span>
+                {slow && <span className="t-chatbot__slow">still thinking…</span>}
+                <span className="t-sr-only">Assistant is thinking</span>
               </div>
             )}
           </div>

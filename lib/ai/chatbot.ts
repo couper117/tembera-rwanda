@@ -273,16 +273,25 @@ function trimSentence(text: string, max: number): string {
 
 /* ------------------------------------------------------- provider calls */
 
+/**
+ * Room for the whole reply, thinking included.
+ *
+ * Gemini 3 reasons before it answers, and those thinking tokens are billed
+ * against maxOutputTokens rather than sitting outside it. At 800 the model
+ * spent 766 tokens thinking, had 30 left, and stopped at MAX_TOKENS in the
+ * middle of a word — the visitor got "**Specialty Coffee**: Visit" and
+ * nothing else. The budget has to cover the reasoning as well as the prose.
+ */
+const MAX_OUTPUT_TOKENS = 3_000;
+
 async function callGemini(
   apiKey: string,
   model: string,
   systemInstruction: string,
   messages: ChatMessage[],
 ): Promise<string> {
-  const response = await fetchWithTimeout(geminiUrl(model, apiKey), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const body = (thinking: boolean) =>
+    JSON.stringify({
       systemInstruction: { parts: [{ text: systemInstruction }] },
       contents: messages
         .filter((m) => m.role !== "system")
@@ -290,9 +299,33 @@ async function callGemini(
           role: m.role === "assistant" ? "model" : "user",
           parts: [{ text: m.content }],
         })),
-      generationConfig: { temperature: 0.6, maxOutputTokens: 800 },
-    }),
-  });
+      generationConfig: {
+        temperature: 0.6,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        // "Where should I eat?" does not need extended reasoning, and the
+        // thinking competes with the answer for the same budget. Low, not off:
+        // gemini-3.6-flash rejects thinkingBudget 0 outright.
+        ...(thinking ? { thinkingConfig: { thinkingLevel: "low" } } : {}),
+      },
+    });
+
+  const post = (thinking: boolean) =>
+    fetchWithTimeout(geminiUrl(model, apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: body(thinking),
+    });
+
+  let response = await post(true);
+
+  // thinkingConfig is a Gemini 3 field. An admin pinned to an older model gets
+  // a 400 for the knob rather than for anything they did, so drop it and ask
+  // again instead of failing the whole conversation over a tuning parameter.
+  if (response.status === 400) {
+    const detail = await response.text();
+    if (/thinking/i.test(detail)) response = await post(false);
+    else throw new Error(describeUpstreamError(400, detail));
+  }
 
   if (!response.ok) {
     throw new Error(describeUpstreamError(response.status, await response.text()));
@@ -320,6 +353,18 @@ async function callGemini(
     );
   }
 
+  // A reply cut off mid-sentence is worse than a short catalogue answer: the
+  // visitor cannot tell it is truncated, and the last thing they read is half
+  // a recommendation. Hand it back to the caller as a failure so the fallback
+  // gives them something whole.
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw new Error(
+      `ran out of output budget before finishing (thinking used ${
+        data.usageMetadata?.thoughtsTokenCount ?? "?"
+      } of ${MAX_OUTPUT_TOKENS} tokens)`,
+    );
+  }
+
   return text;
 }
 
@@ -343,7 +388,7 @@ async function callOpenAICompatible(
         ...messages.filter((m) => m.role !== "system"),
       ],
       temperature: 0.6,
-      max_tokens: 800,
+      max_tokens: MAX_OUTPUT_TOKENS,
     }),
   });
 

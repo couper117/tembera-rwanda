@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import Icon from "@/components/Icon";
 import {
   clearChatbotKeyAction,
+  listGeminiModelsAction,
   saveChatbotSettingsAction,
   testChatbotApiAction,
   type ChatbotFormState,
@@ -40,6 +41,10 @@ export default function ChatbotConfigForm({ config }: Props) {
   const [showKey, setShowKey] = useState(false);
   const [replacing, setReplacing] = useState(!config.hasApiKey);
 
+  const [models, setModels] = useState<string[]>([]);
+  const [modelsNote, setModelsNote] = useState("");
+  const [loadingModels, setLoadingModels] = useState(false);
+
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [clearing, startClearing] = useTransition();
@@ -53,6 +58,27 @@ export default function ChatbotConfigForm({ config }: Props) {
     // typed "gpt-4o" does not lose it by glancing at another provider.
     const isDefault = Object.values(DEFAULT_MODELS).includes(model) || model === "";
     if (isDefault) setModel(DEFAULT_MODELS[next]);
+  };
+
+  const loadModels = async () => {
+    setLoadingModels(true);
+    setModelsNote("");
+    try {
+      const res = await listGeminiModelsAction(newKey || KEEP_EXISTING_KEY);
+      if (res.models) {
+        setModels(res.models);
+        setModelsNote(`${res.models.length} models available to this key.`);
+        // Only move the admin off a model the key cannot reach.
+        if (!res.models.includes(model)) setModel(res.models[0]);
+      } else {
+        setModels([]);
+        setModelsNote(res.error ?? "Could not list models.");
+      }
+    } catch {
+      setModelsNote("Could not list models.");
+    } finally {
+      setLoadingModels(false);
+    }
   };
 
   const runTest = async () => {
@@ -129,17 +155,41 @@ export default function ChatbotConfigForm({ config }: Props) {
           <label className="a-label" htmlFor="ai-model">
             Model
           </label>
-          <input
-            id="ai-model"
-            name="model"
-            type="text"
-            className="a-input"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder={DEFAULT_MODELS[provider] || "provider-specific model id"}
-            required
-          />
-          <span className="a-hint">Passed to the provider verbatim.</span>
+          <div className="a-keyrow">
+            <input
+              id="ai-model"
+              name="model"
+              type="text"
+              className="a-input a-keyrow__input"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder={DEFAULT_MODELS[provider] || "provider-specific model id"}
+              list={models.length ? "ai-model-options" : undefined}
+              required
+            />
+            {provider === "gemini" && (
+              <button
+                type="button"
+                className="t-btn t-btn--secondary"
+                disabled={loadingModels || (!config.hasApiKey && !newKey.trim())}
+                onClick={loadModels}
+                title="Ask Google which models this key can use"
+              >
+                {loadingModels ? "Loading…" : "List models"}
+              </button>
+            )}
+          </div>
+          {models.length > 0 && (
+            <datalist id="ai-model-options">
+              {models.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
+          )}
+          <span className="a-hint">
+            {modelsNote ||
+              "Passed to the provider verbatim. Model names retire — use List models to see what this key can reach."}
+          </span>
         </div>
       </div>
 

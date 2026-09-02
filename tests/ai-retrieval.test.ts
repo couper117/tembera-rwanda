@@ -257,7 +257,20 @@ describe("describeUpstreamError", () => {
   });
 
   test("reports the status alone when the body is empty", () => {
-    assert.equal(describeUpstreamError(429, "   "), "HTTP 429");
+    assert.equal(describeUpstreamError(500, "   "), "HTTP 500");
+  });
+
+  test("names the three failures an admin can actually act on", () => {
+    // A raw quota blob or a 404 body tells an admin nothing about what to do.
+    assert.match(describeUpstreamError(429, "quota"), /Rate limited/);
+    assert.match(describeUpstreamError(404, "no longer available"), /List models/);
+    assert.match(describeUpstreamError(403, "bad key"), /rejected the key/);
+    // The provider's own words survive: they name the model or the quota.
+    assert.match(describeUpstreamError(404, "models/gemini-2.0-flash is gone"), /gemini-2\.0-flash/);
+  });
+
+  test("leaves an unremarkable status without a hint", () => {
+    assert.equal(describeUpstreamError(500, "boom"), "HTTP 500: boom");
   });
 });
 

@@ -57,7 +57,9 @@ export default async function AdminChatbotPage() {
                   <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">
                     aistudio.google.com
                   </a>
-                  . Model <code>gemini-2.0-flash</code>.
+                  . Use <strong>List models</strong> beside the model box rather than
+                  typing a name — Google retires them, and a retired name fails as a
+                  404 in the chat, not in this form.
                 </li>
                 <li>
                   <strong>OpenAI</strong> —{" "}

@@ -22,12 +22,25 @@ export function isProvider(value: unknown): value is Provider {
   return typeof value === "string" && (PROVIDERS as readonly string[]).includes(value);
 }
 
-/** The model each provider gets when an admin switches to it. */
+/**
+ * The model each provider gets when an admin switches to it.
+ *
+ * These are pinned names, and pinned names retire: gemini-1.5-flash went first,
+ * then gemini-2.0-flash, each time turning every default install into a 404
+ * that only shows up when somebody asks the assistant a question. Google's
+ * moving alias `gemini-flash-latest` avoids the pinning problem but points at
+ * whatever is busiest — it answered 503 "high demand" while gemini-3.6-flash
+ * answered fine — so it is a worse default, not a better one.
+ *
+ * The durable fix is not a cleverer constant: it is listGeminiModels() below,
+ * which lets the admin page offer what the key can actually reach. Treat these
+ * as a starting point, and expect to move them again.
+ */
 export const DEFAULT_MODELS: Record<Provider, string> = {
-  gemini: "gemini-2.0-flash",
+  gemini: "gemini-3.6-flash",
   openai: "gpt-4o-mini",
   groq: "llama-3.3-70b-versatile",
-  openrouter: "google/gemini-2.0-flash",
+  openrouter: "google/gemini-3.6-flash",
   custom: "",
 };
 
@@ -70,8 +83,19 @@ export function geminiUrl(model: string, apiKey: string): string {
  * A provider that never answers must not hold the request open forever: the
  * widget has no way to cancel, and a Next server action that never returns
  * leaves the user looking at a spinner until they reload.
+ *
+ * 45s, not the 20s this started at, because a reasoning model is genuinely
+ * slow: measured against gemini-3.6-flash, "where should I eat in Kigali"
+ * took 14s and "two days in Kigali and I love coffee" took 28s. At 20s the
+ * short questions worked and the interesting ones silently fell back to the
+ * catalogue — which looked like the model ignoring the question rather than
+ * like a timeout.
+ *
+ * Note for deployment: a platform with its own function timeout below this
+ * (Vercel Hobby cuts off at 10s) will kill the request first, and the visitor
+ * gets the catalogue answer no matter what this says.
  */
-export const REQUEST_TIMEOUT_MS = 20_000;
+export const REQUEST_TIMEOUT_MS = 45_000;
 
 export async function fetchWithTimeout(
   url: string,
@@ -100,7 +124,21 @@ export async function fetchWithTimeout(
  */
 export function describeUpstreamError(status: number, body: string): string {
   const trimmed = body.trim().replace(/\s+/g, " ").slice(0, 300);
-  return trimmed ? `HTTP ${status}: ${trimmed}` : `HTTP ${status}`;
+
+  // The three that actually happen get a first line somebody can act on. The
+  // provider's own text still follows, because it names the model or the
+  // quota and that is the part worth reading.
+  const hint =
+    status === 429
+      ? "Rate limited by the provider. The free tier allows only a few requests a minute; this clears on its own."
+      : status === 404
+        ? "The provider does not have that model. Model names retire — use List models to see what this key can reach."
+        : status === 401 || status === 403
+          ? "The provider rejected the key."
+          : "";
+
+  const detail = trimmed ? `HTTP ${status}: ${trimmed}` : `HTTP ${status}`;
+  return hint ? `${hint} (${detail})` : detail;
 }
 
 /**
@@ -137,4 +175,35 @@ export function maskKey(key: string): string {
   if (!trimmed) return "";
   if (trimmed.length < 12) return "•".repeat(8);
   return `${trimmed.slice(0, 4)}…${trimmed.slice(-4)}`;
+}
+
+/**
+ * The Gemini models this key can actually call, newest-looking first.
+ *
+ * Added because a retired model is the single failure this integration keeps
+ * hitting, and the admin had no way to discover the replacement except by
+ * reading a 404 body. Only Gemini for now: it is where the failure happens,
+ * and the OpenAI-compatible providers each shape /models differently enough
+ * that guessing one URL from a chat-completions URL is its own bug.
+ */
+export async function listGeminiModels(apiKey: string): Promise<string[]> {
+  const res = await fetchWithTimeout(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`,
+    { method: "GET" },
+  );
+  if (!res.ok) {
+    throw new Error(describeUpstreamError(res.status, await res.text()));
+  }
+
+  const data = (await res.json()) as {
+    models?: Array<{ name?: string; supportedGenerationMethods?: string[] }>;
+  };
+
+  return (data.models ?? [])
+    .filter((m) => m.supportedGenerationMethods?.includes("generateContent"))
+    .map((m) => (m.name ?? "").replace(/^models\//, ""))
+    // Image, audio, video and research models answer generateContent but are
+    // not chat models; offering them as a default invites a confusing bill.
+    .filter((n) => n.startsWith("gemini-") && !/image|tts|audio|transcribe|robotics|computer-use|research/.test(n))
+    .sort((a, b) => b.localeCompare(a, "en", { numeric: true }));
 }

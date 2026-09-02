@@ -602,6 +602,12 @@
   }
 }
 
+.t-chatbot__slow {
+  margin-left: 4px;
+  font-size: 0.76rem;
+  color: var(--t-ink-3);
+}
+
 .t-chatbot__quick {
   flex: none;
   display: flex;

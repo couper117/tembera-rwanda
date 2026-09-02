@@ -14,6 +14,7 @@ import {
   fetchWithTimeout,
   geminiUrl,
   isProvider,
+  listGeminiModels,
   redactSecrets,
   KEEP_EXISTING_KEY,
 } from "@/lib/ai/providers";
@@ -180,5 +181,31 @@ export async function testChatbotApiAction(
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown connection error";
     return { success: false, message: redactSecrets(message) };
+  }
+}
+
+/**
+ * The Gemini models the configured key can reach.
+ *
+ * The admin used to type a model name blind, and a name that had since been
+ * retired failed as a 404 in the chat rather than in the form — so the site
+ * quietly answered from the catalogue while the dashboard said "Live".
+ */
+export async function listGeminiModelsAction(
+  apiKey: string,
+): Promise<{ models?: string[]; error?: string }> {
+  await requireAdmin();
+
+  const stored = await getChatbotConfig();
+  const submitted = apiKey.trim();
+  const key = submitted === "" || submitted === KEEP_EXISTING_KEY ? stored.apiKey : submitted;
+  if (!key) return { error: "Enter an API key first." };
+
+  try {
+    const models = await listGeminiModels(key);
+    return models.length ? { models } : { error: "The key reached Google but returned no chat models." };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not reach Google.";
+    return { error: redactSecrets(message) };
   }
 }
