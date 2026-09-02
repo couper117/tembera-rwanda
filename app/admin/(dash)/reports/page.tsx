@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageHead, Panel, StatusBadge, EmptyRow } from "@/components/admin/ui";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { requireStaff } from "@/lib/auth";
 import { adminReports } from "@/lib/data/moderation";
 import { REPORT_KIND_LABEL } from "@/lib/reports/kinds";

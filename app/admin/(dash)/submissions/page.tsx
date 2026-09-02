@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EmptyRow, PageHead, Panel, StatusBadge } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { requireStaff } from "@/lib/auth";
 import { adminSubmissions } from "@/lib/data/business";
 

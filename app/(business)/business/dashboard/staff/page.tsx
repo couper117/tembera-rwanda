@@ -1,7 +1,7 @@
 import { EmptyRow, PageHead, Panel } from "@/components/admin/ui";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import InviteMemberForm from "@/components/business/InviteMemberForm";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { removeMemberAction } from "@/lib/actions/business";
 import { requireBusiness } from "@/lib/auth";
 import { getMembers, getMyBusiness } from "@/lib/data/business";

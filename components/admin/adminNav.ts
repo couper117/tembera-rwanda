@@ -11,8 +11,6 @@ export interface AdminNavItem {
   icon: IconName;
   /** Which count, if any, rides on this row as a badge. */
   badge?: "submissions" | "reports";
-  /** Nothing behind it yet — shown, but marked as sample data. */
-  sample?: boolean;
   /**
    * Hide the row from an EDITOR. Presentation only — the screen and its
    * actions enforce the same rule with requireAdmin(), which is where the
@@ -39,7 +37,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         label: "Submissions",
         icon: "mail",
         badge: "submissions",
-        sample: true,
       },
       { href: "/admin/reports", label: "Reports", icon: "alert", badge: "reports" },
     ],
@@ -62,7 +59,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         href: "/admin/businesses",
         label: "Businesses",
         icon: "basket",
-        sample: true,
         adminOnly: true,
       },
       { href: "/admin/reviews", label: "Reviews", icon: "star" },
@@ -74,12 +70,11 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     items: [
       { href: "/admin/chatbot", label: "AI Assistant", icon: "sparkle" },
       { href: "/admin/calendar", label: "Calendar", icon: "calendar" },
-      { href: "/admin/activity", label: "Activity", icon: "clock", sample: true },
+      { href: "/admin/activity", label: "Activity", icon: "clock" },
       {
         href: "/admin/settings",
         label: "Settings",
         icon: "settings",
-        sample: true,
         adminOnly: true,
       },
     ],

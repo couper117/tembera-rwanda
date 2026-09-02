@@ -3,7 +3,7 @@ import Icon from "@/components/Icon";
 import { EmptyRow, PageHead, Panel, StatusBadge } from "@/components/admin/ui";
 import { requireBusiness } from "@/lib/auth";
 import { getMyBusiness, getMyPlaces, getMySubmissions } from "@/lib/data/business";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { isRenderableImage } from "@/lib/places/engine";
 
 export const dynamic = "force-dynamic";

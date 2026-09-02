@@ -2,7 +2,7 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { CountStrip, PageHead, Stat } from "@/components/admin/ui";
 import TrendChart from "@/components/admin/TrendChart";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { recentAudit } from "@/lib/audit";
 import { getCategories } from "@/lib/data/categories";
 import { getCities } from "@/lib/data/cities";

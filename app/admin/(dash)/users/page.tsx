@@ -1,7 +1,7 @@
 import Icon from "@/components/Icon";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { PageHead, Panel } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { requireAdmin } from "@/lib/auth";
 import { adminUsers } from "@/lib/data/user";
 import { setUserRole, deleteUser } from "./actions";

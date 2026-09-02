@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import { EmptyRow, PageHead, Panel, Stat, StatusBadge } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { requireAdmin } from "@/lib/auth";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { adminBusinesses, pendingRegistrations } from "@/lib/data/business";

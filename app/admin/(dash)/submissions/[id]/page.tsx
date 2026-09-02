@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Icon from "@/components/Icon";
 import { PageHead, Panel, StatusBadge } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { parseWeekHours, summariseWeek } from "@/lib/places/hours";
 import PlaceImage from "@/components/ui/PlaceImage";
 import { requireStaff } from "@/lib/auth";

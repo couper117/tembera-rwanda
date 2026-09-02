@@ -22,23 +22,6 @@ export function PageHead({
   );
 }
 
-/**
- * Marks a screen whose figures come from lib/admin/placeholder.ts. Sample data
- * that looks live is worse than no data, and this dashboard is being shown to
- * a buyer — nobody should mistake a mock queue for a real one.
- */
-export function SampleNotice({ what }: { what: string }) {
-  return (
-    <p className="a-sample">
-      <Icon name="info" size={16} />
-      <span>
-        <strong>Sample data.</strong> {what} has no table yet, so this screen is
-        laid out against the records it will hold.
-      </span>
-    </p>
-  );
-}
-
 export function Panel({
   title,
   action,

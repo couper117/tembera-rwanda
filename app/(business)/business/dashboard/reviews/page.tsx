@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import { EmptyRow, PageHead, Panel, Stat } from "@/components/admin/ui";
-import { adminDate } from "@/lib/admin/placeholder";
+import { adminDate } from "@/lib/admin/format";
 import { requireBusiness } from "@/lib/auth";
 import { getMyBusiness, getMyReviews } from "@/lib/data/business";
 
