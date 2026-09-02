@@ -646,6 +646,15 @@ model BusinessClaim {
   @@map("business_claims")
 }
 
+/// Key-value storage for application and admin configuration (e.g. AI chatbot settings).
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
 /// A listing a business is proposing, or a change to one it owns.
 ///
 /// The proposal lives in `payload` as JSON rather than in twenty mirrored

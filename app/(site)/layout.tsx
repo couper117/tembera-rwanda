@@ -15,6 +15,7 @@ import { SavedProvider } from "@/lib/client/saved";
 import { ThemeProvider } from "@/lib/client/theme";
 import { ToastProvider } from "@/components/ui/Toast";
 import { VisitedProvider } from "@/lib/client/visited";
+import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 
 /**
  * The app shell: persistent navigation plus the client state every screen reads
@@ -71,6 +72,7 @@ export default async function AppLayout({
                         <DesktopRail />
                       </Suspense>
                       {children}
+                      <ChatbotWidget />
                       <BottomNav />
                     </AppShell>
                   </VisitedProvider>

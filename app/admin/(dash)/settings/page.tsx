@@ -60,6 +60,21 @@ export default async function AdminSettingsPage() {
             </div>
           </Panel>
 
+          <Panel title="AI Travel Assistant">
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--t-2)" }}>
+              <p className="t-small t-muted">
+                Configure LLM providers (Gemini, OpenAI, Groq), API keys, and custom guidance prompts for the visitor AI chatbot.
+              </p>
+              <a
+                href="/admin/chatbot"
+                className="a-btn a-btn--accent"
+                style={{ alignSelf: "flex-start", marginTop: "var(--t-1)" }}
+              >
+                Configure AI Assistant →
+              </a>
+            </div>
+          </Panel>
+
           <Panel title="Sessions">
             <p className="t-small t-muted">
               Sign-in issues a signed cookie valid for 30 days. Changing your

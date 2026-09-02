@@ -13,6 +13,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/explore", label: "Explore", icon: "compass" },
+  { href: "/business", label: "For business", icon: "briefcase" },
   { href: "/map", label: "Map", icon: "map" },
   { href: "/saved", label: "Saved", icon: "bookmark" },
   { href: "/profile", label: "Profile", icon: "user" },
@@ -21,6 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
 /** Which tab should light up for a given path. */
 export function activeNavHref(pathname: string): string | undefined {
   if (pathname === "/") return "/";
+  if (pathname.startsWith("/business")) return "/business";
   // Category, city and place screens all live under Explore.
   if (
     pathname.startsWith("/explore") ||
