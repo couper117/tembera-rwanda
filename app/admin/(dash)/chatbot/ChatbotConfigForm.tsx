@@ -1,77 +1,73 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import Icon from "@/components/Icon";
 import {
+  clearChatbotKeyAction,
   saveChatbotSettingsAction,
   testChatbotApiAction,
   type ChatbotFormState,
+  type TestResult,
 } from "./actions";
-import type { ChatbotConfig } from "@/lib/ai/chatbot";
+import { DEFAULT_MODELS, KEEP_EXISTING_KEY, type Provider } from "@/lib/ai/providers";
+import type { PublicChatbotConfig } from "@/lib/ai/chatbot";
 
 interface Props {
-  initialConfig: ChatbotConfig;
+  config: PublicChatbotConfig;
 }
 
 const initial: ChatbotFormState = {};
 
-export default function ChatbotConfigForm({ initialConfig }: Props) {
-  const [state, action, pending] = useActionState(
-    saveChatbotSettingsAction,
-    initial,
-  );
+const PROVIDER_LABELS: Array<{ value: Provider; label: string; hint: string }> = [
+  { value: "gemini", label: "Google Gemini", hint: "Free tier at aistudio.google.com — start here." },
+  { value: "openai", label: "OpenAI", hint: "Keys begin sk-. Billed per token." },
+  { value: "groq", label: "Groq", hint: "Open models, very fast. Keys begin gsk_." },
+  { value: "openrouter", label: "OpenRouter", hint: "One key, many models. Prefix the model with its vendor." },
+  { value: "custom", label: "Custom (OpenAI-compatible)", hint: "Any endpoint that speaks /chat/completions." },
+];
 
-  const [provider, setProvider] = useState<ChatbotConfig["provider"]>(
-    initialConfig.provider || "gemini",
-  );
-  const [apiKey, setApiKey] = useState(initialConfig.apiKey || "");
-  const [model, setModel] = useState(initialConfig.model || "gemini-2.0-flash");
-  const [customEndpoint, setCustomEndpoint] = useState(
-    initialConfig.customEndpoint || "",
-  );
+export default function ChatbotConfigForm({ config }: Props) {
+  const [state, action, pending] = useActionState(saveChatbotSettingsAction, initial);
+
+  const [provider, setProvider] = useState<Provider>(config.provider);
+  const [model, setModel] = useState(config.model);
+  const [customEndpoint, setCustomEndpoint] = useState(config.customEndpoint ?? "");
+  const [enabled, setEnabled] = useState(config.enabled);
+
+  // Empty means "leave the stored key alone". The stored key is never sent to
+  // the browser, so there is nothing to prefill and nothing to reveal.
+  const [newKey, setNewKey] = useState("");
   const [showKey, setShowKey] = useState(false);
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{
-    success?: boolean;
-    message?: string;
-  } | null>(null);
+  const [replacing, setReplacing] = useState(!config.hasApiKey);
 
-  const handleProviderChange = (newProvider: ChatbotConfig["provider"]) => {
-    setProvider(newProvider);
-    if (newProvider === "gemini") {
-      setModel("gemini-2.0-flash");
-    } else if (newProvider === "openai") {
-      setModel("gpt-4o-mini");
-    } else if (newProvider === "groq") {
-      setModel("llama-3.3-70b-versatile");
-    } else if (newProvider === "openrouter") {
-      setModel("google/gemini-2.0-flash");
-    }
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [clearing, startClearing] = useTransition();
+
+  const providerMeta = PROVIDER_LABELS.find((p) => p.value === provider)!;
+  const live = config.hasApiKey || newKey.trim() !== "";
+
+  const changeProvider = (next: Provider) => {
+    setProvider(next);
+    // Only overwrite the model when it is still a default, so an admin who
+    // typed "gpt-4o" does not lose it by glancing at another provider.
+    const isDefault = Object.values(DEFAULT_MODELS).includes(model) || model === "";
+    if (isDefault) setModel(DEFAULT_MODELS[next]);
   };
 
-  const handleTestConnection = async () => {
+  const runTest = async () => {
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await testChatbotApiAction(
-        provider,
-        apiKey,
-        model,
-        customEndpoint,
+      setTestResult(
+        await testChatbotApiAction(provider, newKey || KEEP_EXISTING_KEY, model, customEndpoint),
       );
-      setTestResult(res);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to test connection.";
-      setTestResult({
-        success: false,
-        message,
-      });
+    } catch {
+      setTestResult({ success: false, message: "The test could not be started." });
     } finally {
       setTesting(false);
     }
   };
-
-  const hasApiKey = Boolean(apiKey && apiKey.trim() !== "");
 
   return (
     <form action={action} className="a-form">
@@ -82,76 +78,56 @@ export default function ChatbotConfigForm({ initialConfig }: Props) {
       )}
       {state.ok && (
         <p className="a-success" role="status">
-          {state.message || "Settings saved."}
+          {state.message}
         </p>
       )}
 
-      {/* Status banner */}
-      <div
-        style={{
-          padding: "var(--t-3) var(--t-4)",
-          borderRadius: "var(--t-radius-md)",
-          background: hasApiKey ? "var(--t-accent-soft)" : "var(--t-surface-2)",
-          border: `1px solid ${hasApiKey ? "var(--t-accent)" : "var(--t-border)"}`,
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--t-3)",
-          marginBottom: "var(--t-3)",
-        }}
-      >
-        <span
-          style={{
-            display: "inline-flex",
-            padding: 6,
-            borderRadius: "50%",
-            background: hasApiKey ? "var(--t-accent)" : "var(--t-surface-3)",
-            color: hasApiKey ? "#fff" : "var(--t-ink-3)",
-          }}
-        >
-          <Icon name="sparkle" size={16} />
+      <div className={`a-aibanner${live ? " a-aibanner--live" : ""}`}>
+        <span className="a-aibanner__icon">
+          <Icon name={live ? "sparkle" : "info"} size={16} />
         </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--t-ink)" }}>
-            {hasApiKey
-              ? `Live AI Enabled (${provider.toUpperCase()}: ${model})`
-              : "Smart Offline Fallback Mode Active"}
-          </div>
-          <div style={{ fontSize: "12px", color: "var(--t-ink-2)" }}>
-            {hasApiKey
-              ? "The assistant answers queries using live LLM reasoning grounded with current catalog places."
-              : "No API key configured. The assistant uses the built-in Rwandan tourism knowledge and database search engine."}
-          </div>
+        <div>
+          <strong>
+            {!enabled
+              ? "Assistant switched off"
+              : live
+                ? `Live — ${providerMeta.label}, ${model || "no model set"}`
+                : "Answering from the catalogue"}
+          </strong>
+          <span>
+            {!enabled
+              ? "The widget is hidden on every public page."
+              : live
+                ? "Questions go to the provider, grounded with matching listings from the catalogue."
+                : "No API key set. The assistant still answers from the 499 listings, the calendar and the business pages — it just cannot hold a free-form conversation."}
+          </span>
         </div>
       </div>
 
       <div className="a-grid2">
         <div className="a-field">
           <label className="a-label" htmlFor="ai-provider">
-            AI Provider
+            Provider
           </label>
           <select
             id="ai-provider"
             name="provider"
             className="a-select"
             value={provider}
-            onChange={(e) =>
-              handleProviderChange(e.target.value as ChatbotConfig["provider"])
-            }
+            onChange={(e) => changeProvider(e.target.value as Provider)}
           >
-            <option value="gemini">Google Gemini (Recommended)</option>
-            <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
-            <option value="groq">Groq (Llama / Mixtral)</option>
-            <option value="openrouter">OpenRouter</option>
-            <option value="custom">Custom OpenAI-Compatible API</option>
+            {PROVIDER_LABELS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
           </select>
-          <span className="a-hint">
-            Select the LLM service to power Tembera AI assistant.
-          </span>
+          <span className="a-hint">{providerMeta.hint}</span>
         </div>
 
         <div className="a-field">
           <label className="a-label" htmlFor="ai-model">
-            Model Name
+            Model
           </label>
           <input
             id="ai-model"
@@ -160,57 +136,85 @@ export default function ChatbotConfigForm({ initialConfig }: Props) {
             className="a-input"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            placeholder="e.g. gemini-2.0-flash or gpt-4o-mini"
+            placeholder={DEFAULT_MODELS[provider] || "provider-specific model id"}
             required
           />
-          <span className="a-hint">
-            Model identifier passed to the AI provider.
-          </span>
+          <span className="a-hint">Passed to the provider verbatim.</span>
         </div>
       </div>
 
       <div className="a-field">
         <label className="a-label" htmlFor="ai-apiKey">
-          API Key
+          API key
         </label>
-        <div style={{ display: "flex", gap: "var(--t-2)" }}>
-          <input
-            id="ai-apiKey"
-            name="apiKey"
-            type={showKey ? "text" : "password"}
-            className="a-input"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder={
-              provider === "gemini"
-                ? "AIzaSy..."
-                : provider === "openai"
-                  ? "sk-..."
-                  : "Enter your API key"
-            }
-            style={{ flex: 1, fontFamily: showKey ? "monospace" : "inherit" }}
-          />
-          <button
-            type="button"
-            className="a-btn"
-            onClick={() => setShowKey(!showKey)}
-            title={showKey ? "Hide API Key" : "Reveal API Key"}
-            style={{ minWidth: "75px" }}
-          >
-            {showKey ? "Hide" : "Show"}
-          </button>
-        </div>
+
+        {config.hasApiKey && !replacing ? (
+          <div className="a-keyrow">
+            <code className="a-keyrow__mask">{config.apiKeyHint}</code>
+            <button type="button" className="t-btn t-btn--secondary" onClick={() => setReplacing(true)}>
+              Replace
+            </button>
+            <button
+              type="button"
+              className="t-btn t-btn--danger"
+              disabled={clearing}
+              onClick={() =>
+                startClearing(async () => {
+                  await clearChatbotKeyAction();
+                  setTestResult(null);
+                  setReplacing(true);
+                })
+              }
+            >
+              {clearing ? "Removing…" : "Remove"}
+            </button>
+          </div>
+        ) : (
+          <div className="a-keyrow">
+            <input
+              id="ai-apiKey"
+              type={showKey ? "text" : "password"}
+              className="a-input a-keyrow__input"
+              value={newKey}
+              onChange={(e) => setNewKey(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={
+                provider === "gemini" ? "AIzaSy…" : provider === "openai" ? "sk-…" : "Paste the key"
+              }
+            />
+            <button type="button" className="t-btn t-btn--secondary" onClick={() => setShowKey(!showKey)}>
+              {showKey ? "Hide" : "Show"}
+            </button>
+            {config.hasApiKey && (
+              <button
+                type="button"
+                className="t-btn t-btn--secondary"
+                onClick={() => {
+                  setReplacing(false);
+                  setNewKey("");
+                }}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* The value actually submitted. The sentinel means "unchanged", so a
+            save that does not touch this field cannot silently blank the key. */}
+        <input type="hidden" name="apiKey" value={newKey || KEEP_EXISTING_KEY} />
+
         <span className="a-hint">
-          {provider === "gemini"
-            ? "Get a free Gemini API key at aistudio.google.com"
-            : "Your API key is stored securely in the database and never exposed to the client."}
+          Stored in the database and never sent to the browser — this page only ever
+          shows the first and last four characters.
         </span>
       </div>
 
       {provider === "custom" && (
         <div className="a-field">
           <label className="a-label" htmlFor="ai-endpoint">
-            Custom Endpoint URL
+            Endpoint URL
           </label>
           <input
             id="ai-endpoint"
@@ -221,83 +225,61 @@ export default function ChatbotConfigForm({ initialConfig }: Props) {
             onChange={(e) => setCustomEndpoint(e.target.value)}
             placeholder="https://api.your-host.com/v1/chat/completions"
           />
-          <span className="a-hint">
-            Standard OpenAI-compatible completions endpoint.
-          </span>
+          <span className="a-hint">Must be https, and must accept the OpenAI chat-completions body.</span>
         </div>
       )}
 
       <div className="a-field">
         <label className="a-label" htmlFor="ai-systemPrompt">
-          Custom System Instructions (Optional)
+          System instructions
         </label>
         <textarea
           id="ai-systemPrompt"
           name="systemPrompt"
           className="a-textarea"
-          rows={5}
-          defaultValue={initialConfig.systemPrompt}
-          placeholder="Override default assistant behavior and instructions..."
+          rows={10}
+          defaultValue={config.systemPrompt}
         />
         <span className="a-hint">
-          Guiding instructions for tone, cultural knowledge, and recommended routes.
+          Sent ahead of every conversation. Matching listings are appended automatically —
+          do not paste place data here. Clear the box to restore the default.
         </span>
       </div>
 
-      <div className="a-checkrow" style={{ marginTop: "var(--t-2)" }}>
+      <div className="a-checkrow">
         <input
           id="ai-enabled"
           name="enabled"
           type="checkbox"
-          defaultChecked={initialConfig.enabled}
+          checked={enabled}
+          onChange={(e) => setEnabled(e.target.checked)}
         />
-        <label htmlFor="ai-enabled" className="a-hint" style={{ cursor: "pointer" }}>
-          Enable AI Chatbot widget across the public website
+        <label htmlFor="ai-enabled" className="a-hint">
+          Show the assistant on the public site
         </label>
       </div>
 
       {testResult && (
-        <div
-          style={{
-            padding: "var(--t-3) var(--t-4)",
-            borderRadius: "var(--t-radius-sm)",
-            background: testResult.success
-              ? "var(--t-accent-soft)"
-              : "var(--t-danger-soft)",
-            border: `1px solid ${testResult.success ? "var(--t-accent)" : "var(--t-danger)"}`,
-            color: testResult.success ? "var(--t-accent-ink)" : "var(--t-danger)",
-            fontSize: "13px",
-            marginTop: "var(--t-2)",
-          }}
+        <p
+          className={testResult.success ? "a-success" : "a-error"}
+          role="status"
+          style={{ wordBreak: "break-word" }}
         >
           {testResult.message}
-        </div>
+        </p>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          gap: "var(--t-3)",
-          alignItems: "center",
-          marginTop: "var(--t-4)",
-          flexWrap: "wrap",
-        }}
-      >
-        <button
-          type="submit"
-          className="a-btn a-btn--accent"
-          disabled={pending}
-        >
-          {pending ? "Saving..." : "Save AI Configuration"}
+      <div className="a-formactions a-keyrow">
+        <button type="submit" className="t-btn t-btn--primary" disabled={pending}>
+          {pending ? "Saving…" : "Save configuration"}
         </button>
-
         <button
           type="button"
-          className="a-btn"
-          disabled={testing || !apiKey}
-          onClick={handleTestConnection}
+          className="t-btn t-btn--secondary"
+          disabled={testing || (!config.hasApiKey && !newKey.trim())}
+          onClick={runTest}
         >
-          {testing ? "Testing connection..." : "Test Connection"}
+          {testing ? "Testing…" : "Test connection"}
         </button>
       </div>
     </form>

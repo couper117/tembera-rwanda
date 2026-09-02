@@ -2,7 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
-import { saveChatbotConfig, type ChatbotConfig } from "@/lib/ai/chatbot";
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  getChatbotConfig,
+  saveChatbotConfig,
+} from "@/lib/ai/chatbot";
+import {
+  DEFAULT_MODELS,
+  describeUpstreamError,
+  endpointFor,
+  fetchWithTimeout,
+  geminiUrl,
+  isProvider,
+  redactSecrets,
+  KEEP_EXISTING_KEY,
+} from "@/lib/ai/providers";
 
 export interface ChatbotFormState {
   error?: string;
@@ -16,90 +30,155 @@ export async function saveChatbotSettingsAction(
 ): Promise<ChatbotFormState> {
   await requireAdmin();
 
-  const provider = (formData.get("provider") as ChatbotConfig["provider"]) || "gemini";
-  const apiKey = (formData.get("apiKey") as string)?.trim() || "";
-  const model = (formData.get("model") as string)?.trim() || "gemini-2.0-flash";
-  const customEndpoint = (formData.get("customEndpoint") as string)?.trim() || "";
-  const systemPrompt = (formData.get("systemPrompt") as string)?.trim() || "";
+  const rawProvider = String(formData.get("provider") ?? "");
+  if (!isProvider(rawProvider)) {
+    return { error: "Choose one of the listed providers." };
+  }
+
+  const submittedKey = String(formData.get("apiKey") ?? "").trim();
+  const model = String(formData.get("model") ?? "").trim() || DEFAULT_MODELS[rawProvider];
+  const customEndpoint = String(formData.get("customEndpoint") ?? "").trim();
+  const systemPrompt = String(formData.get("systemPrompt") ?? "").trim();
   const enabled = formData.get("enabled") === "on";
 
+  if (rawProvider === "custom" && customEndpoint) {
+    try {
+      const url = new URL(customEndpoint);
+      if (url.protocol !== "https:" && url.hostname !== "localhost") {
+        return { error: "The custom endpoint must use https." };
+      }
+    } catch {
+      return { error: "The custom endpoint is not a valid URL." };
+    }
+  }
+
   try {
+    const current = await getChatbotConfig();
+    const apiKey =
+      submittedKey === KEEP_EXISTING_KEY || submittedKey === ""
+        ? current.apiKey
+        : submittedKey;
+
     await saveChatbotConfig({
-      provider,
+      provider: rawProvider,
       apiKey,
       model,
       customEndpoint,
-      systemPrompt,
+      systemPrompt: systemPrompt || DEFAULT_SYSTEM_PROMPT,
       enabled,
     });
 
     revalidatePath("/admin/chatbot");
-    revalidatePath("/admin/settings");
-    return { ok: true, message: "AI Chatbot settings successfully saved." };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to save settings.";
-    return { error: message };
+    return { ok: true, message: "Saved. The assistant picks this up on its next message." };
+  } catch (error) {
+    console.error("chatbot: save failed", error);
+    return { error: "Could not save the settings. Check the server log." };
   }
 }
 
+/** Forget the stored key entirely and fall back to offline answers. */
+export async function clearChatbotKeyAction(): Promise<ChatbotFormState> {
+  await requireAdmin();
+  try {
+    await saveChatbotConfig({ apiKey: "" });
+    revalidatePath("/admin/chatbot");
+    return { ok: true, message: "API key removed. The assistant now answers from the catalogue." };
+  } catch (error) {
+    console.error("chatbot: could not clear key", error);
+    return { error: "Could not remove the key." };
+  }
+}
+
+export interface TestResult {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Send one real message to the configured provider and report what came back.
+ *
+ * `apiKey` is optional: when the admin has not retyped it, the stored key is
+ * used server-side rather than round-tripping the secret through the browser
+ * so it can be sent straight back. That also means the button works on a fresh
+ * page load of an already-configured install, which it previously did not —
+ * the field was empty, so the button was disabled.
+ */
 export async function testChatbotApiAction(
   provider: string,
   apiKey: string,
   model: string,
   customEndpoint?: string,
-): Promise<{ success: boolean; message: string }> {
+): Promise<TestResult> {
   await requireAdmin();
 
-  if (!apiKey || apiKey.trim() === "") {
-    return {
-      success: false,
-      message: "Please enter an API key before testing.",
-    };
+  if (!isProvider(provider)) {
+    return { success: false, message: "Unknown provider." };
   }
 
+  const stored = await getChatbotConfig();
+  const submitted = apiKey.trim();
+  const key =
+    submitted === "" || submitted === KEEP_EXISTING_KEY ? stored.apiKey : submitted;
+
+  if (!key) {
+    return { success: false, message: "No API key to test — enter one first." };
+  }
+
+  const prompt = "Reply with exactly: Connection OK";
+  const endpoint = endpointFor(provider, customEndpoint || stored.customEndpoint);
+
   try {
-    if (provider === "gemini") {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model || "gemini-2.0-flash")}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const res = await fetch(url, {
+    if (endpoint === null) {
+      const res = await fetchWithTimeout(geminiUrl(model, key), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: "Ping test: Reply with 'Connection successful!'" }] }],
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 20 },
         }),
       });
 
       if (!res.ok) {
-        const err = await res.text();
-        return { success: false, message: `Gemini API returned status ${res.status}: ${err}` };
+        return {
+          success: false,
+          message: redactSecrets(describeUpstreamError(res.status, await res.text())),
+        };
       }
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      return { success: true, message: `Gemini Connected! Response: "${text?.trim()}"` };
-    } else {
-      const endpoint = customEndpoint || "https://api.openai.com/v1/chat/completions";
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: model || "gpt-4o-mini",
-          messages: [{ role: "user", content: "Ping test: Reply with 'Connection successful!'" }],
-          max_tokens: 20,
-        }),
-      });
 
-      if (!res.ok) {
-        const err = await res.text();
-        return { success: false, message: `API returned status ${res.status}: ${err}` };
-      }
       const data = await res.json();
-      const text = data.choices?.[0]?.message?.content;
-      return { success: true, message: `Connected successfully! Response: "${text?.trim()}"` };
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      return text
+        ? { success: true, message: `Connected to ${model}. It replied: "${text}"` }
+        : { success: false, message: "Connected, but the model returned no text." };
     }
-  } catch (error: unknown) {
+
+    const res = await fetchWithTimeout(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: model || DEFAULT_MODELS[provider],
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 20,
+      }),
+    });
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: redactSecrets(describeUpstreamError(res.status, await res.text())),
+      };
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content?.trim();
+    return text
+      ? { success: true, message: `Connected to ${model}. It replied: "${text}"` }
+      : { success: false, message: "Connected, but the model returned no text." };
+  } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown connection error";
-    return { success: false, message: `Connection test failed: ${message}` };
+    return { success: false, message: redactSecrets(message) };
   }
 }

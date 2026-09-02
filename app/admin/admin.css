@@ -2664,3 +2664,114 @@ a.a-count:hover .a-count__label {
 .a-summary__chart {
   min-width: 0;
 }
+
+/* --------------------------------------------- assistant configuration */
+
+/* Status line above the chatbot form: which mode the assistant is actually in
+   right now, since "saved" and "answering" are not the same thing when the key
+   is wrong or the provider is down. */
+.a-aibanner {
+  display: flex;
+  gap: var(--t-3);
+  align-items: flex-start;
+  padding: var(--t-3) var(--t-4);
+  border: 1px solid var(--t-border);
+  border-radius: var(--t-r-md);
+  background: var(--t-surface-2);
+}
+
+.a-aibanner--live {
+  border-color: var(--t-accent);
+  background: var(--t-accent-soft);
+}
+
+.a-aibanner__icon {
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--t-surface-3);
+  color: var(--t-ink-3);
+}
+
+.a-aibanner--live .a-aibanner__icon {
+  background: var(--t-accent);
+  color: var(--t-ink-inverse);
+}
+
+.a-aibanner strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--t-ink);
+}
+
+.a-aibanner span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--t-ink-2);
+}
+
+.a-keyrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--t-2);
+}
+
+.a-keyrow__input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.a-keyrow__mask {
+  flex: 1;
+  min-width: 140px;
+  padding: 9px 12px;
+  border: 1px dashed var(--t-border-strong);
+  border-radius: var(--t-r-sm);
+  background: var(--t-surface-2);
+  color: var(--t-ink-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.a-note {
+  font-size: 0.83rem;
+  line-height: 1.6;
+  color: var(--t-ink-2);
+}
+
+.a-note p {
+  margin: 0 0 var(--t-3);
+}
+
+.a-note > :last-child {
+  margin-bottom: 0;
+}
+
+.a-note ul {
+  margin: 0 0 var(--t-3);
+  padding-left: 1.1rem;
+}
+
+.a-note li {
+  margin-bottom: 6px;
+}
+
+.a-note strong {
+  color: var(--t-ink);
+}
+
+.a-note code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--t-surface-2);
+  font-size: 0.9em;
+}
+
+.a-note a {
+  color: var(--t-accent-ink);
+  text-decoration: underline;
+}
