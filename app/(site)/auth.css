@@ -311,6 +311,33 @@
   color: var(--t-ink-3);
 }
 
+/* The label row, when the field carries an action beside its name — currently
+   "Forgot password?". The wrapper existed before the link did and had no rule
+   of its own, so the label simply sat in a bare block; without this the link
+   would stack underneath it rather than sitting opposite.
+
+   Baseline alignment rather than centre: the two are different sizes and
+   weights, and centring them leaves the smaller one visibly floating. */
+.t-authfield__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--t-2);
+}
+
+.t-authfield__link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--t-accent);
+  text-decoration: none;
+  transition: color var(--t-fast) var(--t-ease);
+}
+
+.t-authfield__link:hover,
+.t-authfield__link:focus-visible {
+  text-decoration: underline;
+}
+
 /* Reviews */
 .t-reviews {
   display: flex;

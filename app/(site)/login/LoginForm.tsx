@@ -72,6 +72,13 @@ export default function LoginForm({ email }: { email?: string }) {
             <div className="t-authfield">
               <div className="t-authfield__top">
                 <span className="t-label">Password</span>
+                {/* Sits beside the label rather than below the form: the
+                    moment someone needs this is the moment they are staring
+                    at the password box, not after they have scrolled past the
+                    sign-in button. */}
+                <Link href="/forgot" className="t-authfield__link">
+                  Forgot password?
+                </Link>
               </div>
               <label className="t-field">
                 <Icon name="lock" size={18} />
