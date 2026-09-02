@@ -25,7 +25,7 @@ export default function ChatbotConfigForm({ initialConfig }: Props) {
     initialConfig.provider || "gemini",
   );
   const [apiKey, setApiKey] = useState(initialConfig.apiKey || "");
-  const [model, setModel] = useState(initialConfig.model || "gemini-1.5-flash");
+  const [model, setModel] = useState(initialConfig.model || "gemini-2.0-flash");
   const [customEndpoint, setCustomEndpoint] = useState(
     initialConfig.customEndpoint || "",
   );
@@ -39,13 +39,13 @@ export default function ChatbotConfigForm({ initialConfig }: Props) {
   const handleProviderChange = (newProvider: ChatbotConfig["provider"]) => {
     setProvider(newProvider);
     if (newProvider === "gemini") {
-      setModel("gemini-1.5-flash");
+      setModel("gemini-2.0-flash");
     } else if (newProvider === "openai") {
       setModel("gpt-4o-mini");
     } else if (newProvider === "groq") {
       setModel("llama-3.3-70b-versatile");
     } else if (newProvider === "openrouter") {
-      setModel("google/gemini-flash-1.5");
+      setModel("google/gemini-2.0-flash");
     }
   };
 
@@ -160,7 +160,7 @@ export default function ChatbotConfigForm({ initialConfig }: Props) {
             className="a-input"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            placeholder="e.g. gemini-1.5-flash or gpt-4o-mini"
+            placeholder="e.g. gemini-2.0-flash or gpt-4o-mini"
             required
           />
           <span className="a-hint">

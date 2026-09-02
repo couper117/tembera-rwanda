@@ -18,7 +18,7 @@ export async function saveChatbotSettingsAction(
 
   const provider = (formData.get("provider") as ChatbotConfig["provider"]) || "gemini";
   const apiKey = (formData.get("apiKey") as string)?.trim() || "";
-  const model = (formData.get("model") as string)?.trim() || "gemini-1.5-flash";
+  const model = (formData.get("model") as string)?.trim() || "gemini-2.0-flash";
   const customEndpoint = (formData.get("customEndpoint") as string)?.trim() || "";
   const systemPrompt = (formData.get("systemPrompt") as string)?.trim() || "";
   const enabled = formData.get("enabled") === "on";
@@ -59,7 +59,7 @@ export async function testChatbotApiAction(
 
   try {
     if (provider === "gemini") {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model || "gemini-1.5-flash")}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model || "gemini-2.0-flash")}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

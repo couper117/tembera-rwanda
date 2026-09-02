@@ -12,7 +12,7 @@ export interface ChatbotConfig {
 export const DEFAULT_CHATBOT_CONFIG: ChatbotConfig = {
   provider: "gemini",
   apiKey: "",
-  model: "gemini-1.5-flash",
+  model: "gemini-2.0-flash",
   customEndpoint: "",
   systemPrompt: `You are Tembera AI, an intelligent and knowledgeable tourism guide for Rwanda.
 Your goal is to help visitors and locals explore Rwanda with clear, respectful, useful guidance.
@@ -54,7 +54,7 @@ export async function getChatbotConfig(): Promise<ChatbotConfig> {
   const model =
     provider === "openai"
       ? process.env.OPENAI_MODEL || "gpt-4o-mini"
-      : process.env.GEMINI_MODEL || "gemini-1.5-flash";
+      : process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
   return {
     ...DEFAULT_CHATBOT_CONFIG,
@@ -150,7 +150,7 @@ async function callGemini(
   systemInstruction: string,
   messages: ChatMessage[],
 ): Promise<string> {
-  const modelName = model || "gemini-1.5-flash";
+  const modelName = model || "gemini-2.0-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   const contents = messages
