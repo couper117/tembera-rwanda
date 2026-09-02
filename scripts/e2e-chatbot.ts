@@ -24,9 +24,13 @@ function check(label: string, ok: boolean, detail = "") {
 
 async function openChat(page: Page) {
   await page.goto(BASE, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector(".t-chatbot__fab", { timeout: 15_000 });
+  // The launcher is deliberately absent until GET /api/chat confirms the
+  // assistant is switched on, so an admin who disables it never gets a button
+  // that flashes in and vanishes. Against a dev server that round trip lands
+  // behind a first compile of the route, which is well past a few seconds.
+  await page.waitForSelector(".t-chatbot__fab", { timeout: 90_000 });
   await page.click(".t-chatbot__fab");
-  await page.waitForSelector(".t-chatbot__panel:not([hidden])", { timeout: 5_000 });
+  await page.waitForSelector(".t-chatbot__panel:not([hidden])", { timeout: 10_000 });
 }
 
 async function ask(page: Page, question: string) {

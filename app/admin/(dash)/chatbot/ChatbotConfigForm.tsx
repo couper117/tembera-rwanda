@@ -171,8 +171,14 @@ export default function ChatbotConfigForm({ config }: Props) {
           </div>
         ) : (
           <div className="a-keyrow">
+            {/* The field carries the form's name itself. Mirroring it into a
+                hidden input meant the submitted value came from React state
+                rather than from the box the admin typed in — two sources for
+                one value, and the wrong one wins if they ever disagree. An
+                empty box means "leave the stored key alone". */}
             <input
               id="ai-apiKey"
+              name="apiKey"
               type={showKey ? "text" : "password"}
               className="a-input a-keyrow__input"
               value={newKey}
@@ -200,10 +206,6 @@ export default function ChatbotConfigForm({ config }: Props) {
             )}
           </div>
         )}
-
-        {/* The value actually submitted. The sentinel means "unchanged", so a
-            save that does not touch this field cannot silently blank the key. */}
-        <input type="hidden" name="apiKey" value={newKey || KEEP_EXISTING_KEY} />
 
         <span className="a-hint">
           Stored in the database and never sent to the browser — this page only ever
